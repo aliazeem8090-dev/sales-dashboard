@@ -1,0 +1,173 @@
+// database/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  directUrl = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  password       String
+  role           Role     @default(REP)
+  assignedProfileId String?
+  activeStatus   Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  profile        UpworkProfile? @relation(fields: [assignedProfileId], references: [id])
+  rep            Rep?
+  createdProposals Proposal[]
+  coachingInsights CoachingInsight[]
+}
+
+model UpworkProfile {
+  id            String   @id @default(cuid())
+  title         String
+  primarySkills String[]
+  niche         String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  users         User[]
+  proposals     Proposal[]
+}
+
+model Rep {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  managerId      String?
+  targets        Json?
+  currentConnects Int     @default(0)
+  weeklyGoals    Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id])
+  proposals      Proposal[]
+  activityLogs   ActivityLog[]
+  coachingInsights CoachingInsight[]
+}
+
+model Job {
+  id             String   @id @default(cuid())
+  upworkJobUrl   String   @unique
+  title          String
+  clientBudget   Float?
+  category       String
+  skills         String[]
+  postedDate     DateTime
+  description    String
+  fitTags        String[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  proposals      Proposal[]
+}
+
+model Proposal {
+  id             String            @id @default(cuid())
+  repId          String
+  jobId          String
+  fullProposalText String
+  submittedAt    DateTime         @default(now())
+  viewedAt       DateTime?
+  repliedAt      DateTime?
+  interviewAt    DateTime?
+  hiredAt        DateTime?
+  status         ProposalStatus   @default(SENT)
+  connectsUsed   Int
+  profileUsedId  String?
+  aiScore        Float?
+  manualScore    Float?
+  improvementNotes String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  rep            Rep              @relation(fields: [repId], references: [id])
+  job            Job              @relation(fields: [jobId], references: [id])
+  profileUsed    UpworkProfile?   @relation(fields: [profileUsedId], references: [id])
+  reviews        ProposalReview[]
+}
+
+model ProposalReview {
+  id             String   @id @default(cuid())
+  proposalId     String
+  parameterScores Json
+  missingElements String[]
+  rewrittenVersion String?
+  suggestions    String[]
+  modelOutputSnapshot Json?
+  createdAt      DateTime @default(now())
+
+  proposal       Proposal @relation(fields: [proposalId], references: [id])
+}
+
+model ActivityLog {
+  id             String   @id @default(cuid())
+  repId          String
+  date           DateTime
+  proposalsSent  Int     @default(0)
+  challengesFaced String?
+  justification  String?
+  notes          String?
+  createdAt      DateTime @default(now())
+
+  rep            Rep     @relation(fields: [repId], references: [id])
+}
+
+model CoachingInsight {
+  id             String         @id @default(cuid())
+  repId          String
+  insightType    InsightType
+  generatedInsight String
+  severity       Severity
+  createdAt      DateTime      @default(now())
+
+  rep            User          @relation(fields: [repId], references: [id])
+}
+
+model Benchmark {
+  id             String   @id @default(cuid())
+  name           String
+  scoringWeights Json
+  minimumStandards Json
+  profileSpecificGuidance Json?
+  proposalTemplates Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  REP
+  LEAD
+}
+
+enum ProposalStatus {
+  SENT
+  VIEWED
+  REPLIED
+  INTERVIEW
+  HIRED
+  REJECTED
+}
+
+enum InsightType {
+  PERFORMANCE
+  PROPOSAL_QUALITY
+  ACTIVITY
+  PROFILE_FIT
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}

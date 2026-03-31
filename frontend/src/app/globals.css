@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+:root {
+  --background: #08090d;
+  --foreground: #e2e8f0;
+  --card: #0f1117;
+  --card-border: rgba(6, 182, 212, 0.15);
+  --accent: #06b6d4;
+  --accent-glow: rgba(6, 182, 212, 0.3);
+  --muted: #1e2533;
+  --muted-fg: #64748b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), 'Inter', Arial, sans-serif;
+}
+
+/* Subtle grid overlay for techy feel */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #08090d; }
+::-webkit-scrollbar-thumb { background: #1e2533; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
+
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  color: #e2e8f0 !important;
+  background-color: #0f1117 !important;
+}
+
+/* Neon glow utility */
+.glow-cyan {
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.25), inset 0 0 12px rgba(6, 182, 212, 0.05);
+}
+
+.glow-cyan-sm {
+  box-shadow: 0 0 6px rgba(6, 182, 212, 0.2);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 8px rgba(6, 182, 212, 0.6);
+}
