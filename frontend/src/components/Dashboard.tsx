@@ -8,8 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 export function Dashboard() {
-  const [teamData, setTeamData] = useState(null)
-  const [repsData, setRepsData] = useState([])
+  const [teamData, setTeamData] = useState<{ totalProposals: number; hireRate: number; replyRate: number } | null>(null)
+  const [repsData, setRepsData] = useState<any[]>([])
 
   useEffect(() => {
     // Fetch dashboard data
