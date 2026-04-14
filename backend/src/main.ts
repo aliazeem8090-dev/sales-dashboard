@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { autoSeedIfEmpty } from './database/auto-seed';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,6 +13,7 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3001;
   await app.listen(port, '0.0.0.0');
   console.log(`Application listening on port ${port}`);
+  autoSeedIfEmpty().catch(err => console.error('[AutoSeed] Failed:', err));
 }
 bootstrap().catch((err) => {
   console.error('Failed to start application:', err);
