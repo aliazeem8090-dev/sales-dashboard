@@ -79,16 +79,17 @@ async function seed() {
   ]);
   console.log('Created benchmarks');
 
-  // NOTE: Waqas, Abdullah, Shayan, etc. are Upwork profile NAMES (not employee logins).
-  // Bidders are real employees who sign up via the register page.
-  // Only seed the manager + a few test bidder accounts for development.
   const teamMembers = [
-    { name: 'Manager', email: 'manager@team.com', role: 'MANAGER', targets: {}, currentConnects: 0 },
-    { name: 'Test Bidder 1', email: 'bidder1@team.com', role: 'REP', targets: { dailyProposals: 5, weeklyHires: 2 }, currentConnects: 60 },
-    { name: 'Test Bidder 2', email: 'bidder2@team.com', role: 'REP', targets: { dailyProposals: 5, weeklyHires: 2 }, currentConnects: 50 },
+    { name: 'Manager', email: 'manager@team.com', password: 'manager098', role: 'MANAGER', targets: {}, currentConnects: 0 },
+    { name: 'Fatima', email: 'fatima@team.com', password: 'fatima098', role: 'REP', targets: { dailyProposals: 5, weeklyHires: 2 }, currentConnects: 60 },
+    { name: 'Rao Waqar', email: 'waqar@team.com', password: 'waqar098', role: 'REP', targets: { dailyProposals: 5, weeklyHires: 2 }, currentConnects: 60 },
+    { name: 'Abdullah', email: 'abdullah@team.com', password: 'abdullah098', role: 'REP', targets: { dailyProposals: 5, weeklyHires: 2 }, currentConnects: 60 },
+    { name: 'Maryam', email: 'maryam@team.com', password: 'maryam098', role: 'REP', targets: { dailyProposals: 5, weeklyHires: 2 }, currentConnects: 60 },
+    { name: 'Danish', email: 'danish@team.com', password: 'danish098', role: 'REP', targets: { dailyProposals: 5, weeklyHires: 2 }, currentConnects: 60 },
+    { name: 'Mutawalkal', email: 'mutawalkal@team.com', password: 'mutawalkal098', role: 'REP', targets: { dailyProposals: 5, weeklyHires: 2 }, currentConnects: 60 },
   ];
 
-  const hashedPassword = await bcrypt.hash('password123', 10);
+  const hashedPassword = null; // each member has their own password below
 
   for (const member of teamMembers) {
     const existingUser = await userRepo.findOne({ where: { email: member.email } });
@@ -97,10 +98,11 @@ async function seed() {
       continue;
     }
 
+    const hashed = await bcrypt.hash(member.password, 10);
     const user = await userRepo.save(userRepo.create({
       name: member.name,
       email: member.email,
-      password: hashedPassword,
+      password: hashed,
       role: member.role as any,
     }));
 
@@ -113,11 +115,10 @@ async function seed() {
       }));
     }
 
-    console.log(`Created user: ${member.name} (${member.email}) · password: password123`);
+    console.log(`Created user: ${member.name} (${member.email}) · password: ${member.password}`);
   }
 
   console.log('\nSeed complete!');
-  console.log('All reps use password: password123');
   await AppDataSource.destroy();
 }
 
