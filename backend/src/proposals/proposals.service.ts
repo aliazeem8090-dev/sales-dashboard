@@ -1,5 +1,5 @@
 // backend/src/proposals/proposals.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { Proposal, ProposalStatus } from './proposal.entity';
@@ -135,6 +135,18 @@ export class ProposalsService {
   }
 
   async remove(id: string): Promise<void> {
+    await this.proposalsRepository.delete(id);
+  }
+
+  async removeByOwner(id: string, userId: string): Promise<void> {
+    const proposal = await this.proposalsRepository.findOne({
+      where: { id },
+      relations: ['rep'],
+    });
+    if (!proposal) throw new NotFoundException(`Proposal ${id} not found`);
+    if ((proposal.rep as any)?.userId !== userId) {
+      throw new ForbiddenException('You can only delete your own proposals');
+    }
     await this.proposalsRepository.delete(id);
   }
 }

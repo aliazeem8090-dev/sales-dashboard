@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { api } from '@/lib/api'
 import { getStoredUser } from '@/lib/auth'
-import { Plus, ExternalLink, Zap } from 'lucide-react'
+import { Plus, ExternalLink, Zap, Trash2 } from 'lucide-react'
 
 const STATUS_COLORS: Record<string, string> = {
   SENT:      'bg-slate-700/50 text-slate-400 border-slate-600/40',
@@ -190,6 +190,10 @@ function ProposalsList() {
                         current={p.status}
                         onUpdate={updated => setProposals(prev => prev.map(x => x.id === updated.id ? updated : x))}
                       />
+                      <DeleteButton
+                        proposalId={p.id}
+                        onDelete={() => setProposals(prev => prev.filter(x => x.id !== p.id))}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -199,6 +203,54 @@ function ProposalsList() {
         </div>
       )}
     </div>
+  )
+}
+
+function DeleteButton({ proposalId, onDelete }: { proposalId: string; onDelete: () => void }) {
+  const [confirming, setConfirming] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  async function handleDelete() {
+    setDeleting(true)
+    try {
+      await api.delete(`/proposals/${proposalId}`)
+      onDelete()
+    } catch (e) {
+      console.error(e)
+      setConfirming(false)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  if (confirming) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <button
+          onClick={handleDelete}
+          disabled={deleting}
+          className="text-[10px] text-red-400 hover:text-red-300 font-medium transition-colors disabled:opacity-50"
+        >
+          {deleting ? 'Deleting…' : 'Confirm'}
+        </button>
+        <button
+          onClick={() => setConfirming(false)}
+          className="text-[10px] text-slate-600 hover:text-slate-400 transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <button
+      onClick={() => setConfirming(true)}
+      className="text-slate-700 hover:text-red-400 transition-colors"
+      title="Delete proposal"
+    >
+      <Trash2 size={12} />
+    </button>
   )
 }
 

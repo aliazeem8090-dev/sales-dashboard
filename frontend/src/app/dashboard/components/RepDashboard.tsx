@@ -6,7 +6,8 @@ import { api } from '@/lib/api'
 import { getStoredUser } from '@/lib/auth'
 import {
   TrendingUp, MessageSquare, Eye, Briefcase, XCircle,
-  Zap, CheckCircle, Activity, AlertTriangle, Bell, Kanban
+  Zap, CheckCircle, Activity, AlertTriangle, Bell, Kanban,
+  Target, CheckCircle2, XCircle as XCircleIcon
 } from 'lucide-react'
 
 function StatCard({
@@ -90,6 +91,63 @@ function formatDate(d: string | Date | null) {
   return `${diff}d ago`
 }
 
+function kpiStatus(actual: number, target: number, higherIsBetter: boolean): 'pass' | 'warn' | 'fail' {
+  if (target === 0) return 'pass'
+  const ratio = higherIsBetter ? actual / target : target / actual
+  if (ratio >= 1) return 'pass'
+  if (ratio >= 0.75) return 'warn'
+  return 'fail'
+}
+
+const KPI_STATUS_STYLES = {
+  pass: { bar: 'bg-emerald-500', text: 'text-emerald-400', label: 'Met', badge: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' },
+  warn: { bar: 'bg-amber-500',   text: 'text-amber-400',   label: 'Close', badge: 'bg-amber-500/10 border-amber-500/20 text-amber-400' },
+  fail: { bar: 'bg-red-500',     text: 'text-red-400',     label: 'Below', badge: 'bg-red-500/10 border-red-500/20 text-red-400' },
+}
+
+interface KpiRowProps {
+  label: string
+  actual: number
+  target: number
+  higherIsBetter: boolean
+  formatActual: (v: number) => string
+  formatTarget: (v: number) => string
+}
+function KpiRow({ label, actual, target, higherIsBetter, formatActual, formatTarget }: KpiRowProps) {
+  const status = kpiStatus(actual, target, higherIsBetter)
+  const styles = KPI_STATUS_STYLES[status]
+  const pct = target === 0 ? 100 : higherIsBetter
+    ? Math.min(100, Math.round((actual / target) * 100))
+    : Math.min(100, Math.round((target / actual) * 100)) || (actual === 0 ? 100 : 0)
+
+  return (
+    <div className="grid grid-cols-12 items-center gap-2 py-2.5 border-b border-slate-800/40 last:border-0">
+      <div className="col-span-4">
+        <p className="text-xs text-slate-400">{label}</p>
+      </div>
+      <div className="col-span-5">
+        <div className="flex items-center gap-2">
+          <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className={`h-full rounded-full transition-all duration-700 ${styles.bar}`} style={{ width: `${pct}%` }} />
+          </div>
+          <span className={`text-[10px] font-mono font-semibold w-16 text-right ${styles.text}`}>{formatActual(actual)}</span>
+        </div>
+      </div>
+      <div className="col-span-2 text-right">
+        <span className="text-[10px] text-slate-600 font-mono">{target > 0 ? formatTarget(target) : '—'}</span>
+      </div>
+      <div className="col-span-1 flex justify-end">
+        {status === 'pass'
+          ? <CheckCircle2 size={12} className="text-emerald-400" />
+          : status === 'warn'
+          ? <AlertTriangle size={12} className="text-amber-400" />
+          : <XCircleIcon size={12} className="text-red-400" />
+        }
+      </div>
+    </div>
+  )
+}
+
 export function RepDashboard() {
   const user = getStoredUser()
   const [data, setData] = useState<any>(null)
@@ -158,13 +216,13 @@ export function RepDashboard() {
             )}
           </p>
         </div>
-        <a
+        <Link
           href="/board"
           className="flex items-center gap-2 px-3 py-2 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-medium rounded-lg hover:bg-cyan-500/20 transition-colors"
         >
           <Kanban size={13} />
           My Board
-        </a>
+        </Link>
       </div>
 
       {/* KPI grid */}
@@ -178,6 +236,90 @@ export function RepDashboard() {
         <StatCard label="Connects Used" value={data.connectsUsed || 0} sub={`${data.currentConnects || 0} remaining`} color="amber" icon={Zap} />
         <StatCard label="Consistency" value={`${data.consistencyScore || 0}%`} sub={`Last activity: ${formatDate(data.lastActivityDate)}`} color="slate" icon={Activity} />
       </div>
+
+      {/* Assigned Profiles */}
+      {data.assignedProfiles?.length > 0 && (
+        <div className="bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Briefcase size={13} className="text-cyan-400" />
+            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Your Assigned Profiles</h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {data.assignedProfiles.map((p: any) => (
+              <div key={p.id} className="flex items-center gap-2 px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg">
+                <div className="w-2 h-2 rounded-full bg-cyan-500 shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-slate-200">{p.title}</p>
+                  <p className="text-[10px] text-slate-500">{p.niche}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* KPI Performance */}
+      {(() => {
+        const t = data.targets || {}
+        const dailyTarget      = t.dailyProposalTarget ?? t.dailyProposals ?? 5
+        const minViewRate      = t.acceptableViewRate      ?? 20
+        const minInterviewRate = t.acceptableInterviewRate ?? 5
+        const minClosingRate   = t.acceptableClosingRate   ?? 3
+        const mrrGoal          = t.mrrGoal                ?? 500
+        const connectsLimit    = t.monthlyConnectsLimit    ?? 150
+
+        const dailyActual    = Math.round((data.totalProposals / 30) * 10) / 10
+        const monthlyTarget  = dailyTarget * 30
+        const earningsActual = data.earningsThisMonth || 0
+        const connectsActual = data.connectsUsed || 0
+
+        const kpis = [
+          { label: 'Daily Proposals',  actual: dailyActual,        target: dailyTarget,      higherIsBetter: true,  fa: (v: number) => `${v}/day`,     ft: (v: number) => `${v}/day`  },
+          { label: 'View Rate',        actual: data.viewRate || 0,  target: minViewRate,      higherIsBetter: true,  fa: (v: number) => `${v.toFixed(1)}%`, ft: (v: number) => `${v}%` },
+          { label: 'Interview Rate',   actual: data.interviewRate || 0, target: minInterviewRate, higherIsBetter: true, fa: (v: number) => `${v.toFixed(1)}%`, ft: (v: number) => `${v}%` },
+          { label: 'Closing Rate',     actual: data.hireRate || 0,  target: minClosingRate,   higherIsBetter: true,  fa: (v: number) => `${v.toFixed(1)}%`, ft: (v: number) => `${v}%` },
+          { label: 'MRR Goal',         actual: earningsActual,      target: mrrGoal,          higherIsBetter: true,  fa: (v: number) => `$${v.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, ft: (v: number) => `$${v}` },
+          { label: 'Connects Budget',  actual: connectsActual,      target: connectsLimit,    higherIsBetter: false, fa: (v: number) => `${v} used`,    ft: (v: number) => `${v} max` },
+        ]
+
+        const statuses = kpis.map(k => kpiStatus(k.actual, k.target, k.higherIsBetter))
+        const overall = statuses.includes('fail') ? 'fail' : statuses.includes('warn') ? 'warn' : 'pass'
+        const overallStyle = KPI_STATUS_STYLES[overall]
+        const metCount = statuses.filter(s => s === 'pass').length
+
+        return (
+          <div className={`bg-[#0a0b10] rounded-xl border overflow-hidden ${overall === 'fail' ? 'border-red-500/20' : overall === 'warn' ? 'border-amber-500/20' : 'border-emerald-500/20'}`}>
+            <div className={`flex items-center justify-between px-5 py-3 border-b ${overall === 'fail' ? 'border-red-500/20 bg-red-500/5' : overall === 'warn' ? 'border-amber-500/20 bg-amber-500/5' : 'border-emerald-500/20 bg-emerald-500/5'}`}>
+              <div className="flex items-center gap-2">
+                <Target size={14} className={overallStyle.text} />
+                <h2 className="text-xs font-semibold text-slate-300 uppercase tracking-widest">KPI Performance</h2>
+              </div>
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${overallStyle.badge}`}>
+                {metCount}/{kpis.length} KPIs Met
+              </span>
+            </div>
+            <div className="px-5 py-1">
+              <div className="flex items-center gap-1 py-1.5 mb-0.5">
+                <span className="col-span-4 text-[9px] text-slate-700 uppercase tracking-wider w-1/3">KPI</span>
+                <span className="text-[9px] text-slate-700 uppercase tracking-wider flex-1 pl-2">Progress</span>
+                <span className="text-[9px] text-slate-700 uppercase tracking-wider w-16 text-right">Target</span>
+                <span className="w-4" />
+              </div>
+              {kpis.map(k => (
+                <KpiRow
+                  key={k.label}
+                  label={k.label}
+                  actual={k.actual}
+                  target={k.target}
+                  higherIsBetter={k.higherIsBetter}
+                  formatActual={k.fa}
+                  formatTarget={k.ft}
+                />
+              ))}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Middle row: funnel + alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -280,21 +422,6 @@ export function RepDashboard() {
         </div>
       )}
 
-      {/* Assigned profiles */}
-      {data.assignedProfiles?.length > 0 && (
-        <div className="bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Your Profiles</h2>
-          <div className="flex flex-wrap gap-2">
-            {data.assignedProfiles.map((p: any) => (
-              <div key={p.id} className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/40 border border-slate-700/40 rounded-lg">
-                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
-                <span className="text-xs text-slate-300">{p.title}</span>
-                <span className="text-[10px] text-slate-500">{p.niche}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   )
 }

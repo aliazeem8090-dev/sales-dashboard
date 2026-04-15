@@ -70,8 +70,11 @@ export class ProposalsController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN', 'MANAGER')
-  remove(@Param('id') id: string) {
-    return this.proposalsService.remove(id);
+  remove(@Param('id') id: string, @Request() req: any) {
+    const { role, userId } = req.user;
+    if (role === 'ADMIN' || role === 'MANAGER') {
+      return this.proposalsService.remove(id);
+    }
+    return this.proposalsService.removeByOwner(id, userId);
   }
 }

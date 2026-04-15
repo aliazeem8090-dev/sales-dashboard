@@ -249,6 +249,10 @@ export class DashboardService {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const proposalsThisWeek = proposals.filter(p => p.submittedAt >= sevenDaysAgo).length;
 
+    const earningsThisMonth = proposals
+      .filter(p => p.status === 'HIRED' && p.hiredAt && p.hiredAt >= thirtyDaysAgo)
+      .reduce((sum, p) => sum + (p.contractValue || 0), 0);
+
     const assignments = await this.assignmentsRepository.find({
       where: { bidderId: userId, isActive: true },
       relations: ['profile'],
@@ -276,6 +280,7 @@ export class DashboardService {
       consistencyScore,
       lastActivityDate: lastLog?.date || null,
       proposalsThisWeek,
+      earningsThisMonth: Math.round(earningsThisMonth * 100) / 100,
       assignedProfiles: assignments.map(a => ({ id: a.profileId, title: a.profile?.title, niche: a.profile?.niche })),
       recentProposals: proposals.slice(0, 5),
     };
