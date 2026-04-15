@@ -225,18 +225,6 @@ export function RepDashboard() {
         </Link>
       </div>
 
-      {/* KPI grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-        <StatCard label="Proposals" value={total} sub={`${data.proposalsThisWeek} this week`} color="cyan" icon={TrendingUp} />
-        <StatCard label="Viewed" value={data.viewed || 0} sub={`${data.viewRate || 0}% view rate`} color="blue" icon={Eye} />
-        <StatCard label="Replied" value={data.replied || 0} sub={`${data.replyRate || 0}% reply rate`} color="violet" icon={MessageSquare} />
-        <StatCard label="Interviews" value={data.interviews || 0} sub={`${data.interviewRate || 0}% of proposals`} color="amber" icon={Briefcase} />
-        <StatCard label="Closed" value={data.hires || 0} sub={`${data.hireRate || 0}% hire rate`} color="emerald" icon={CheckCircle} />
-        <StatCard label="Lost" value={data.lost || 0} sub="Rejected or lost" color="red" icon={XCircle} />
-        <StatCard label="Connects Used" value={data.connectsUsed || 0} sub={`${data.currentConnects || 0} remaining`} color="amber" icon={Zap} />
-        <StatCard label="Consistency" value={`${data.consistencyScore || 0}%`} sub={`Last activity: ${formatDate(data.lastActivityDate)}`} color="slate" icon={Activity} />
-      </div>
-
       {/* Assigned Profiles */}
       {data.assignedProfiles?.length > 0 && (
         <div className="bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
@@ -257,6 +245,18 @@ export function RepDashboard() {
           </div>
         </div>
       )}
+
+      {/* KPI grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <StatCard label="Proposals" value={total} sub={`${data.proposalsThisWeek} this week`} color="cyan" icon={TrendingUp} />
+        <StatCard label="Viewed" value={data.viewed || 0} sub={`${data.viewRate || 0}% view rate`} color="blue" icon={Eye} />
+        <StatCard label="Replied" value={data.replied || 0} sub={`${data.replyRate || 0}% reply rate`} color="violet" icon={MessageSquare} />
+        <StatCard label="Interviews" value={data.interviews || 0} sub={`${data.interviewRate || 0}% of proposals`} color="amber" icon={Briefcase} />
+        <StatCard label="Closed" value={data.hires || 0} sub={`${data.hireRate || 0}% hire rate`} color="emerald" icon={CheckCircle} />
+        <StatCard label="Lost" value={data.lost || 0} sub="Rejected or lost" color="red" icon={XCircle} />
+        <StatCard label="Connects Used" value={data.connectsUsed || 0} sub={`${data.currentConnects || 0} remaining`} color="amber" icon={Zap} />
+        <StatCard label="Consistency" value={`${data.consistencyScore || 0}%`} sub={`Last activity: ${formatDate(data.lastActivityDate)}`} color="slate" icon={Activity} />
+      </div>
 
       {/* KPI Performance */}
       {(() => {
