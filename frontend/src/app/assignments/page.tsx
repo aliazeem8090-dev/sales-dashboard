@@ -129,9 +129,9 @@ export default function AssignmentsPage() {
             {profiles.map(profile => {
               const assigned = getAssignedBidders(profile.id)
               const isSelected = selectedProfile?.id === profile.id
-              const skills = Array.isArray(profile.primarySkills)
+              const skills: string[] = Array.isArray(profile.primarySkills)
                 ? profile.primarySkills
-                : (profile.primarySkills as any as string)?.split(',').map((s: string) => s.trim()) || []
+                : (profile.primarySkills as any as string)?.split(',').map((s: string) => s.trim()) ?? []
               return (
                 <button
                   key={profile.id}
