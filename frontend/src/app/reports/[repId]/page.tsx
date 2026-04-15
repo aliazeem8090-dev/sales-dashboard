@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { api } from '@/lib/api'
-import { Sidebar } from '@/components/layout/Sidebar'
 import { Printer } from 'lucide-react'
 
 interface ReportData {
@@ -117,19 +116,13 @@ export default function ReportPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen" style={{ background: 'var(--background)' }}>
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center text-slate-600 text-sm">Loading report…</div>
-      </div>
+      <div className="flex-1 flex items-center justify-center text-slate-600 text-sm">Loading report…</div>
     )
   }
 
   if (error || !report) {
     return (
-      <div className="flex min-h-screen" style={{ background: 'var(--background)' }}>
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center text-red-400 text-sm">{error || 'Report not found'}</div>
-      </div>
+      <div className="flex-1 flex items-center justify-center text-red-400 text-sm">{error || 'Report not found'}</div>
     )
   }
 
@@ -145,12 +138,7 @@ export default function ReportPage() {
         }
       `}</style>
 
-      <div className="flex min-h-screen" style={{ background: 'var(--background)' }}>
-        <div className="no-print">
-          <Sidebar />
-        </div>
-
-        <div className="flex-1 print-page">
+      <div className="flex-1 print-page overflow-auto">
           {/* Header */}
           <div className="px-8 py-5 flex items-center justify-between no-print" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', ...bgDark }}>
             <div>
@@ -303,7 +291,6 @@ export default function ReportPage() {
 
           </div>
         </div>
-      </div>
     </>
   )
 }

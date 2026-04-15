@@ -42,39 +42,49 @@ function getRepFlags(rep: any): { label: string; level: 'critical' | 'warn' | 'i
   const flags: { label: string; level: 'critical' | 'warn' | 'info' }[] = []
   const t = rep.targets || {}
 
-  const minProposals   = t.minMonthlyProposals   ?? 5
-  const minViewRate    = t.acceptableViewRate     ?? 5
+  const dailyTarget      = t.dailyProposalTarget ?? t.dailyProposals ?? 5
+  const monthlyTarget    = dailyTarget * 30
+  const minViewRate      = t.acceptableViewRate      ?? 5
   const minInterviewRate = t.acceptableInterviewRate ?? 0
-  const minClosingRate = t.acceptableClosingRate  ?? 0
-  const mrrGoal        = t.mrrGoal               ?? 0
-  const connectsLimit  = t.monthlyConnectsLimit   ?? 0
+  const minClosingRate   = t.acceptableClosingRate   ?? 0
+  const mrrGoal          = t.mrrGoal                ?? 0
+  const connectsLimit    = t.monthlyConnectsLimit    ?? 0
 
-  if (rep.totalProposals < minProposals)
-    flags.push({ label: `Proposals below target (${rep.totalProposals}/${minProposals})`, level: rep.totalProposals < minProposals * 0.5 ? 'critical' : 'warn' })
+  // Low activity — below daily proposal target
+  if (rep.totalProposals < monthlyTarget)
+    flags.push({ label: 'Low Activity', level: rep.totalProposals < monthlyTarget * 0.5 ? 'critical' : 'warn' })
 
+  // Low visibility — view rate below target
   if (rep.totalProposals >= 10 && rep.viewRate < minViewRate)
-    flags.push({ label: `View rate below target (${rep.viewRate}%/${minViewRate}%)`, level: rep.viewRate < minViewRate * 0.5 ? 'critical' : 'warn' })
+    flags.push({ label: 'Low Visibility', level: rep.viewRate < minViewRate * 0.5 ? 'critical' : 'warn' })
 
+  // Low engagement — interview rate below target
   if (minInterviewRate > 0 && rep.totalProposals >= 10 && rep.interviewRate < minInterviewRate)
-    flags.push({ label: `Interview rate below target (${rep.interviewRate}%/${minInterviewRate}%)`, level: 'warn' })
+    flags.push({ label: 'Low Engagement', level: 'warn' })
 
+  // Low conversion — closing rate below target
   if (minClosingRate > 0 && rep.totalProposals >= 10 && rep.hireRate < minClosingRate)
-    flags.push({ label: `Closing rate below target (${rep.hireRate}%/${minClosingRate}%)`, level: 'warn' })
+    flags.push({ label: 'Low Conversion', level: 'warn' })
 
+  // Below MRR goal
   if (mrrGoal > 0 && (rep.earningsThisMonth || 0) < mrrGoal)
-    flags.push({ label: `MRR below goal ($${rep.earningsThisMonth || 0}/$${mrrGoal})`, level: 'warn' })
+    flags.push({ label: 'Below MRR Goal', level: 'warn' })
 
+  // Connects over budget
   if (connectsLimit > 0 && rep.connectsUsed > connectsLimit)
-    flags.push({ label: `Connects over budget (${rep.connectsUsed}/${connectsLimit})`, level: 'warn' })
+    flags.push({ label: 'Connects Over Budget', level: 'warn' })
 
+  // Irregular activity — low consistency score
   if (rep.consistencyScore < 30 && rep.totalProposals > 0)
-    flags.push({ label: 'Inconsistent activity', level: 'warn' })
+    flags.push({ label: 'Irregular Activity', level: 'warn' })
 
-  if (!rep.lastActivityDate) flags.push({ label: 'No activity logged', level: 'critical' })
-  else {
+  // No recent activity
+  if (!rep.lastActivityDate) {
+    flags.push({ label: 'No Recent Activity', level: 'critical' })
+  } else {
     const daysSince = Math.floor((Date.now() - new Date(rep.lastActivityDate).getTime()) / (1000 * 60 * 60 * 24))
-    if (daysSince >= 5) flags.push({ label: `Inactive ${daysSince}d`, level: 'critical' })
-    else if (daysSince >= 3) flags.push({ label: `Inactive ${daysSince}d`, level: 'warn' })
+    if (daysSince >= 5) flags.push({ label: 'No Recent Activity', level: 'critical' })
+    else if (daysSince >= 3) flags.push({ label: 'Low Activity', level: 'warn' })
   }
   return flags
 }
@@ -152,6 +162,7 @@ export function ManagerDashboard() {
   }
 
   const flaggedReps = leaderboard.filter(r => getRepFlags(r).length > 0)
+  const onTrackReps = leaderboard.filter(r => getRepFlags(r).length === 0)
 
   return (
     <div className="p-6 space-y-6 relative z-10">
@@ -208,9 +219,9 @@ export function ManagerDashboard() {
           <KPICard
             label="Flagged Reps"
             value={flaggedReps.length}
-            sub="need attention"
+            sub={`${onTrackReps.length} on track`}
             color={flaggedReps.length > 0 ? 'amber' : 'emerald'}
-            href="/team"
+            href="/manager/kpis"
           />
         </div>
       )}

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
 import { getStoredUser } from '@/lib/auth'
-import { Sidebar } from '@/components/layout/Sidebar'
 import { UserCheck, Plus, X, BarChart2 } from 'lucide-react'
 
 interface BidderUser {
@@ -101,17 +100,12 @@ export default function AssignmentsPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen" style={{ background: 'var(--background)' }}>
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center text-slate-600 text-sm">Loading…</div>
-      </div>
+      <div className="flex-1 flex items-center justify-center text-slate-600 text-sm">Loading…</div>
     )
   }
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--background)' }}>
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="px-6 py-4 shrink-0" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', ...bgDark }}>
           <h1 className="text-lg font-semibold text-slate-200">Profile Assignments</h1>
@@ -251,6 +245,5 @@ export default function AssignmentsPage() {
           </div>
         </div>
       </div>
-    </div>
   )
 }

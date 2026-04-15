@@ -5,7 +5,7 @@ import { api } from '@/lib/api'
 import { Target, CheckCircle2, XCircle, AlertTriangle, Save, RefreshCw } from 'lucide-react'
 
 interface KpiTargets {
-  minMonthlyProposals: number
+  dailyProposalTarget: number
   acceptableViewRate: number
   acceptableInterviewRate: number
   acceptableClosingRate: number
@@ -27,7 +27,7 @@ interface RepData {
 }
 
 const DEFAULT_TARGETS: KpiTargets = {
-  minMonthlyProposals: 50,
+  dailyProposalTarget: 5,
   acceptableViewRate: 20,
   acceptableInterviewRate: 5,
   acceptableClosingRate: 3,
@@ -42,8 +42,10 @@ const KPI_FIELDS: {
   actualKey: keyof RepData
   higherIsBetter: boolean
   description: string
+  getActual?: (rep: RepData) => number
+  getTarget?: (target: number) => number
 }[] = [
-  { key: 'minMonthlyProposals',   label: 'Min Monthly Proposals',  unit: '',   actualKey: 'totalProposals',   higherIsBetter: true,  description: 'Minimum proposals to send per month' },
+  { key: 'dailyProposalTarget',   label: 'Daily Proposal Target',  unit: '/day', actualKey: 'totalProposals', higherIsBetter: true,  description: 'Proposals per day target (×30 = monthly)', getActual: (r) => Math.round((r.totalProposals / 30) * 10) / 10 },
   { key: 'acceptableViewRate',    label: 'Min View Rate',          unit: '%',  actualKey: 'viewRate',         higherIsBetter: true,  description: 'Minimum % of proposals that get viewed' },
   { key: 'acceptableInterviewRate', label: 'Min Interview Rate',   unit: '%',  actualKey: 'interviewRate',    higherIsBetter: true,  description: 'Minimum % of proposals reaching interview' },
   { key: 'acceptableClosingRate', label: 'Min Closing Rate',       unit: '%',  actualKey: 'hireRate',         higherIsBetter: true,  description: 'Minimum % of proposals that close' },
@@ -91,7 +93,7 @@ export default function KpiTargetsPage() {
         for (const rep of data) {
           if (!rep.repId) continue
           initial[rep.repId] = {
-            minMonthlyProposals: rep.targets?.minMonthlyProposals ?? (rep.targets?.dailyProposals ? rep.targets.dailyProposals * 22 : DEFAULT_TARGETS.minMonthlyProposals),
+            dailyProposalTarget: rep.targets?.dailyProposalTarget ?? rep.targets?.dailyProposals ?? DEFAULT_TARGETS.dailyProposalTarget,
             acceptableViewRate:    rep.targets?.acceptableViewRate    ?? DEFAULT_TARGETS.acceptableViewRate,
             acceptableInterviewRate: rep.targets?.acceptableInterviewRate ?? DEFAULT_TARGETS.acceptableInterviewRate,
             acceptableClosingRate: rep.targets?.acceptableClosingRate  ?? DEFAULT_TARGETS.acceptableClosingRate,
@@ -233,7 +235,7 @@ export default function KpiTargetsPage() {
               {/* KPI rows */}
               <div className="divide-y divide-slate-800/40">
                 {KPI_FIELDS.map(field => {
-                  const actual = Number(rep[field.actualKey]) || 0
+                  const actual = field.getActual ? field.getActual(rep) : (Number(rep[field.actualKey]) || 0)
                   const target = repTargets[field.key] || 0
                   const status = getStatus(actual, target, field.higherIsBetter)
 
@@ -272,6 +274,7 @@ export default function KpiTargetsPage() {
                         }`}>
                           {field.unit === '$' ? `$${actual.toLocaleString(undefined, { maximumFractionDigits: 0 })}` :
                            field.unit === '%' ? `${actual.toFixed(1)}%` :
+                           field.unit === '/day' ? `${actual}/day` :
                            actual.toString()}
                         </span>
                       </div>

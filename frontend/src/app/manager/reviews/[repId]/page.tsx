@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { api } from '@/lib/api'
-import { Sidebar } from '@/components/layout/Sidebar'
 import { ArrowLeft, ExternalLink, Zap, ChevronDown, ChevronUp } from 'lucide-react'
 
 const TIME_FILTERS = [
@@ -187,9 +186,7 @@ export default function RepReviewDetailPage() {
   const hires = proposals.filter(p => p.status === 'HIRED').length
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--background)' }}>
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="px-6 py-4 shrink-0" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', ...bgDark }}>
           <div className="flex items-center justify-between flex-wrap gap-3">
@@ -260,6 +257,5 @@ export default function RepReviewDetailPage() {
           )}
         </div>
       </div>
-    </div>
   )
 }
