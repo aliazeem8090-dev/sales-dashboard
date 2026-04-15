@@ -172,11 +172,11 @@ export function ManagerDashboard() {
       {/* Team KPIs */}
       {overview && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KPICard label="Total Proposals" value={overview.totalProposals} sub={`${overview.hireRate}% hire rate`} color="cyan" href="/proposals" />
-          <KPICard label="Deals Closed" value={overview.totalHires} sub={`$${(overview.totalEarnings || 0).toLocaleString()} earned`} color="emerald" href="/proposals" />
-          <KPICard label="Reply Rate" value={`${overview.replyRate}%`} sub={`${overview.totalReplied} replied`} color="violet" href="/proposals" />
-          <KPICard label="View Rate" value={`${overview.viewRate}%`} sub={`${overview.totalViewed} viewed`} color="blue" href="/proposals" />
-          <KPICard label="Interviews" value={overview.totalInterviews} sub={`${overview.interviewRate}% rate`} color="amber" href="/proposals" />
+          <KPICard label="Total Proposals" value={overview.totalProposals} sub={`${overview.hireRate}% hire rate`} color="cyan" href="/proposals?status=SENT" />
+          <KPICard label="Deals Closed" value={overview.totalHires} sub={`$${(overview.totalEarnings || 0).toLocaleString()} earned`} color="emerald" href="/proposals?status=HIRED" />
+          <KPICard label="Reply Rate" value={`${overview.replyRate}%`} sub={`${overview.totalReplied} replied`} color="violet" href="/proposals?status=REPLIED" />
+          <KPICard label="View Rate" value={`${overview.viewRate}%`} sub={`${overview.totalViewed} viewed`} color="blue" href="/proposals?status=VIEWED" />
+          <KPICard label="Interviews" value={overview.totalInterviews} sub={`${overview.interviewRate}% rate`} color="amber" href="/proposals?status=INTERVIEW" />
           <KPICard label="Connects Used" value={overview.totalConnectsUsed} color="slate" href="/team" />
           <KPICard label="This Week" value={weeklySummary?.thisWeek || 0} sub={`vs ${weeklySummary?.lastWeek || 0} last week`} color="cyan" href="/activity/new" />
           <KPICard

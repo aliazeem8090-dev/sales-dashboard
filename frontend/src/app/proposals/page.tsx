@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { api } from '@/lib/api'
 import { getStoredUser } from '@/lib/auth'
 import { Plus, ExternalLink, Zap } from 'lucide-react'
@@ -19,9 +20,11 @@ const STATUSES = ['SENT', 'VIEWED', 'REPLIED', 'INTERVIEW', 'HIRED', 'REJECTED',
 
 export default function ProposalsPage() {
   const user = getStoredUser()
+  const searchParams = useSearchParams()
+  const isManager = user?.role === 'MANAGER' || user?.role === 'ADMIN'
   const [proposals, setProposals] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('')
+  const [filter, setFilter] = useState(() => searchParams.get('status') || '')
 
   useEffect(() => {
     setLoading(true)
@@ -108,6 +111,7 @@ export default function ProposalsPage() {
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(30,37,51,1)', background: '#07080d' }}>
                 <th className="px-4 py-3 text-left font-medium text-slate-600 uppercase tracking-wider">Job</th>
+                {isManager && <th className="px-4 py-3 text-left font-medium text-slate-600 uppercase tracking-wider">Rep</th>}
                 <th className="px-4 py-3 text-left font-medium text-slate-600 uppercase tracking-wider">Status</th>
                 <th className="px-4 py-3 text-right font-medium text-slate-600 uppercase tracking-wider">AI Score</th>
                 <th className="px-4 py-3 text-right font-medium text-slate-600 uppercase tracking-wider">Connects</th>
@@ -136,6 +140,11 @@ export default function ProposalsPage() {
                       </a>
                     )}
                   </td>
+                  {isManager && (
+                    <td className="px-4 py-3">
+                      <span className="text-slate-300 font-medium">{p.rep?.user?.name || '—'}</span>
+                    </td>
+                  )}
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded border text-[10px] font-semibold uppercase tracking-wide ${STATUS_COLORS[p.status] || STATUS_COLORS.SENT}`}>
                       {p.status === 'HIRED' ? 'CLOSED' : p.status}

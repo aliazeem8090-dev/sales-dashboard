@@ -32,7 +32,7 @@ export class ProposalsController {
     if (repId) {
       return this.proposalsService.findByRepWithFilters(repId, { status, startDate: start, endDate: end, profileId });
     }
-    return this.proposalsService.findAll();
+    return this.proposalsService.findAll({ status });
   }
 
   @Get('status-history/:proposalId')

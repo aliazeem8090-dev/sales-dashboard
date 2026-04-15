@@ -15,9 +15,12 @@ export class ProposalsService {
     private activityLogsService: ActivityLogsService,
   ) {}
 
-  async findAll(): Promise<Proposal[]> {
+  async findAll(filters?: { status?: ProposalStatus }): Promise<Proposal[]> {
+    const where: any = {};
+    if (filters?.status) where.status = filters.status;
     return this.proposalsRepository.find({
-      relations: ['job', 'profileUsed'],
+      where,
+      relations: ['job', 'profileUsed', 'rep', 'rep.user'],
       order: { submittedAt: 'DESC' },
     });
   }
@@ -51,7 +54,7 @@ export class ProposalsService {
     }
     return this.proposalsRepository.find({
       where,
-      relations: ['job', 'profileUsed'],
+      relations: ['job', 'profileUsed', 'rep', 'rep.user'],
       order: { submittedAt: 'DESC' },
     });
   }
