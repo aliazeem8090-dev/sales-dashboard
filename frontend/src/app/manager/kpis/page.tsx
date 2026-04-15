@@ -91,7 +91,7 @@ export default function KpiTargetsPage() {
         for (const rep of data) {
           if (!rep.repId) continue
           initial[rep.repId] = {
-            minMonthlyProposals: rep.targets?.minMonthlyProposals ?? rep.targets?.dailyProposals * 22 ?? DEFAULT_TARGETS.minMonthlyProposals,
+            minMonthlyProposals: rep.targets?.minMonthlyProposals ?? (rep.targets?.dailyProposals ? rep.targets.dailyProposals * 22 : DEFAULT_TARGETS.minMonthlyProposals),
             acceptableViewRate:    rep.targets?.acceptableViewRate    ?? DEFAULT_TARGETS.acceptableViewRate,
             acceptableInterviewRate: rep.targets?.acceptableInterviewRate ?? DEFAULT_TARGETS.acceptableInterviewRate,
             acceptableClosingRate: rep.targets?.acceptableClosingRate  ?? DEFAULT_TARGETS.acceptableClosingRate,
