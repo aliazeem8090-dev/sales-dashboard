@@ -37,13 +37,39 @@ function KPICard({
   return <div className={cls} onClick={onClick}>{inner}</div>
 }
 
-// Underperformance flag logic
+// Underperformance flag logic — uses per-rep KPI targets when set
 function getRepFlags(rep: any): { label: string; level: 'critical' | 'warn' | 'info' }[] {
   const flags: { label: string; level: 'critical' | 'warn' | 'info' }[] = []
-  if (rep.totalProposals < 5) flags.push({ label: 'Low proposal volume', level: 'warn' })
-  if (rep.totalProposals >= 10 && rep.replyRate < 10) flags.push({ label: 'Very low reply rate', level: 'critical' })
-  if (rep.totalProposals >= 10 && rep.viewRate < 5) flags.push({ label: 'Almost no views', level: 'critical' })
-  if (rep.consistencyScore < 30 && rep.totalProposals > 0) flags.push({ label: 'Inconsistent activity', level: 'warn' })
+  const t = rep.targets || {}
+
+  const minProposals   = t.minMonthlyProposals   ?? 5
+  const minViewRate    = t.acceptableViewRate     ?? 5
+  const minInterviewRate = t.acceptableInterviewRate ?? 0
+  const minClosingRate = t.acceptableClosingRate  ?? 0
+  const mrrGoal        = t.mrrGoal               ?? 0
+  const connectsLimit  = t.monthlyConnectsLimit   ?? 0
+
+  if (rep.totalProposals < minProposals)
+    flags.push({ label: `Proposals below target (${rep.totalProposals}/${minProposals})`, level: rep.totalProposals < minProposals * 0.5 ? 'critical' : 'warn' })
+
+  if (rep.totalProposals >= 10 && rep.viewRate < minViewRate)
+    flags.push({ label: `View rate below target (${rep.viewRate}%/${minViewRate}%)`, level: rep.viewRate < minViewRate * 0.5 ? 'critical' : 'warn' })
+
+  if (minInterviewRate > 0 && rep.totalProposals >= 10 && rep.interviewRate < minInterviewRate)
+    flags.push({ label: `Interview rate below target (${rep.interviewRate}%/${minInterviewRate}%)`, level: 'warn' })
+
+  if (minClosingRate > 0 && rep.totalProposals >= 10 && rep.hireRate < minClosingRate)
+    flags.push({ label: `Closing rate below target (${rep.hireRate}%/${minClosingRate}%)`, level: 'warn' })
+
+  if (mrrGoal > 0 && (rep.earningsThisMonth || 0) < mrrGoal)
+    flags.push({ label: `MRR below goal ($${rep.earningsThisMonth || 0}/$${mrrGoal})`, level: 'warn' })
+
+  if (connectsLimit > 0 && rep.connectsUsed > connectsLimit)
+    flags.push({ label: `Connects over budget (${rep.connectsUsed}/${connectsLimit})`, level: 'warn' })
+
+  if (rep.consistencyScore < 30 && rep.totalProposals > 0)
+    flags.push({ label: 'Inconsistent activity', level: 'warn' })
+
   if (!rep.lastActivityDate) flags.push({ label: 'No activity logged', level: 'critical' })
   else {
     const daysSince = Math.floor((Date.now() - new Date(rep.lastActivityDate).getTime()) / (1000 * 60 * 60 * 24))
