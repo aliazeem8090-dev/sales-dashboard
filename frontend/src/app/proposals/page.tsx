@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { api } from '@/lib/api'
 import { getStoredUser } from '@/lib/auth'
@@ -19,6 +19,14 @@ const STATUS_COLORS: Record<string, string> = {
 const STATUSES = ['SENT', 'VIEWED', 'REPLIED', 'INTERVIEW', 'HIRED', 'REJECTED', 'LOST']
 
 export default function ProposalsPage() {
+  return (
+    <Suspense>
+      <ProposalsList />
+    </Suspense>
+  )
+}
+
+function ProposalsList() {
   const user = getStoredUser()
   const searchParams = useSearchParams()
   const isManager = user?.role === 'MANAGER' || user?.role === 'ADMIN'
