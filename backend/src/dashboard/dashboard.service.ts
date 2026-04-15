@@ -107,6 +107,7 @@ export class DashboardService {
       hires,
       connectsUsed,
       currentConnects: rep?.currentConnects || 0,
+      targets: rep?.targets || {},
       viewRate: total > 0 ? Math.round((viewed / total) * 10000) / 100 : 0,
       replyRate: total > 0 ? Math.round((replied / total) * 10000) / 100 : 0,
       interviewRate: total > 0 ? Math.round((interviews / total) * 10000) / 100 : 0,

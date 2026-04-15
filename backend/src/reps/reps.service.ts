@@ -30,7 +30,9 @@ export class RepsService {
   }
 
   async update(id: string, data: Partial<Rep>): Promise<Rep> {
-    await this.repsRepository.update(id, data);
+    const rep = await this.findOne(id);
+    Object.assign(rep, data);
+    await this.repsRepository.save(rep);
     return this.findOne(id);
   }
 

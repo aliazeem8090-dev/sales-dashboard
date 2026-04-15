@@ -78,6 +78,22 @@ function overallStatus(rep: RepData, targets: KpiTargets): 'pass' | 'warn' | 'fa
   return 'pass'
 }
 
+function buildInitialTargets(data: any[]): Record<string, KpiTargets> {
+  const initial: Record<string, KpiTargets> = {}
+  for (const rep of data) {
+    if (!rep.repId) continue
+    initial[rep.repId] = {
+      dailyProposalTarget:     rep.targets?.dailyProposalTarget     ?? rep.targets?.dailyProposals ?? DEFAULT_TARGETS.dailyProposalTarget,
+      acceptableViewRate:      rep.targets?.acceptableViewRate      ?? DEFAULT_TARGETS.acceptableViewRate,
+      acceptableInterviewRate: rep.targets?.acceptableInterviewRate ?? DEFAULT_TARGETS.acceptableInterviewRate,
+      acceptableClosingRate:   rep.targets?.acceptableClosingRate   ?? DEFAULT_TARGETS.acceptableClosingRate,
+      mrrGoal:                 rep.targets?.mrrGoal                 ?? DEFAULT_TARGETS.mrrGoal,
+      monthlyConnectsLimit:    rep.targets?.monthlyConnectsLimit    ?? DEFAULT_TARGETS.monthlyConnectsLimit,
+    }
+  }
+  return initial
+}
+
 export default function KpiTargetsPage() {
   const [reps, setReps] = useState<RepData[]>([])
   const [targets, setTargets] = useState<Record<string, KpiTargets>>({})
@@ -85,26 +101,18 @@ export default function KpiTargetsPage() {
   const [saved, setSaved] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    api.get<any[]>('/dashboard/leaderboard?days=30')
+  function loadData() {
+    return api.get<any[]>('/dashboard/leaderboard?days=30')
       .then(data => {
-        setReps(data.filter(r => r.repId))
-        const initial: Record<string, KpiTargets> = {}
-        for (const rep of data) {
-          if (!rep.repId) continue
-          initial[rep.repId] = {
-            dailyProposalTarget: rep.targets?.dailyProposalTarget ?? rep.targets?.dailyProposals ?? DEFAULT_TARGETS.dailyProposalTarget,
-            acceptableViewRate:    rep.targets?.acceptableViewRate    ?? DEFAULT_TARGETS.acceptableViewRate,
-            acceptableInterviewRate: rep.targets?.acceptableInterviewRate ?? DEFAULT_TARGETS.acceptableInterviewRate,
-            acceptableClosingRate: rep.targets?.acceptableClosingRate  ?? DEFAULT_TARGETS.acceptableClosingRate,
-            mrrGoal:               rep.targets?.mrrGoal               ?? DEFAULT_TARGETS.mrrGoal,
-            monthlyConnectsLimit:  rep.targets?.monthlyConnectsLimit   ?? DEFAULT_TARGETS.monthlyConnectsLimit,
-          }
-        }
-        setTargets(initial)
+        const filtered = data.filter(r => r.repId)
+        setReps(filtered)
+        setTargets(buildInitialTargets(filtered))
       })
       .catch(console.error)
-      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    loadData().finally(() => setLoading(false))
   }, [])
 
   function updateTarget(repId: string, key: keyof KpiTargets, value: string) {
@@ -120,11 +128,10 @@ export default function KpiTargetsPage() {
   async function saveTargets(rep: RepData) {
     setSaving(prev => ({ ...prev, [rep.repId]: true }))
     try {
-      const merged = {
-        ...rep.targets,
-        ...targets[rep.repId],
-      }
+      const merged = { ...rep.targets, ...targets[rep.repId] }
       await api.patch(`/reps/${rep.repId}`, { targets: merged })
+      // Reload so actuals + saved targets both reflect reality
+      await loadData()
       setSaved(prev => ({ ...prev, [rep.repId]: true }))
     } catch (e) {
       console.error(e)
