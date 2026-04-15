@@ -25,15 +25,17 @@ async function seed() {
   const profileRepo = AppDataSource.getRepository(UpworkProfile);
   const benchmarkRepo = AppDataSource.getRepository(Benchmark);
 
-  // Upwork profiles
+  // Upwork profiles — named accounts
   const profiles = await Promise.all([
-    profileRepo.save(profileRepo.create({ title: 'MERN Stack Developer', primarySkills: ['React', 'Node.js', 'MongoDB', 'Express'], niche: 'MERN' })),
-    profileRepo.save(profileRepo.create({ title: 'Laravel / PHP Developer', primarySkills: ['Laravel', 'PHP', 'MySQL', 'REST API'], niche: 'Laravel' })),
-    profileRepo.save(profileRepo.create({ title: 'AI/ML Python Engineer', primarySkills: ['Python', 'TensorFlow', 'PyTorch', 'scikit-learn', 'LLMs'], niche: 'AI_ML' })),
-    profileRepo.save(profileRepo.create({ title: 'WordPress Developer', primarySkills: ['WordPress', 'WooCommerce', 'PHP', 'Elementor'], niche: 'WordPress' })),
+    profileRepo.save(profileRepo.create({ title: 'Shayan Abbasi', primarySkills: ['AI/ML', 'Python', 'TensorFlow', 'PyTorch', 'LLMs'], niche: 'AI_ML' })),
+    profileRepo.save(profileRepo.create({ title: 'Zainab',        primarySkills: ['MERN', 'React', 'Node.js', 'MongoDB', 'Express'], niche: 'MERN' })),
+    profileRepo.save(profileRepo.create({ title: 'Aleem',         primarySkills: ['PHP', 'Laravel', 'MySQL', 'REST API'], niche: 'Laravel' })),
+    profileRepo.save(profileRepo.create({ title: 'Nammrah',       primarySkills: ['AI/ML', 'Python', 'scikit-learn', 'LLMs', 'TensorFlow'], niche: 'AI_ML' })),
+    profileRepo.save(profileRepo.create({ title: 'Waqas',         primarySkills: ['PHP', 'Laravel', 'MERN', 'React', 'Node.js'], niche: 'GENERAL' })),
+    profileRepo.save(profileRepo.create({ title: 'Abdullah',      primarySkills: ['MERN', 'React', 'Node.js', 'MongoDB', 'Express'], niche: 'MERN' })),
   ]);
 
-  const [mernProfile, laravelProfile, aimlProfile, wpProfile] = profiles;
+  const [shayanProfile, zainabProfile, aleemProfile, nammrahProfile, waqasProfile, abdullahProfile] = profiles;
   console.log('Created Upwork profiles');
 
   // Benchmarks with scoring rubric from docs

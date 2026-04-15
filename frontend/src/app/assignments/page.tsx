@@ -21,10 +21,22 @@ const NICHE_COLORS: Record<string, string> = {
   Laravel:   'bg-red-500/15 text-red-400 border-red-500/25',
   AI_ML:     'bg-purple-500/15 text-purple-400 border-purple-500/25',
   WordPress: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
+  GENERAL:   'bg-cyan-500/15 text-cyan-400 border-cyan-500/25',
+}
+
+const NICHE_LABELS: Record<string, string> = {
+  MERN:    'MERN',
+  Laravel: 'Laravel',
+  AI_ML:   'AI/ML',
+  GENERAL: 'Multi',
 }
 
 function nicheColor(niche: string) {
   return NICHE_COLORS[niche] || 'bg-slate-700/40 text-slate-400 border-slate-600/30'
+}
+
+function nicheLabel(niche: string) {
+  return NICHE_LABELS[niche] || niche
 }
 
 export default function AssignmentsPage() {
@@ -108,33 +120,51 @@ export default function AssignmentsPage() {
 
         <div className="flex flex-1 overflow-hidden">
           {/* Left panel — profiles list */}
-          <div className="w-72 shrink-0 overflow-y-auto" style={{ borderRight: '1px solid rgba(30,37,51,0.8)', ...bgDark }}>
-            <div className="px-4 py-2.5" style={{ borderBottom: '1px solid rgba(30,37,51,0.8)' }}>
-              <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider">Profiles ({profiles.length})</p>
+          <div className="w-80 shrink-0 overflow-y-auto" style={{ borderRight: '1px solid rgba(30,37,51,0.8)', ...bgDark }}>
+            {/* Column headers */}
+            <div className="grid grid-cols-2 px-4 py-2.5 gap-2" style={{ borderBottom: '1px solid rgba(30,37,51,0.8)' }}>
+              <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider">Profile Name</p>
+              <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider">Tech Stack</p>
             </div>
             {profiles.map(profile => {
               const assigned = getAssignedBidders(profile.id)
               const isSelected = selectedProfile?.id === profile.id
+              const skills = Array.isArray(profile.primarySkills)
+                ? profile.primarySkills
+                : (profile.primarySkills as any as string)?.split(',').map((s: string) => s.trim()) || []
               return (
                 <button
                   key={profile.id}
                   onClick={() => setSelectedProfile(profile)}
-                  className="w-full text-left px-4 py-3 transition-colors"
+                  className="w-full text-left transition-colors"
                   style={{
                     borderBottom: '1px solid rgba(30,37,51,0.6)',
                     background: isSelected ? 'rgba(6,182,212,0.08)' : 'transparent',
                     borderLeft: isSelected ? '2px solid #06b6d4' : '2px solid transparent',
                   }}
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded border font-semibold uppercase tracking-wide ${nicheColor(profile.niche)}`}>
-                      {profile.niche}
-                    </span>
+                  <div className="grid grid-cols-2 px-4 py-3 gap-2 items-start">
+                    {/* Profile Name column */}
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className={`text-[8px] px-1 py-0.5 rounded border font-semibold uppercase tracking-wide ${nicheColor(profile.niche)}`}>
+                          {nicheLabel(profile.niche)}
+                        </span>
+                      </div>
+                      <p className={`text-xs font-semibold ${isSelected ? 'text-cyan-300' : 'text-slate-200'}`}>{profile.title}</p>
+                      <p className="text-[9px] text-slate-600 mt-0.5">
+                        {assigned.length > 0 ? `${assigned.length} rep${assigned.length > 1 ? 's' : ''}` : 'Unassigned'}
+                      </p>
+                    </div>
+                    {/* Tech Stack column */}
+                    <div className="flex flex-wrap gap-1 pt-0.5">
+                      {skills.slice(0, 4).map((skill: string) => (
+                        <span key={skill} className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800/60 text-slate-400 border border-slate-700/50">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <p className={`text-xs font-medium ${isSelected ? 'text-cyan-300' : 'text-slate-300'}`}>{profile.title}</p>
-                  <p className="text-[10px] text-slate-600 mt-0.5">
-                    {assigned.length > 0 ? assigned.map(b => b.name).join(', ') : 'No reps assigned'}
-                  </p>
                 </button>
               )
             })}
@@ -152,14 +182,23 @@ export default function AssignmentsPage() {
             ) : (
               <div className="max-w-lg">
                 <div className="mb-5">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-2">
                     <span className={`text-[9px] px-1.5 py-0.5 rounded border font-semibold uppercase tracking-wide ${nicheColor(selectedProfile.niche)}`}>
-                      {selectedProfile.niche}
+                      {nicheLabel(selectedProfile.niche)}
                     </span>
                     <h2 className="text-sm font-semibold text-slate-200">{selectedProfile.title}</h2>
                   </div>
                   {selectedProfile.primarySkills && (
-                    <p className="text-[10px] text-slate-600 mt-1">Skills: {selectedProfile.primarySkills}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(Array.isArray(selectedProfile.primarySkills)
+                        ? selectedProfile.primarySkills
+                        : (selectedProfile.primarySkills as any as string).split(',').map((s: string) => s.trim())
+                      ).map((skill: string) => (
+                        <span key={skill} className="text-[10px] px-2 py-0.5 rounded-md bg-slate-800/60 text-slate-300 border border-slate-700/50">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
 

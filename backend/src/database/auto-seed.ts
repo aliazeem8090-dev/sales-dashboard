@@ -34,12 +34,14 @@ export async function autoSeedIfEmpty(): Promise<void> {
   const profileRepo = ds.getRepository(UpworkProfile);
   const benchmarkRepo = ds.getRepository(Benchmark);
 
-  // Upwork profiles
+  // Upwork profiles — named accounts
   await Promise.all([
-    profileRepo.save(profileRepo.create({ title: 'MERN Stack Developer', primarySkills: ['React', 'Node.js', 'MongoDB', 'Express'], niche: 'MERN' })),
-    profileRepo.save(profileRepo.create({ title: 'Laravel / PHP Developer', primarySkills: ['Laravel', 'PHP', 'MySQL', 'REST API'], niche: 'Laravel' })),
-    profileRepo.save(profileRepo.create({ title: 'AI/ML Python Engineer', primarySkills: ['Python', 'TensorFlow', 'PyTorch', 'scikit-learn', 'LLMs'], niche: 'AI_ML' })),
-    profileRepo.save(profileRepo.create({ title: 'WordPress Developer', primarySkills: ['WordPress', 'WooCommerce', 'PHP', 'Elementor'], niche: 'WordPress' })),
+    profileRepo.save(profileRepo.create({ title: 'Shayan Abbasi', primarySkills: ['AI/ML', 'Python', 'TensorFlow', 'PyTorch', 'LLMs'], niche: 'AI_ML' })),
+    profileRepo.save(profileRepo.create({ title: 'Zainab',        primarySkills: ['MERN', 'React', 'Node.js', 'MongoDB', 'Express'], niche: 'MERN' })),
+    profileRepo.save(profileRepo.create({ title: 'Aleem',         primarySkills: ['PHP', 'Laravel', 'MySQL', 'REST API'], niche: 'Laravel' })),
+    profileRepo.save(profileRepo.create({ title: 'Nammrah',       primarySkills: ['AI/ML', 'Python', 'scikit-learn', 'LLMs', 'TensorFlow'], niche: 'AI_ML' })),
+    profileRepo.save(profileRepo.create({ title: 'Waqas',         primarySkills: ['PHP', 'Laravel', 'MERN', 'React', 'Node.js'], niche: 'GENERAL' })),
+    profileRepo.save(profileRepo.create({ title: 'Abdullah',      primarySkills: ['MERN', 'React', 'Node.js', 'MongoDB', 'Express'], niche: 'MERN' })),
   ]);
 
   const scoringWeights = { hook: 20, personalization: 15, painPoints: 15, technicalCredibility: 15, portfolio: 10, cta: 10, toneBrevity: 10, profileAlignment: 5 };
