@@ -9,11 +9,12 @@ import {
 } from 'lucide-react'
 
 function KPICard({
-  label, value, sub, color = 'cyan', onClick,
+  label, value, sub, color = 'cyan', onClick, href,
 }: {
   label: string; value: string | number; sub?: string
   color?: 'cyan' | 'blue' | 'violet' | 'emerald' | 'amber' | 'slate'
   onClick?: () => void
+  href?: string
 }) {
   const colors = {
     cyan:    'border-cyan-500/20 bg-cyan-500/5 text-cyan-400',
@@ -23,16 +24,17 @@ function KPICard({
     amber:   'border-amber-500/20 bg-amber-500/5 text-amber-400',
     slate:   'border-slate-600/30 bg-slate-800/30 text-slate-400',
   }
-  return (
-    <div
-      className={`rounded-xl border p-4 ${colors[color]} ${onClick ? 'cursor-pointer hover:brightness-110 transition-all' : ''}`}
-      onClick={onClick}
-    >
+  const isClickable = !!onClick || !!href
+  const inner = (
+    <>
       <p className="text-[10px] font-semibold uppercase tracking-widest opacity-70 mb-2">{label}</p>
       <p className="text-2xl font-bold font-mono">{value}</p>
       {sub && <p className="text-[10px] mt-1 opacity-60">{sub}</p>}
-    </div>
+    </>
   )
+  const cls = `rounded-xl border p-4 ${colors[color]} ${isClickable ? 'cursor-pointer hover:brightness-125 transition-all' : ''}`
+  if (href) return <a href={href} className={cls}>{inner}</a>
+  return <div className={cls} onClick={onClick}>{inner}</div>
 }
 
 // Underperformance flag logic
@@ -170,18 +172,19 @@ export function ManagerDashboard() {
       {/* Team KPIs */}
       {overview && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KPICard label="Total Proposals" value={overview.totalProposals} sub={`${overview.hireRate}% hire rate`} color="cyan" />
-          <KPICard label="Deals Closed" value={overview.totalHires} sub={`$${(overview.totalEarnings || 0).toLocaleString()} earned`} color="emerald" />
-          <KPICard label="Reply Rate" value={`${overview.replyRate}%`} sub={`${overview.totalReplied} replied`} color="violet" />
-          <KPICard label="View Rate" value={`${overview.viewRate}%`} sub={`${overview.totalViewed} viewed`} color="blue" />
-          <KPICard label="Interviews" value={overview.totalInterviews} sub={`${overview.interviewRate}% rate`} color="amber" />
-          <KPICard label="Connects Used" value={overview.totalConnectsUsed} color="slate" />
-          <KPICard label="This Week" value={weeklySummary?.thisWeek || 0} sub={`vs ${weeklySummary?.lastWeek || 0} last week`} color="cyan" />
+          <KPICard label="Total Proposals" value={overview.totalProposals} sub={`${overview.hireRate}% hire rate`} color="cyan" href="/proposals" />
+          <KPICard label="Deals Closed" value={overview.totalHires} sub={`$${(overview.totalEarnings || 0).toLocaleString()} earned`} color="emerald" href="/proposals" />
+          <KPICard label="Reply Rate" value={`${overview.replyRate}%`} sub={`${overview.totalReplied} replied`} color="violet" href="/proposals" />
+          <KPICard label="View Rate" value={`${overview.viewRate}%`} sub={`${overview.totalViewed} viewed`} color="blue" href="/proposals" />
+          <KPICard label="Interviews" value={overview.totalInterviews} sub={`${overview.interviewRate}% rate`} color="amber" href="/proposals" />
+          <KPICard label="Connects Used" value={overview.totalConnectsUsed} color="slate" href="/team" />
+          <KPICard label="This Week" value={weeklySummary?.thisWeek || 0} sub={`vs ${weeklySummary?.lastWeek || 0} last week`} color="cyan" href="/activity/new" />
           <KPICard
             label="Flagged Reps"
             value={flaggedReps.length}
             sub="need attention"
             color={flaggedReps.length > 0 ? 'amber' : 'emerald'}
+            href="/team"
           />
         </div>
       )}
@@ -212,7 +215,11 @@ export function ManagerDashboard() {
                 {leaderboard.map(rep => {
                   const flags = getRepFlags(rep)
                   return (
-                    <tr key={rep.userId || rep.repId} className="border-b border-slate-800/40 hover:bg-slate-800/20 transition-colors">
+                    <tr
+                      key={rep.userId || rep.repId}
+                      className={`border-b border-slate-800/40 hover:bg-slate-800/20 transition-colors ${rep.repId ? 'cursor-pointer' : ''}`}
+                      onClick={() => rep.repId && (window.location.href = `/reports/${rep.repId}`)}
+                    >
                       <td className="py-2.5 text-slate-600 font-mono text-[10px]">{rep.rank}</td>
                       <td className="py-2.5">
                         <div className="flex items-center gap-2">
@@ -282,7 +289,7 @@ export function ManagerDashboard() {
             </div>
             <div className="space-y-1.5">
               {insights.slice(0, 5).map((ins: any) => (
-                <div key={ins.id} className="flex items-start gap-2 py-1.5 border-b border-slate-800/40 last:border-0">
+                <a key={ins.id} href="/insights" className="flex items-start gap-2 py-1.5 border-b border-slate-800/40 last:border-0 hover:bg-slate-800/20 rounded px-1 -mx-1 transition-colors cursor-pointer">
                   <div className={`w-1.5 h-1.5 rounded-full mt-1 shrink-0 ${
                     ins.severity === 'CRITICAL' ? 'bg-red-500' :
                     ins.severity === 'HIGH' ? 'bg-amber-400' :
@@ -292,7 +299,7 @@ export function ManagerDashboard() {
                     <p className="text-[10px] text-slate-400 leading-relaxed line-clamp-2">{ins.generatedInsight}</p>
                     <p className="text-[9px] text-slate-600 mt-0.5">{ins.rep?.user?.name || 'Unknown rep'}</p>
                   </div>
-                </div>
+                </a>
               ))}
               {insights.length === 0 && (
                 <p className="text-[11px] text-slate-600 text-center py-3">No unread alerts</p>
@@ -337,14 +344,14 @@ export function ManagerDashboard() {
             {flaggedReps.map(rep => {
               const flags = getRepFlags(rep)
               return (
-                <div key={rep.userId} className="bg-slate-900/40 border border-slate-800/60 rounded-lg p-3">
+                <a
+                  key={rep.userId}
+                  href={rep.repId ? `/reports/${rep.repId}` : '#'}
+                  className="bg-slate-900/40 border border-slate-800/60 rounded-lg p-3 block hover:border-slate-600 hover:bg-slate-900/70 transition-all"
+                >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-semibold text-slate-300">{rep.name}</span>
-                    {rep.repId && (
-                      <a href={`/reports/${rep.repId}`} className="text-slate-600 hover:text-cyan-400 transition-colors">
-                        <BarChart2 size={12} />
-                      </a>
-                    )}
+                    <BarChart2 size={12} className="text-slate-600" />
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {flags.map((f, i) => (
@@ -358,7 +365,7 @@ export function ManagerDashboard() {
                     <span className="text-[10px] text-slate-600">{rep.hireRate}% hire</span>
                     <span className="text-[10px] text-slate-600">{formatDate(rep.lastActivityDate)}</span>
                   </div>
-                </div>
+                </a>
               )
             })}
           </div>
