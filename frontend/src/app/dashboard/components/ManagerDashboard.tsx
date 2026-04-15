@@ -39,6 +39,12 @@ function KPICard({
   return <div className={cls} onClick={onClick}>{inner}</div>
 }
 
+// Returns how many days ago a date was, or Infinity if null
+function daysSince(date: string | Date | null): number {
+  if (!date) return Infinity
+  return Math.floor((Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24))
+}
+
 // Underperformance flag logic — uses per-rep KPI targets when set
 function getRepFlags(rep: any): { label: string; level: 'critical' | 'warn' | 'info' }[] {
   const flags: { label: string; level: 'critical' | 'warn' | 'info' }[] = []
@@ -52,11 +58,16 @@ function getRepFlags(rep: any): { label: string; level: 'critical' | 'warn' | 'i
   const mrrGoal          = t.mrrGoal                ?? 0
   const connectsLimit    = t.monthlyConnectsLimit    ?? 0
 
-  // Low activity — below daily proposal target
+  // Most recent activity: use either proposals or activity logs, whichever is more recent
+  const daysLog      = daysSince(rep.lastActivityDate)
+  const daysProposal = daysSince(rep.lastProposalDate)
+  const mostRecentActivity = Math.min(daysLog, daysProposal)
+
+  // Low activity — below monthly proposal target
   if (rep.totalProposals < monthlyTarget)
     flags.push({ label: 'Low Activity', level: rep.totalProposals < monthlyTarget * 0.5 ? 'critical' : 'warn' })
 
-  // Low visibility — view rate below target
+  // Low visibility — view rate below target (need enough proposals for it to be meaningful)
   if (rep.totalProposals >= 10 && rep.viewRate < minViewRate)
     flags.push({ label: 'Low Visibility', level: rep.viewRate < minViewRate * 0.5 ? 'critical' : 'warn' })
 
@@ -76,18 +87,15 @@ function getRepFlags(rep: any): { label: string; level: 'critical' | 'warn' | 'i
   if (connectsLimit > 0 && rep.connectsUsed > connectsLimit)
     flags.push({ label: 'Connects Over Budget', level: 'warn' })
 
-  // Irregular activity — low consistency score
-  if (rep.consistencyScore < 30 && rep.totalProposals > 0)
+  // Irregular activity — only flag if there are enough activity logs to measure (≥5),
+  // meaning the rep uses the activity log feature and their score is still low
+  if (rep.consistencyScore < 30 && rep.consistencyScore > 0 && rep.totalProposals >= 5)
     flags.push({ label: 'Irregular Activity', level: 'warn' })
 
-  // No recent activity
-  if (!rep.lastActivityDate) {
+  // No recent activity — only if both proposals AND activity logs are stale/absent
+  if (mostRecentActivity >= 5)
     flags.push({ label: 'No Recent Activity', level: 'critical' })
-  } else {
-    const daysSince = Math.floor((Date.now() - new Date(rep.lastActivityDate).getTime()) / (1000 * 60 * 60 * 24))
-    if (daysSince >= 5) flags.push({ label: 'No Recent Activity', level: 'critical' })
-    else if (daysSince >= 3) flags.push({ label: 'Low Activity', level: 'warn' })
-  }
+
   return flags
 }
 
@@ -296,7 +304,11 @@ export function ManagerDashboard() {
                       <td className="py-2.5 text-right">
                         <span className="flex items-center justify-end gap-1 text-[10px] text-slate-500">
                           <Clock size={9} />
-                          {formatDate(rep.lastActivityDate)}
+                          {formatDate(
+                            [rep.lastActivityDate, rep.lastProposalDate]
+                              .filter(Boolean)
+                              .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0] || null
+                          )}
                         </span>
                       </td>
                       <td className="py-2.5 text-right">
@@ -403,7 +415,11 @@ export function ManagerDashboard() {
                   <div className="flex items-center gap-3 mt-2 pt-2 border-t border-slate-800/60">
                     <span className="text-[10px] text-slate-600">{rep.totalProposals} proposals</span>
                     <span className="text-[10px] text-slate-600">{rep.hireRate}% hire</span>
-                    <span className="text-[10px] text-slate-600">{formatDate(rep.lastActivityDate)}</span>
+                    <span className="text-[10px] text-slate-600">{formatDate(
+                      [rep.lastActivityDate, rep.lastProposalDate]
+                        .filter(Boolean)
+                        .sort((a: any, b: any) => new Date(b).getTime() - new Date(a).getTime())[0] || null
+                    )}</span>
                   </div>
                 </Link>
               )

@@ -117,6 +117,7 @@ export class DashboardService {
       totalEarnings: Math.round(totalEarnings * 100) / 100,
       earningsThisMonth: Math.round(earningsThisMonth * 100) / 100,
       lastActivityDate,
+      lastProposalDate: proposals[0]?.submittedAt || null,
       proposalsThisWeek,
       recentProposals: proposals.slice(0, 5),
     };
