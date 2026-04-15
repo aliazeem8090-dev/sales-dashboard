@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { logout, getStoredUser, AuthUser } from '@/lib/auth'
 import {
@@ -53,7 +54,7 @@ export function Sidebar() {
         {visibleItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
-            <a
+            <Link
               key={href}
               href={href}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs transition-all duration-150 ${
@@ -65,13 +66,13 @@ export function Sidebar() {
               <Icon size={14} className={active ? 'text-cyan-400' : ''} />
               {label}
               {active && <div className="ml-auto w-1 h-1 rounded-full bg-cyan-400" />}
-            </a>
+            </Link>
           )
         })}
 
         {/* My Report — rep only */}
         {role === 'REP' && user?.repId && (
-          <a
+          <Link
             href={`/reports/${user.repId}`}
             className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs transition-all duration-150 ${
               pathname.startsWith('/reports')
@@ -82,7 +83,7 @@ export function Sidebar() {
             <BarChart2 size={14} />
             My Report
             {pathname.startsWith('/reports') && <div className="ml-auto w-1 h-1 rounded-full bg-cyan-400" />}
-          </a>
+          </Link>
         )}
       </nav>
 

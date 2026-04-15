@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { login } from '@/lib/auth'
 
@@ -93,7 +94,7 @@ export default function LoginPage() {
 
           <p className="mt-5 text-center text-xs text-slate-600">
             No account?{' '}
-            <a href="/register" className="text-cyan-500/70 hover:text-cyan-400 transition-colors">Register</a>
+            <Link href="/register" className="text-cyan-500/70 hover:text-cyan-400 transition-colors">Register</Link>
           </p>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { api } from '@/lib/api'
 import { ArrowLeft, ExternalLink, Zap, ChevronDown, ChevronUp } from 'lucide-react'
@@ -191,9 +192,9 @@ export default function RepReviewDetailPage() {
         <div className="px-6 py-4 shrink-0" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', ...bgDark }}>
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
-              <a href="/manager/reviews" className="text-slate-600 hover:text-slate-300 transition-colors">
+              <Link href="/manager/reviews" className="text-slate-600 hover:text-slate-300 transition-colors">
                 <ArrowLeft size={16} />
-              </a>
+              </Link>
               <div>
                 <h1 className="text-lg font-semibold text-slate-200">{repName || 'Rep'} — Proposals</h1>
                 <p className="text-xs text-slate-500 mt-0.5">{total} proposals · {replied} replies · {hires} hires</p>

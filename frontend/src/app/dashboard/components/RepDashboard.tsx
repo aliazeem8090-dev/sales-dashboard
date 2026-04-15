@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { api } from '@/lib/api'
 import { getStoredUser } from '@/lib/auth'
 import {
@@ -243,9 +244,9 @@ export function RepDashboard() {
           )}
 
           {insights.length > 0 && (
-            <a href="/insights" className="block mt-3 text-center text-[10px] text-cyan-500/60 hover:text-cyan-400 transition-colors">
+            <Link href="/insights" className="block mt-3 text-center text-[10px] text-cyan-500/60 hover:text-cyan-400 transition-colors">
               View all insights →
-            </a>
+            </Link>
           )}
         </div>
       </div>
@@ -255,7 +256,7 @@ export function RepDashboard() {
         <div className="bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Recent Proposals</h2>
-            <a href="/board" className="text-[10px] text-cyan-500/60 hover:text-cyan-400 transition-colors">View board →</a>
+            <Link href="/board" className="text-[10px] text-cyan-500/60 hover:text-cyan-400 transition-colors">View board →</Link>
           </div>
           <div className="space-y-1">
             {data.recentProposals.slice(0, 5).map((p: any) => (

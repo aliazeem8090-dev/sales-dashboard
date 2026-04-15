@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import {
   TrendingUp, Users, CheckCircle, MessageSquare, Eye,
@@ -33,7 +35,7 @@ function KPICard({
     </>
   )
   const cls = `rounded-xl border p-4 ${colors[color]} ${isClickable ? 'cursor-pointer hover:brightness-125 transition-all' : ''}`
-  if (href) return <a href={href} className={cls}>{inner}</a>
+  if (href) return <Link href={href} className={cls}>{inner}</Link>
   return <div className={cls} onClick={onClick}>{inner}</div>
 }
 
@@ -112,6 +114,7 @@ const TIME_FILTERS = [
 ]
 
 export function ManagerDashboard() {
+  const router = useRouter()
   const [overview, setOverview] = useState<any>(null)
   const [leaderboard, setLeaderboard] = useState<any[]>([])
   const [nicheStats, setNicheStats] = useState<any[]>([])
@@ -196,13 +199,13 @@ export function ManagerDashboard() {
               </button>
             ))}
           </div>
-          <a
+          <Link
             href="/assignments"
             className="flex items-center gap-2 px-3 py-2 bg-slate-800/60 border border-slate-700 text-slate-300 text-xs font-medium rounded-lg hover:border-cyan-500/40 hover:text-cyan-400 transition-colors"
           >
             <Users size={13} />
             Assignments
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -255,7 +258,7 @@ export function ManagerDashboard() {
                     <tr
                       key={rep.userId || rep.repId}
                       className={`border-b border-slate-800/40 hover:bg-slate-800/20 transition-colors ${rep.repId ? 'cursor-pointer' : ''}`}
-                      onClick={() => rep.repId && (window.location.href = `/reports/${rep.repId}`)}
+                      onClick={() => rep.repId && router.push(`/reports/${rep.repId}`)}
                     >
                       <td className="py-2.5 text-slate-600 font-mono text-[10px]">{rep.rank}</td>
                       <td className="py-2.5">
@@ -298,9 +301,9 @@ export function ManagerDashboard() {
                       </td>
                       <td className="py-2.5 text-right">
                         {rep.repId && (
-                          <a href={`/reports/${rep.repId}`} className="text-slate-600 hover:text-cyan-400 transition-colors">
+                          <Link href={`/reports/${rep.repId}`} className="text-slate-600 hover:text-cyan-400 transition-colors">
                             <ChevronRight size={13} />
-                          </a>
+                          </Link>
                         )}
                       </td>
                     </tr>
@@ -322,11 +325,11 @@ export function ManagerDashboard() {
           <div className="bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Coaching Alerts</h2>
-              <a href="/insights" className="text-[10px] text-cyan-500/60 hover:text-cyan-400 transition-colors">View all →</a>
+              <Link href="/insights" className="text-[10px] text-cyan-500/60 hover:text-cyan-400 transition-colors">View all →</Link>
             </div>
             <div className="space-y-1.5">
               {insights.slice(0, 5).map((ins: any) => (
-                <a key={ins.id} href="/insights" className="flex items-start gap-2 py-1.5 border-b border-slate-800/40 last:border-0 hover:bg-slate-800/20 rounded px-1 -mx-1 transition-colors cursor-pointer">
+                <Link key={ins.id} href="/insights" className="flex items-start gap-2 py-1.5 border-b border-slate-800/40 last:border-0 hover:bg-slate-800/20 rounded px-1 -mx-1 transition-colors cursor-pointer">
                   <div className={`w-1.5 h-1.5 rounded-full mt-1 shrink-0 ${
                     ins.severity === 'CRITICAL' ? 'bg-red-500' :
                     ins.severity === 'HIGH' ? 'bg-amber-400' :
@@ -336,7 +339,7 @@ export function ManagerDashboard() {
                     <p className="text-[10px] text-slate-400 leading-relaxed line-clamp-2">{ins.generatedInsight}</p>
                     <p className="text-[9px] text-slate-600 mt-0.5">{ins.rep?.user?.name || 'Unknown rep'}</p>
                   </div>
-                </a>
+                </Link>
               ))}
               {insights.length === 0 && (
                 <p className="text-[11px] text-slate-600 text-center py-3">No unread alerts</p>
@@ -381,9 +384,9 @@ export function ManagerDashboard() {
             {flaggedReps.map(rep => {
               const flags = getRepFlags(rep)
               return (
-                <a
+                <Link
                   key={rep.userId}
-                  href={rep.repId ? `/reports/${rep.repId}` : '#'}
+                  href={rep.repId ? `/reports/${rep.repId}` : '/dashboard'}
                   className="bg-slate-900/40 border border-slate-800/60 rounded-lg p-3 block hover:border-slate-600 hover:bg-slate-900/70 transition-all"
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -402,7 +405,7 @@ export function ManagerDashboard() {
                     <span className="text-[10px] text-slate-600">{rep.hireRate}% hire</span>
                     <span className="text-[10px] text-slate-600">{formatDate(rep.lastActivityDate)}</span>
                   </div>
-                </a>
+                </Link>
               )
             })}
           </div>

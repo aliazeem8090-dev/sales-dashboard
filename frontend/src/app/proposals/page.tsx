@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, Suspense } from 'react'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { api } from '@/lib/api'
 import { getStoredUser } from '@/lib/auth'
@@ -66,20 +67,20 @@ function ProposalsList() {
           <p className="text-xs text-slate-500 mt-0.5">{proposals.length} total</p>
         </div>
         <div className="flex items-center gap-2">
-          <a
+          <Link
             href="/board"
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-300 transition-colors"
           >
             Board view
-          </a>
-          <a
+          </Link>
+          <Link
             href="/proposals/new"
             className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg transition-colors"
             style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.25)', color: '#67e8f9' }}
           >
             <Plus size={13} />
             Log Proposal
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -109,9 +110,9 @@ function ProposalsList() {
       ) : proposals.length === 0 ? (
         <div className="rounded-xl border border-slate-800/60 p-12 text-center" style={{ background: '#0a0b10' }}>
           <p className="text-slate-500 text-sm">No proposals found.</p>
-          <a href="/proposals/new" className="mt-3 inline-block text-xs text-cyan-500/70 hover:text-cyan-400 transition-colors">
+          <Link href="/proposals/new" className="mt-3 inline-block text-xs text-cyan-500/70 hover:text-cyan-400 transition-colors">
             Log your first proposal →
-          </a>
+          </Link>
         </div>
       ) : (
         <div className="rounded-xl border border-slate-800/60 overflow-hidden" style={{ background: '#0a0b10' }}>
