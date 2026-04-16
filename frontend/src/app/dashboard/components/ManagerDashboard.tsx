@@ -5,12 +5,11 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import {
-  TrendingUp, Users, CheckCircle, MessageSquare, Eye,
-  Briefcase, Zap, DollarSign, AlertTriangle, BarChart2,
-  Activity, ChevronRight, Clock, Network, UserSearch,
+  Users, AlertTriangle, BarChart2,
+  Briefcase, ChevronRight, Clock, Network,
 } from 'lucide-react'
 
-/* ─────────────────── shared helpers ─────────────────── */
+/* ─────────────── helpers ─────────────── */
 
 function daysSince(date: string | Date | null): number {
   if (!date) return Infinity
@@ -38,48 +37,47 @@ const TIME_FILTERS = [
   { label: 'All', days: 0  },
 ]
 
-/* ─────────────────── KPI status dot ─────────────────── */
+/* ─────────────── KPI dot ─────────────── */
 
 function KpiDot({ status }: { status: 'pass' | 'warn' | 'fail' }) {
   const c = status === 'pass' ? '#4ade80' : status === 'warn' ? '#fbbf24' : '#f87171'
-  return <span className="inline-block w-2 h-2 rounded-full" style={{ background: c }} />
+  return <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ background: c }} />
 }
 
-/* ─────────────────── rep flag logic ─────────────────── */
+/* ─────────────── rep flags ─────────────── */
 
 function getRepFlags(rep: any): { label: string; level: 'critical' | 'warn' | 'info' }[] {
   const flags: { label: string; level: 'critical' | 'warn' | 'info' }[] = []
   const t = rep.targets || {}
-  const dailyTarget      = t.dailyProposalTarget ?? t.dailyProposals ?? 5
-  const monthlyTarget    = dailyTarget * 30
-  const minViewRate      = t.acceptableViewRate      ?? 5
-  const minInterviewRate = t.acceptableInterviewRate ?? 0
-  const minClosingRate   = t.acceptableClosingRate   ?? 0
-  const mrrGoal          = t.mrrGoal                ?? 0
-  const connectsLimit    = t.monthlyConnectsLimit    ?? 0
-  const daysLog          = daysSince(rep.lastActivityDate)
-  const daysProposal     = daysSince(rep.lastProposalDate)
-  const mostRecentActivity = Math.min(daysLog, daysProposal)
+  const dailyTarget   = t.dailyProposalTarget ?? t.dailyProposals ?? 5
+  const monthlyTarget = dailyTarget * 30
+  const minViewRate   = t.acceptableViewRate      ?? 5
+  const minIntRate    = t.acceptableInterviewRate ?? 0
+  const minCloseRate  = t.acceptableClosingRate   ?? 0
+  const mrrGoal       = t.mrrGoal                ?? 0
+  const connsLimit    = t.monthlyConnectsLimit    ?? 0
+  const mostRecent    = Math.min(daysSince(rep.lastActivityDate), daysSince(rep.lastProposalDate))
+
   if (rep.totalProposals < monthlyTarget)
     flags.push({ label: 'Low Activity', level: rep.totalProposals < monthlyTarget * 0.5 ? 'critical' : 'warn' })
   if (rep.totalProposals >= 10 && rep.viewRate < minViewRate)
     flags.push({ label: 'Low Visibility', level: rep.viewRate < minViewRate * 0.5 ? 'critical' : 'warn' })
-  if (minInterviewRate > 0 && rep.totalProposals >= 10 && rep.interviewRate < minInterviewRate)
+  if (minIntRate > 0 && rep.totalProposals >= 10 && rep.interviewRate < minIntRate)
     flags.push({ label: 'Low Engagement', level: 'warn' })
-  if (minClosingRate > 0 && rep.totalProposals >= 10 && rep.hireRate < minClosingRate)
+  if (minCloseRate > 0 && rep.totalProposals >= 10 && rep.hireRate < minCloseRate)
     flags.push({ label: 'Low Conversion', level: 'warn' })
   if (mrrGoal > 0 && (rep.earningsThisMonth || 0) < mrrGoal)
     flags.push({ label: 'Below MRR Goal', level: 'warn' })
-  if (connectsLimit > 0 && rep.connectsUsed > connectsLimit)
+  if (connsLimit > 0 && rep.connectsUsed > connsLimit)
     flags.push({ label: 'Connects Over Budget', level: 'warn' })
   if (rep.consistencyScore < 30 && rep.consistencyScore > 0 && rep.totalProposals >= 5)
     flags.push({ label: 'Irregular Activity', level: 'warn' })
-  if (mostRecentActivity >= 5)
+  if (mostRecent >= 5)
     flags.push({ label: 'No Recent Activity', level: 'critical' })
   return flags
 }
 
-/* ─────────────────── KPI card ─────────────────── */
+/* ─────────────── KPI overview card ─────────────── */
 
 function KPICard({ label, value, sub, color = 'cyan', href }: {
   label: string; value: string | number; sub?: string
@@ -106,167 +104,279 @@ function KPICard({ label, value, sub, color = 'cyan', href }: {
   return <div className={cls}>{inner}</div>
 }
 
-/* ─────────────────── agent row (LinkedIn / Freelancer) ─────────────────── */
+/* ─────────────── Sales Rep compact panel ─────────────── */
 
-interface AgentRowProps {
-  agent: any
-  kpiKeys: string[]
-  cols: { label: string; value: (a: any) => string | number; color?: (v: number) => string }[]
-  detailHref: string
-}
-
-function AgentRow({ agent, kpiKeys, cols, detailHref }: AgentRowProps) {
-  const critCount = (agent.alerts || []).filter((al: any) => al.level === 'critical').length
-  const warnCount = (agent.alerts || []).filter((al: any) => al.level === 'warn').length
-  const kpis = agent.kpis || {}
-  const allPass = kpiKeys.every(k => kpis[k]?.status === 'pass')
-  const hasFail = kpiKeys.some(k => kpis[k]?.status === 'fail')
-  const dotColor = allPass ? '#4ade80' : hasFail ? '#f87171' : '#fbbf24'
+function RepProgressPanel({ leaderboard, weeklySummary, days }: { leaderboard: any[]; weeklySummary: any; days: number }) {
+  const router = useRouter()
+  const flaggedCount = leaderboard.filter(r => getRepFlags(r).length > 0).length
 
   return (
-    <tr className="border-b border-slate-800/40 hover:bg-slate-800/20 transition-colors">
-      <td className="py-2.5">
+    <div className="flex flex-col bg-[#0a0b10] border border-slate-800/60 rounded-xl overflow-hidden">
+      {/* panel header */}
+      <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)' }}>
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: dotColor }} />
-          <span className="text-xs font-medium text-slate-300">{agent.name}</span>
+          <BarChart2 size={13} className="text-cyan-400" />
+          <span className="text-xs font-semibold text-slate-300 uppercase tracking-widest">Sales Reps</span>
+          <span className="text-[10px] text-slate-600">{leaderboard.length}</span>
         </div>
-      </td>
-      {cols.map((c, i) => {
-        const val = c.value(agent)
-        const numVal = typeof val === 'number' ? val : parseFloat(val as string) || 0
-        const textColor = c.color ? c.color(numVal) : 'text-slate-400'
-        return (
-          <td key={i} className={`py-2.5 text-right font-mono text-xs ${textColor}`}>{val}</td>
-        )
-      })}
-      <td className="py-2.5 text-right">
-        <div className="flex items-center justify-end gap-0.5">
-          {kpiKeys.map(k => <KpiDot key={k} status={kpis[k]?.status || 'fail'} />)}
-        </div>
-      </td>
-      <td className="py-2.5 text-right">
-        <div className="flex items-center justify-end gap-1.5">
-          {critCount > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-red-500/10 text-red-400 border border-red-500/20">
-              {critCount} crit
+        <div className="flex items-center gap-2">
+          {flaggedCount > 0 && (
+            <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <AlertTriangle size={9} /> {flaggedCount}
             </span>
           )}
-          {warnCount > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              {warnCount} warn
-            </span>
-          )}
-          {critCount === 0 && warnCount === 0 && (
-            <span className="text-[10px] text-slate-600">—</span>
-          )}
+          <Link href="/manager/kpis" className="text-[10px] text-slate-600 hover:text-cyan-400 transition-colors">
+            Details →
+          </Link>
         </div>
-      </td>
-      <td className="py-2.5 text-right">
-        <Link href={detailHref} className="text-slate-600 hover:text-cyan-400 transition-colors">
-          <ChevronRight size={13} />
-        </Link>
-      </td>
-    </tr>
-  )
-}
-
-/* ─────────────────── section wrapper ─────────────────── */
-
-function AgentSection({ title, icon: Icon, iconColor, agents, kpiKeys, cols, detailBase, emptyMsg }: {
-  title: string
-  icon: any
-  iconColor: string
-  agents: any[]
-  kpiKeys: string[]
-  cols: AgentRowProps['cols']
-  detailBase: string
-  emptyMsg: string
-}) {
-  if (agents.length === 0) return (
-    <div className="bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <Icon size={13} style={{ color: iconColor }} />
-        <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">{title}</h2>
       </div>
-      <p className="text-[11px] text-slate-600 py-2">{emptyMsg}</p>
-    </div>
-  )
 
-  const criticalAgents = agents.filter(a =>
-    (a.alerts || []).some((al: any) => al.level === 'critical') ||
-    Object.values(a.kpis || {}).some((k: any) => k.status === 'fail')
-  ).length
+      {/* rep rows */}
+      <div className="flex-1 overflow-y-auto" style={{ maxHeight: 320 }}>
+        {leaderboard.length === 0 ? (
+          <p className="text-[11px] text-slate-600 text-center py-8">No reps yet</p>
+        ) : leaderboard.map(rep => {
+          const flags   = getRepFlags(rep)
+          const hasCrit = flags.some(f => f.level === 'critical')
+          const hasWarn = flags.length > 0 && !hasCrit
+          const dotColor = flags.length === 0 ? '#4ade80' : hasCrit ? '#f87171' : '#fbbf24'
 
-  return (
-    <div className="bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Icon size={13} style={{ color: iconColor }} />
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">{title}</h2>
-          <span className="text-[10px] text-slate-600">{agents.length} agent{agents.length !== 1 ? 's' : ''}</span>
-        </div>
-        {criticalAgents > 0 && (
-          <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">
-            <AlertTriangle size={9} /> {criticalAgents} need attention
+          return (
+            <div
+              key={rep.userId || rep.repId}
+              onClick={() => rep.repId && router.push(`/reports/${rep.repId}`)}
+              className={`flex items-center gap-3 px-4 py-2.5 border-b border-slate-800/40 last:border-0 hover:bg-slate-800/20 transition-colors ${rep.repId ? 'cursor-pointer' : ''}`}
+            >
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: dotColor }} />
+              <span className="flex-1 text-xs text-slate-300 font-medium truncate">{rep.name}</span>
+              <span className="text-[11px] font-mono text-slate-500 w-12 text-right">{rep.totalProposals}p</span>
+              <span className={`text-[11px] font-mono w-12 text-right ${rep.replyRate >= 20 ? 'text-emerald-400' : rep.replyRate >= 10 ? 'text-amber-400' : 'text-red-400'}`}>
+                {rep.replyRate}%
+              </span>
+              <span className={`text-[11px] font-mono w-10 text-right ${rep.hireRate >= 10 ? 'text-emerald-400' : rep.hireRate >= 5 ? 'text-amber-400' : 'text-red-400'}`}>
+                {rep.hireRate}%h
+              </span>
+              <span className="flex items-center gap-1 text-[10px] text-slate-600 w-14 text-right">
+                <Clock size={9} />
+                {formatDate(
+                  [rep.lastActivityDate, rep.lastProposalDate].filter(Boolean)
+                    .sort((a: any, b: any) => new Date(b).getTime() - new Date(a).getTime())[0] || null
+                )}
+              </span>
+              {rep.repId && <ChevronRight size={12} className="text-slate-700 shrink-0" />}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* footer stat */}
+      {weeklySummary && (
+        <div className="px-4 py-2 flex items-center gap-3" style={{ borderTop: '1px solid rgba(6,182,212,0.06)', background: '#07080d' }}>
+          <span className="text-[10px] text-slate-600">This week:</span>
+          <span className="text-[10px] font-mono text-slate-400">{weeklySummary.thisWeek} proposals</span>
+          <span className={`text-[10px] font-mono ${weeklySummary.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            {weeklySummary.change >= 0 ? '↑' : '↓'}{Math.abs(weeklySummary.change)} vs last week
           </span>
-        )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ─────────────── LinkedIn Agent panel ─────────────── */
+
+const LI_KPI_KEYS = ['dailyConnections', 'monthlyInMails', 'replyRate', 'conversionRate', 'leadProcessingRate']
+
+function LinkedInProgressPanel({ agents }: { agents: any[] }) {
+  return (
+    <div className="flex flex-col bg-[#0a0b10] rounded-xl overflow-hidden" style={{ border: '1px solid rgba(129,140,248,0.15)' }}>
+      <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(129,140,248,0.08)' }}>
+        <div className="flex items-center gap-2">
+          <Network size={13} style={{ color: '#818cf8' }} />
+          <span className="text-xs font-semibold text-slate-300 uppercase tracking-widest">LinkedIn Agents</span>
+          <span className="text-[10px] text-slate-600">{agents.length}</span>
+        </div>
+        <Link href="/manager/linkedin" className="text-[10px] text-slate-600 hover:text-indigo-400 transition-colors">
+          Details →
+        </Link>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-slate-800">
-              <th className="pb-2 text-left text-[10px] text-slate-600 font-medium">Agent</th>
-              {cols.map((c, i) => (
-                <th key={i} className="pb-2 text-right text-[10px] text-slate-600 font-medium">{c.label}</th>
-              ))}
-              <th className="pb-2 text-right text-[10px] text-slate-600 font-medium">KPIs</th>
-              <th className="pb-2 text-right text-[10px] text-slate-600 font-medium">Alerts</th>
-              <th className="pb-2 w-6" />
-            </tr>
-          </thead>
-          <tbody>
-            {agents.map(agent => (
-              <AgentRow
-                key={agent.agentId}
-                agent={agent}
-                kpiKeys={kpiKeys}
-                cols={cols}
-                detailHref={detailBase}
-              />
-            ))}
-          </tbody>
-        </table>
+
+      <div className="flex-1 overflow-y-auto" style={{ maxHeight: 320 }}>
+        {agents.length === 0 ? (
+          <p className="text-[11px] text-slate-600 text-center py-8">No LinkedIn agents yet</p>
+        ) : agents.map(agent => {
+          const kpis    = agent.kpis || {}
+          const allPass = LI_KPI_KEYS.every(k => kpis[k]?.status === 'pass')
+          const hasFail = LI_KPI_KEYS.some(k => kpis[k]?.status === 'fail')
+          const dotColor = allPass ? '#4ade80' : hasFail ? '#f87171' : '#fbbf24'
+          const critCount = (agent.alerts || []).filter((a: any) => a.level === 'critical').length
+
+          return (
+            <div key={agent.agentId} className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-800/40 last:border-0 hover:bg-slate-800/20 transition-colors">
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: dotColor }} />
+              <span className="flex-1 text-xs text-slate-300 font-medium truncate">{agent.name}</span>
+
+              {/* key metrics */}
+              <div className="flex items-center gap-3">
+                <div className="text-center">
+                  <p className="text-[11px] font-mono text-slate-400">{agent.totalConnections ?? 0}</p>
+                  <p className="text-[9px] text-slate-600">Conn</p>
+                </div>
+                <div className="text-center">
+                  <p className={`text-[11px] font-mono ${(agent.replyRate ?? 0) >= 10 ? 'text-emerald-400' : (agent.replyRate ?? 0) >= 5 ? 'text-amber-400' : 'text-red-400'}`}>
+                    {agent.replyRate ?? 0}%
+                  </p>
+                  <p className="text-[9px] text-slate-600">Reply</p>
+                </div>
+                <div className="text-center">
+                  <p className={`text-[11px] font-mono ${(agent.conversionRate ?? 0) >= 5 ? 'text-emerald-400' : (agent.conversionRate ?? 0) >= 2 ? 'text-amber-400' : 'text-red-400'}`}>
+                    {agent.conversionRate ?? 0}%
+                  </p>
+                  <p className="text-[9px] text-slate-600">Conv</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-[11px] font-mono text-slate-400">{agent.converted ?? 0}</p>
+                  <p className="text-[9px] text-slate-600">Won</p>
+                </div>
+              </div>
+
+              {/* KPI dots */}
+              <div className="flex items-center gap-0.5">
+                {LI_KPI_KEYS.map(k => <KpiDot key={k} status={kpis[k]?.status || 'fail'} />)}
+              </div>
+
+              {critCount > 0 && (
+                <span className="text-[10px] px-1 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 shrink-0">
+                  {critCount}!
+                </span>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* footer legend */}
+      <div className="px-4 py-2 flex items-center gap-3" style={{ borderTop: '1px solid rgba(129,140,248,0.06)', background: '#07080d' }}>
+        <span className="text-[10px] text-slate-600">KPIs:</span>
+        {['Conn/day', 'InMail', 'Reply%', 'Conv%', 'Process%'].map((l, i) => (
+          <span key={i} className="text-[10px] text-slate-600">{l}</span>
+        ))}
       </div>
     </div>
   )
 }
 
-/* ─────────────────── main component ─────────────────── */
+/* ─────────────── Freelancer Agent panel ─────────────── */
+
+const FL_KPI_KEYS = ['dailyProposals', 'responseRate', 'interviewRate', 'hireRate', 'followUpCompliance']
+
+function FreelancerProgressPanel({ agents }: { agents: any[] }) {
+  return (
+    <div className="flex flex-col bg-[#0a0b10] rounded-xl overflow-hidden" style={{ border: '1px solid rgba(251,191,36,0.15)' }}>
+      <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(251,191,36,0.08)' }}>
+        <div className="flex items-center gap-2">
+          <Briefcase size={13} style={{ color: '#fbbf24' }} />
+          <span className="text-xs font-semibold text-slate-300 uppercase tracking-widest">Freelancer Agents</span>
+          <span className="text-[10px] text-slate-600">{agents.length}</span>
+        </div>
+        <Link href="/manager/freelancer" className="text-[10px] text-slate-600 hover:text-amber-400 transition-colors">
+          Details →
+        </Link>
+      </div>
+
+      <div className="flex-1 overflow-y-auto" style={{ maxHeight: 320 }}>
+        {agents.length === 0 ? (
+          <p className="text-[11px] text-slate-600 text-center py-8">No Freelancer agents yet</p>
+        ) : agents.map(agent => {
+          const kpis    = agent.kpis || {}
+          const allPass = FL_KPI_KEYS.every(k => kpis[k]?.status === 'pass')
+          const hasFail = FL_KPI_KEYS.some(k => kpis[k]?.status === 'fail')
+          const dotColor = allPass ? '#4ade80' : hasFail ? '#f87171' : '#fbbf24'
+          const critCount = (agent.alerts || []).filter((a: any) => a.level === 'critical').length
+
+          return (
+            <div key={agent.agentId} className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-800/40 last:border-0 hover:bg-slate-800/20 transition-colors">
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: dotColor }} />
+              <span className="flex-1 text-xs text-slate-300 font-medium truncate">{agent.name}</span>
+
+              {/* key metrics */}
+              <div className="flex items-center gap-3">
+                <div className="text-center">
+                  <p className="text-[11px] font-mono text-slate-400">{agent.totalProposals ?? 0}</p>
+                  <p className="text-[9px] text-slate-600">Prop</p>
+                </div>
+                <div className="text-center">
+                  <p className={`text-[11px] font-mono ${(agent.responseRate ?? 0) >= 20 ? 'text-emerald-400' : (agent.responseRate ?? 0) >= 10 ? 'text-amber-400' : 'text-red-400'}`}>
+                    {agent.responseRate ?? 0}%
+                  </p>
+                  <p className="text-[9px] text-slate-600">Reply</p>
+                </div>
+                <div className="text-center">
+                  <p className={`text-[11px] font-mono ${(agent.interviewRate ?? 0) >= 30 ? 'text-emerald-400' : (agent.interviewRate ?? 0) >= 15 ? 'text-amber-400' : 'text-red-400'}`}>
+                    {agent.interviewRate ?? 0}%
+                  </p>
+                  <p className="text-[9px] text-slate-600">Intv</p>
+                </div>
+                <div className="text-center">
+                  <p className={`text-[11px] font-mono ${(agent.hireRate ?? 0) >= 25 ? 'text-emerald-400' : (agent.hireRate ?? 0) >= 12 ? 'text-amber-400' : 'text-red-400'}`}>
+                    {agent.hireRate ?? 0}%
+                  </p>
+                  <p className="text-[9px] text-slate-600">Hire</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-[11px] font-mono text-slate-400">{agent.totalDeals ?? 0}</p>
+                  <p className="text-[9px] text-slate-600">Won</p>
+                </div>
+              </div>
+
+              {/* KPI dots */}
+              <div className="flex items-center gap-0.5">
+                {FL_KPI_KEYS.map(k => <KpiDot key={k} status={kpis[k]?.status || 'fail'} />)}
+              </div>
+
+              {critCount > 0 && (
+                <span className="text-[10px] px-1 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 shrink-0">
+                  {critCount}!
+                </span>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* footer legend */}
+      <div className="px-4 py-2 flex items-center gap-3" style={{ borderTop: '1px solid rgba(251,191,36,0.06)', background: '#07080d' }}>
+        <span className="text-[10px] text-slate-600">KPIs:</span>
+        {['Prop/day', 'Reply%', 'Intv%', 'Hire%', 'FollowUp%'].map((l, i) => (
+          <span key={i} className="text-[10px] text-slate-600">{l}</span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ─────────────── main component ─────────────── */
 
 export function ManagerDashboard() {
   const router = useRouter()
 
-  // Sales rep data
-  const [overview, setOverview]         = useState<any>(null)
-  const [leaderboard, setLeaderboard]   = useState<any[]>([])
-  const [nicheStats, setNicheStats]     = useState<any[]>([])
-  const [insights, setInsights]         = useState<any[]>([])
-  const [trends, setTrends]             = useState<any[]>([])
-  const [weeklySummary, setWeeklySummary] = useState<any>(null)
-
-  // Agent data
-  const [linkedinAgents, setLinkedinAgents]     = useState<any[]>([])
+  const [overview, setOverview]               = useState<any>(null)
+  const [leaderboard, setLeaderboard]         = useState<any[]>([])
+  const [nicheStats, setNicheStats]           = useState<any[]>([])
+  const [insights, setInsights]               = useState<any[]>([])
+  const [trends, setTrends]                   = useState<any[]>([])
+  const [weeklySummary, setWeeklySummary]     = useState<any>(null)
+  const [linkedinAgents, setLinkedinAgents]   = useState<any[]>([])
   const [freelancerAgents, setFreelancerAgents] = useState<any[]>([])
-
   const [loading, setLoading] = useState(true)
-  const [days, setDays]       = useState(30)
+  const [days, setDays] = useState(30)
 
   function loadData(selectedDays: number) {
     setLoading(true)
-    const daysParam = selectedDays > 0 ? `?days=${selectedDays}` : ''
+    const q = selectedDays > 0 ? `?days=${selectedDays}` : ''
     Promise.all([
-      api.get<any>(`/dashboard/team-overview${daysParam}`).catch(() => null),
-      api.get<any[]>(`/dashboard/leaderboard${daysParam}`).catch(() => []),
+      api.get<any>(`/dashboard/team-overview${q}`).catch(() => null),
+      api.get<any[]>(`/dashboard/leaderboard${q}`).catch(() => []),
       api.get<any[]>('/dashboard/niche-stats').catch(() => []),
       api.get<any[]>('/coaching-insights/team').catch(() => []),
       api.get<any[]>(`/dashboard/team-trends?days=${selectedDays || 30}`).catch(() => []),
@@ -287,11 +397,6 @@ export function ManagerDashboard() {
 
   useEffect(() => { loadData(days) }, [])
 
-  function handleFilterChange(selectedDays: number) {
-    setDays(selectedDays)
-    loadData(selectedDays)
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
@@ -305,55 +410,8 @@ export function ManagerDashboard() {
     )
   }
 
-  const flaggedReps  = leaderboard.filter(r => getRepFlags(r).length > 0)
-  const onTrackReps  = leaderboard.filter(r => getRepFlags(r).length === 0)
-
-  const liKpiKeys = ['dailyConnections', 'monthlyInMails', 'replyRate', 'conversionRate', 'leadProcessingRate']
-  const flKpiKeys = ['dailyProposals', 'responseRate', 'interviewRate', 'hireRate', 'followUpCompliance']
-
-  const liCols: AgentRowProps['cols'] = [
-    { label: 'Connections', value: a => a.totalConnections ?? 0 },
-    { label: 'Leads',       value: a => a.totalLeads ?? 0 },
-    { label: 'Replied',     value: a => a.replied ?? 0 },
-    { label: 'Converted',   value: a => a.converted ?? 0 },
-    {
-      label: 'Reply%',
-      value: a => `${a.replyRate ?? 0}%`,
-      color: v => v >= 10 ? 'text-emerald-400' : v >= 5 ? 'text-amber-400' : 'text-red-400',
-    },
-    {
-      label: 'Conv%',
-      value: a => `${a.conversionRate ?? 0}%`,
-      color: v => v >= 5 ? 'text-emerald-400' : v >= 2 ? 'text-amber-400' : 'text-red-400',
-    },
-  ]
-
-  const flCols: AgentRowProps['cols'] = [
-    { label: 'Proposals', value: a => a.totalProposals ?? 0 },
-    { label: 'Replies',   value: a => a.totalReplies ?? 0 },
-    { label: 'Interviews',value: a => a.totalInterviews ?? 0 },
-    { label: 'Hired',     value: a => a.totalDeals ?? 0 },
-    {
-      label: 'Reply%',
-      value: a => `${a.responseRate ?? 0}%`,
-      color: v => v >= 20 ? 'text-emerald-400' : v >= 10 ? 'text-amber-400' : 'text-red-400',
-    },
-    {
-      label: 'Hire%',
-      value: a => `${a.hireRate ?? 0}%`,
-      color: v => v >= 25 ? 'text-emerald-400' : v >= 12 ? 'text-amber-400' : 'text-red-400',
-    },
-  ]
-
-  // Summary counts for header
-  const liCritical = linkedinAgents.filter(a =>
-    (a.alerts || []).some((al: any) => al.level === 'critical') ||
-    liKpiKeys.some(k => a.kpis?.[k]?.status === 'fail')
-  ).length
-  const flCritical = freelancerAgents.filter(a =>
-    (a.alerts || []).some((al: any) => al.level === 'critical') ||
-    flKpiKeys.some(k => a.kpis?.[k]?.status === 'fail')
-  ).length
+  const flaggedReps = leaderboard.filter(r => getRepFlags(r).length > 0)
+  const onTrackReps = leaderboard.filter(r => getRepFlags(r).length === 0)
 
   return (
     <div className="p-6 space-y-6 relative z-10">
@@ -363,12 +421,9 @@ export function ManagerDashboard() {
         <div>
           <h1 className="text-lg font-semibold text-slate-200 tracking-tight">Team Dashboard</h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            {leaderboard.length} reps · {linkedinAgents.length} LinkedIn · {freelancerAgents.length} Freelancer
-            {weeklySummary && (
-              <> · <span className={weeklySummary.change >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                {weeklySummary.change >= 0 ? '↑' : '↓'} {Math.abs(weeklySummary.change)} proposals vs last week
-              </span></>
-            )}
+            {leaderboard.length} sales rep{leaderboard.length !== 1 ? 's' : ''} ·{' '}
+            {linkedinAgents.length} LinkedIn agent{linkedinAgents.length !== 1 ? 's' : ''} ·{' '}
+            {freelancerAgents.length} freelancer agent{freelancerAgents.length !== 1 ? 's' : ''}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -376,7 +431,7 @@ export function ManagerDashboard() {
             {TIME_FILTERS.map(f => (
               <button
                 key={f.label}
-                onClick={() => handleFilterChange(f.days)}
+                onClick={() => { setDays(f.days); loadData(f.days) }}
                 className={`px-3 py-1 text-[10px] font-semibold rounded-md transition-all ${
                   days === f.days
                     ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
@@ -394,32 +449,33 @@ export function ManagerDashboard() {
         </div>
       </div>
 
-      {/* ── Team KPI cards ── */}
+      {/* ── TOP: Three progress panels side by side ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <RepProgressPanel leaderboard={leaderboard} weeklySummary={weeklySummary} days={days} />
+        <LinkedInProgressPanel agents={linkedinAgents} />
+        <FreelancerProgressPanel agents={freelancerAgents} />
+      </div>
+
+      {/* ── Team KPI summary cards (reps) ── */}
       {overview && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KPICard label="Total Proposals"  value={overview.totalProposals}                            sub={`${overview.hireRate}% hire rate`}        color="cyan"    href="/proposals?status=SENT" />
-          <KPICard label="Deals Closed"     value={overview.totalHires}                                sub={`$${(overview.totalEarnings||0).toLocaleString()} earned`} color="emerald" href="/proposals?status=HIRED" />
-          <KPICard label="Reply Rate"        value={`${overview.replyRate}%`}                          sub={`${overview.totalReplied} replied`}        color="violet"  href="/proposals?status=REPLIED" />
-          <KPICard label="View Rate"         value={`${overview.viewRate}%`}                           sub={`${overview.totalViewed} viewed`}          color="blue"    href="/proposals?status=VIEWED" />
-          <KPICard label="Interviews"        value={overview.totalInterviews}                          sub={`${overview.interviewRate}% rate`}         color="amber"   href="/proposals?status=INTERVIEW" />
-          <KPICard label="Connects Used"     value={overview.totalConnectsUsed}                        color="slate"                                                    href="/team" />
-          <KPICard label="This Week"         value={weeklySummary?.thisWeek || 0}                      sub={`vs ${weeklySummary?.lastWeek || 0} last week`} color="cyan" href="/activity/new" />
-          <KPICard label="Flagged Reps"      value={flaggedReps.length}                               sub={`${onTrackReps.length} on track`}          color={flaggedReps.length > 0 ? 'amber' : 'emerald'} href="/manager/kpis" />
+          <KPICard label="Total Proposals"  value={overview.totalProposals}             sub={`${overview.hireRate}% hire rate`}               color="cyan"    href="/proposals?status=SENT" />
+          <KPICard label="Deals Closed"     value={overview.totalHires}                 sub={`$${(overview.totalEarnings||0).toLocaleString()} earned`} color="emerald" href="/proposals?status=HIRED" />
+          <KPICard label="Reply Rate"        value={`${overview.replyRate}%`}            sub={`${overview.totalReplied} replied`}               color="violet"  href="/proposals?status=REPLIED" />
+          <KPICard label="View Rate"         value={`${overview.viewRate}%`}             sub={`${overview.totalViewed} viewed`}                 color="blue"    href="/proposals?status=VIEWED" />
+          <KPICard label="Interviews"        value={overview.totalInterviews}            sub={`${overview.interviewRate}% rate`}                color="amber"   href="/proposals?status=INTERVIEW" />
+          <KPICard label="Connects Used"     value={overview.totalConnectsUsed}         color="slate"                                                           href="/team" />
+          <KPICard label="This Week"         value={weeklySummary?.thisWeek || 0}        sub={`vs ${weeklySummary?.lastWeek || 0} last week`}   color="cyan" />
+          <KPICard label="Flagged Reps"      value={flaggedReps.length}                 sub={`${onTrackReps.length} on track`}                 color={flaggedReps.length > 0 ? 'amber' : 'emerald'} href="/manager/kpis" />
         </div>
       )}
 
-      {/* ── Main grid: leaderboard + sidebar ── */}
+      {/* ── Detailed leaderboard + sidebar ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-        {/* Rep leaderboard */}
         <div className="lg:col-span-2 bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <BarChart2 size={13} className="text-cyan-400" />
-              <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Sales Rep Leaderboard</h2>
-              <span className="text-[10px] text-slate-600">{leaderboard.length} reps</span>
-            </div>
-            <Link href="/manager/kpis" className="text-[10px] text-cyan-500/60 hover:text-cyan-400 transition-colors">KPI targets →</Link>
+            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Rep Leaderboard</h2>
+            <span className="text-[10px] text-slate-600">{leaderboard.length} reps</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
@@ -478,8 +534,7 @@ export function ManagerDashboard() {
                         <span className="flex items-center justify-end gap-1 text-[10px] text-slate-500">
                           <Clock size={9} />
                           {formatDate(
-                            [rep.lastActivityDate, rep.lastProposalDate]
-                              .filter(Boolean)
+                            [rep.lastActivityDate, rep.lastProposalDate].filter(Boolean)
                               .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0] || null
                           )}
                         </span>
@@ -502,9 +557,8 @@ export function ManagerDashboard() {
           </div>
         </div>
 
-        {/* Right sidebar */}
+        {/* Sidebar */}
         <div className="space-y-4">
-          {/* Coaching alerts */}
           <div className="bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Coaching Alerts</h2>
@@ -528,7 +582,6 @@ export function ManagerDashboard() {
             </div>
           </div>
 
-          {/* Win rate by niche */}
           <div className="bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
             <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Win Rate by Niche</h2>
             <div className="space-y-2">
@@ -544,63 +597,6 @@ export function ManagerDashboard() {
               {nicheStats.length === 0 && <p className="text-[11px] text-slate-600 text-center py-2">No niche data yet</p>}
             </div>
           </div>
-
-          {/* Quick agent health summary */}
-          {(linkedinAgents.length > 0 || freelancerAgents.length > 0) && (
-            <div className="bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
-              <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Agent Health</h2>
-              <div className="space-y-2">
-                {linkedinAgents.length > 0 && (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <Network size={11} className="text-indigo-400" />
-                      <span className="text-[11px] text-slate-400">LinkedIn</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {linkedinAgents.map(a => (
-                        <span
-                          key={a.agentId}
-                          title={a.name}
-                          className="w-2 h-2 rounded-full"
-                          style={{
-                            background: liKpiKeys.every(k => a.kpis?.[k]?.status === 'pass') ? '#4ade80'
-                              : liKpiKeys.some(k => a.kpis?.[k]?.status === 'fail') ? '#f87171' : '#fbbf24'
-                          }}
-                        />
-                      ))}
-                      {liCritical > 0 && (
-                        <span className="text-[10px] text-red-400 ml-1">{liCritical} issue{liCritical > 1 ? 's' : ''}</span>
-                      )}
-                    </div>
-                  </div>
-                )}
-                {freelancerAgents.length > 0 && (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <Briefcase size={11} className="text-amber-400" />
-                      <span className="text-[11px] text-slate-400">Freelancer</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {freelancerAgents.map(a => (
-                        <span
-                          key={a.agentId}
-                          title={a.name}
-                          className="w-2 h-2 rounded-full"
-                          style={{
-                            background: flKpiKeys.every(k => a.kpis?.[k]?.status === 'pass') ? '#4ade80'
-                              : flKpiKeys.some(k => a.kpis?.[k]?.status === 'fail') ? '#f87171' : '#fbbf24'
-                          }}
-                        />
-                      ))}
-                      {flCritical > 0 && (
-                        <span className="text-[10px] text-red-400 ml-1">{flCritical} issue{flCritical > 1 ? 's' : ''}</span>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -637,8 +633,7 @@ export function ManagerDashboard() {
                     <span className="text-[10px] text-slate-600">{rep.totalProposals} proposals</span>
                     <span className="text-[10px] text-slate-600">{rep.hireRate}% hire</span>
                     <span className="text-[10px] text-slate-600">{formatDate(
-                      [rep.lastActivityDate, rep.lastProposalDate]
-                        .filter(Boolean)
+                      [rep.lastActivityDate, rep.lastProposalDate].filter(Boolean)
                         .sort((a: any, b: any) => new Date(b).getTime() - new Date(a).getTime())[0] || null
                     )}</span>
                   </div>
@@ -649,31 +644,7 @@ export function ManagerDashboard() {
         </div>
       )}
 
-      {/* ── LinkedIn Agent progress ── */}
-      <AgentSection
-        title="LinkedIn Agent Progress"
-        icon={Network}
-        iconColor="#818cf8"
-        agents={linkedinAgents}
-        kpiKeys={liKpiKeys}
-        cols={liCols}
-        detailBase="/manager/linkedin"
-        emptyMsg="No LinkedIn agents yet — add one from the Team page."
-      />
-
-      {/* ── Freelancer Agent progress ── */}
-      <AgentSection
-        title="Freelancer Agent Progress"
-        icon={Briefcase}
-        iconColor="#fbbf24"
-        agents={freelancerAgents}
-        kpiKeys={flKpiKeys}
-        cols={flCols}
-        detailBase="/manager/freelancer"
-        emptyMsg="No Freelancer agents yet — add one from the Team page."
-      />
-
-      {/* ── 14-day proposal trend ── */}
+      {/* ── 14-day trend ── */}
       {trends.length > 0 && (
         <div className="bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
           <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">14-Day Proposal Trend (Reps)</h2>
@@ -681,7 +652,7 @@ export function ManagerDashboard() {
             {(() => {
               const maxVal = Math.max(...trends.map((t: any) => t.proposals), 1)
               return trends.map((t: any, i: number) => (
-                <div key={i} className="flex-1 flex flex-col items-center justify-end gap-0.5 group">
+                <div key={i} className="flex-1 flex flex-col items-center justify-end group">
                   <div
                     className="w-full bg-cyan-500/40 rounded-sm group-hover:bg-cyan-400/70 transition-colors"
                     style={{ height: `${Math.max(4, Math.round((t.proposals / maxVal) * 64))}px` }}
