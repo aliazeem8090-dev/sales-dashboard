@@ -13,6 +13,9 @@ import { BidderAssignment } from '../bidder-assignments/bidder-assignment.entity
 import { LinkedInAgent } from '../linkedin-agents/linkedin-agent.entity';
 import { LinkedInDailyLog } from '../linkedin-daily-logs/linkedin-daily-log.entity';
 import { LinkedInLead } from '../linkedin-leads/linkedin-lead.entity';
+import { FreelancerAgent } from '../freelancer-agents/freelancer-agent.entity';
+import { FreelancerDailyLog } from '../freelancer-daily-logs/freelancer-daily-log.entity';
+import { FreelancerJob } from '../freelancer-jobs/freelancer-job.entity';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -40,6 +43,12 @@ export class UsersService {
     private linkedInDailyLogsRepository: Repository<LinkedInDailyLog>,
     @InjectRepository(LinkedInLead)
     private linkedInLeadsRepository: Repository<LinkedInLead>,
+    @InjectRepository(FreelancerAgent)
+    private freelancerAgentsRepository: Repository<FreelancerAgent>,
+    @InjectRepository(FreelancerDailyLog)
+    private freelancerDailyLogsRepository: Repository<FreelancerDailyLog>,
+    @InjectRepository(FreelancerJob)
+    private freelancerJobsRepository: Repository<FreelancerJob>,
   ) {}
 
   async findAll(): Promise<User[]> {
@@ -87,10 +96,17 @@ export class UsersService {
       if (!existing) {
         await this.linkedInAgentsRepository.save(this.linkedInAgentsRepository.create({ userId: id }));
       }
-      const rep = await this.repsRepository.findOne({ where: { userId: id } });
-      if (rep) {
-        await this.repsRepository.delete({ userId: id });
+      await this.repsRepository.delete({ userId: id });
+      await this.freelancerAgentsRepository.delete({ userId: id });
+    }
+
+    if (newRole === 'FREELANCER_AGENT') {
+      const existing = await this.freelancerAgentsRepository.findOne({ where: { userId: id } });
+      if (!existing) {
+        await this.freelancerAgentsRepository.save(this.freelancerAgentsRepository.create({ userId: id }));
       }
+      await this.repsRepository.delete({ userId: id });
+      await this.linkedInAgentsRepository.delete({ userId: id });
     }
 
     return this.findOne(id);
@@ -113,11 +129,19 @@ export class UsersService {
     }
 
     // Handle LinkedIn Agent cleanup
-    const agent = await this.linkedInAgentsRepository.findOne({ where: { userId: id } });
-    if (agent) {
-      await this.linkedInLeadsRepository.delete({ agentId: agent.id });
-      await this.linkedInDailyLogsRepository.delete({ agentId: agent.id });
+    const liAgent = await this.linkedInAgentsRepository.findOne({ where: { userId: id } });
+    if (liAgent) {
+      await this.linkedInLeadsRepository.delete({ agentId: liAgent.id });
+      await this.linkedInDailyLogsRepository.delete({ agentId: liAgent.id });
       await this.linkedInAgentsRepository.delete({ userId: id });
+    }
+
+    // Handle Freelancer Agent cleanup
+    const flAgent = await this.freelancerAgentsRepository.findOne({ where: { userId: id } });
+    if (flAgent) {
+      await this.freelancerJobsRepository.delete({ agentId: flAgent.id });
+      await this.freelancerDailyLogsRepository.delete({ agentId: flAgent.id });
+      await this.freelancerAgentsRepository.delete({ userId: id });
     }
 
     await this.usersRepository.delete(id);

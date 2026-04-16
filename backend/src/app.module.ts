@@ -26,6 +26,13 @@ import { LinkedInDailyLog } from './linkedin-daily-logs/linkedin-daily-log.entit
 import { LinkedInLeadsModule } from './linkedin-leads/linkedin-leads.module';
 import { LinkedInLead } from './linkedin-leads/linkedin-lead.entity';
 import { LinkedInDashboardModule } from './linkedin-dashboard/linkedin-dashboard.module';
+import { FreelancerAgentsModule } from './freelancer-agents/freelancer-agents.module';
+import { FreelancerAgent } from './freelancer-agents/freelancer-agent.entity';
+import { FreelancerDailyLogsModule } from './freelancer-daily-logs/freelancer-daily-logs.module';
+import { FreelancerDailyLog } from './freelancer-daily-logs/freelancer-daily-log.entity';
+import { FreelancerJobsModule } from './freelancer-jobs/freelancer-jobs.module';
+import { FreelancerJob } from './freelancer-jobs/freelancer-job.entity';
+import { FreelancerDashboardModule } from './freelancer-dashboard/freelancer-dashboard.module';
 import { User } from './users/user.entity';
 import { Rep } from './reps/rep.entity';
 import { UpworkProfile } from './upwork-profiles/upwork-profile.entity';
@@ -46,7 +53,7 @@ import { Benchmark } from './benchmarks/benchmark.entity';
       username: process.env.DB_USERNAME || 'root',
       password: process.env.DB_PASSWORD || '',
       database: process.env.DB_NAME || 'sales_dashboard',
-      entities: [User, Rep, UpworkProfile, Job, Proposal, ProposalReview, ActivityLog, CoachingInsight, Benchmark, BidderAssignment, ProposalStatusHistory, LinkedInAgent, LinkedInDailyLog, LinkedInLead],
+      entities: [User, Rep, UpworkProfile, Job, Proposal, ProposalReview, ActivityLog, CoachingInsight, Benchmark, BidderAssignment, ProposalStatusHistory, LinkedInAgent, LinkedInDailyLog, LinkedInLead, FreelancerAgent, FreelancerDailyLog, FreelancerJob],
       synchronize: true,
     }),
     AuthModule,
@@ -67,6 +74,10 @@ import { Benchmark } from './benchmarks/benchmark.entity';
     LinkedInDailyLogsModule,
     LinkedInLeadsModule,
     LinkedInDashboardModule,
+    FreelancerAgentsModule,
+    FreelancerDailyLogsModule,
+    FreelancerJobsModule,
+    FreelancerDashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

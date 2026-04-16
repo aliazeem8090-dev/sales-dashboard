@@ -8,6 +8,9 @@ import { BidderAssignment } from '../bidder-assignments/bidder-assignment.entity
 import { LinkedInAgent } from '../linkedin-agents/linkedin-agent.entity';
 import { LinkedInDailyLog } from '../linkedin-daily-logs/linkedin-daily-log.entity';
 import { LinkedInLead } from '../linkedin-leads/linkedin-lead.entity';
+import { FreelancerAgent } from '../freelancer-agents/freelancer-agent.entity';
+import { FreelancerDailyLog } from '../freelancer-daily-logs/freelancer-daily-log.entity';
+import { FreelancerJob } from '../freelancer-jobs/freelancer-job.entity';
 
 const CANONICAL_PROFILES = [
   { title: 'Shayan Abbasi', primarySkills: ['AI/ML', 'Python', 'TensorFlow', 'PyTorch', 'LLMs'],          niche: 'AI_ML'   },
@@ -74,7 +77,7 @@ export async function autoSeedIfEmpty(): Promise<void> {
     username: process.env.DB_USERNAME || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'sales_dashboard',
-    entities: [User, Rep, UpworkProfile, Benchmark, BidderAssignment, LinkedInAgent, LinkedInDailyLog, LinkedInLead],
+    entities: [User, Rep, UpworkProfile, Benchmark, BidderAssignment, LinkedInAgent, LinkedInDailyLog, LinkedInLead, FreelancerAgent, FreelancerDailyLog, FreelancerJob],
     synchronize: false,
   });
 
@@ -205,6 +208,74 @@ export async function autoSeedIfEmpty(): Promise<void> {
     }));
   }
   console.log(`[AutoSeed] Seeded ${sampleLeads.length} sample leads for Sara Ahmed`);
+
+  // ── Freelancer Agent demo user ───────────────────────────────────────────────
+  const flAgentRepo = ds.getRepository(FreelancerAgent);
+  const flLogRepo   = ds.getRepository(FreelancerDailyLog);
+  const flJobRepo   = ds.getRepository(FreelancerJob);
+
+  const flHashedPw  = await bcrypt.hash('hassan098', 10);
+  const flUser      = await userRepo.save(userRepo.create({
+    name: 'Hassan Ali', email: 'hassan@team.com', password: flHashedPw, role: 'FREELANCER_AGENT' as any,
+  }));
+  const flAgent = await flAgentRepo.save(flAgentRepo.create({
+    userId: flUser.id,
+    targets: { dailyProposalTarget: 5, minResponseRate: 20, minInterviewRate: 30, minHireRate: 25, followUpCompliance: 80 },
+  }));
+  console.log('[AutoSeed] Created Freelancer Agent: Hassan Ali (hassan@team.com)');
+
+  // 14 days of daily logs
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const ds2  = d.toISOString().split('T')[0];
+    const sent = 3 + Math.floor(Math.random() * 5);
+    await flLogRepo.save(flLogRepo.create({
+      agentId: flAgent.id, date: ds2 as any,
+      jobsFound:       15 + Math.floor(Math.random() * 20),
+      jobsFiltered:    8  + Math.floor(Math.random() * 10),
+      proposalsSent:   sent,
+      clientReplies:   Math.floor(sent * (0.15 + Math.random() * 0.15)),
+      followUpsSent:   Math.floor(Math.random() * 4),
+      interviewsBooked:i < 5 ? Math.floor(Math.random() * 2) : 0,
+      dealsClosed:     i < 3 ? (Math.random() > 0.7 ? 1 : 0) : 0,
+      notes: i === 0 ? 'Good day — 2 strong replies, following up tomorrow.' : (null as any),
+    }));
+  }
+  console.log('[AutoSeed] Seeded 14 days of activity logs for Hassan Ali');
+
+  // Sample jobs across all lifecycle stages
+  const sampleJobs = [
+    { jobTitle: 'Full Stack Developer for SaaS App',   clientName: 'TechCorp Ltd',    status: 'HIRED',     daysAgo: 10, proposalText: "Hi, I've built several SaaS apps with React/Node.js. Happy to share relevant examples.", appliedDaysAgo: 14 },
+    { jobTitle: 'React Developer – Dashboard Project',  clientName: 'DataViz Inc',     status: 'INTERVIEW', daysAgo: 4,  proposalText: "Great project brief. I specialize in data visualization dashboards using React + Recharts.", appliedDaysAgo: 7 },
+    { jobTitle: 'Laravel API Backend for Mobile App',   clientName: 'StartupXYZ',      status: 'REPLIED',   daysAgo: 2,  proposalText: "I've built REST APIs in Laravel for multiple mobile apps. Can deliver this in 2 weeks.", appliedDaysAgo: 5 },
+    { jobTitle: 'WordPress Site for E-commerce Store',  clientName: 'ShopEasy',        status: 'VIEWED',    daysAgo: 5,  proposalText: "Experienced with WooCommerce + custom themes. Can have a demo ready in 3 days.", appliedDaysAgo: 5 },
+    { jobTitle: 'Python Script for Data Scraping',      clientName: 'Analytics Co',    status: 'APPLIED',   daysAgo: 5,  proposalText: "Python/Scrapy expert. Can build the scraper with proper rate limiting and error handling.", appliedDaysAgo: 5 },
+    { jobTitle: 'Node.js Microservices Architecture',   clientName: 'CloudSys',        status: 'APPLIED',   daysAgo: 6,  proposalText: "Have designed microservices with Docker/K8s. Let me share the architecture I'd propose.", appliedDaysAgo: 6 },
+    { jobTitle: 'Mobile App UI/UX Redesign',            clientName: 'AppWorks',        status: 'FOUND',     daysAgo: 0,  proposalText: null,                                                                                     appliedDaysAgo: 0 },
+    { jobTitle: 'AI Chatbot Integration',               clientName: 'RetailBot',       status: 'FOUND',     daysAgo: 0,  proposalText: null,                                                                                     appliedDaysAgo: 0 },
+    { jobTitle: 'PostgreSQL Database Optimization',     clientName: 'FinTech Pro',     status: 'LOST',      daysAgo: 8,  proposalText: "DBA with 5 years PostgreSQL. Can audit and optimize query performance significantly.", appliedDaysAgo: 12 },
+    { jobTitle: 'Vue.js Frontend for Admin Panel',      clientName: 'AdminFlow',       status: 'LOST',      daysAgo: 6,  proposalText: "Built admin panels in Vue 3 + Composition API. Portfolio link attached.", appliedDaysAgo: 9 },
+  ];
+
+  for (const j of sampleJobs) {
+    const appliedAt   = j.appliedDaysAgo > 0 ? new Date(Date.now() - j.appliedDaysAgo * 86400000) : undefined;
+    const viewedAt    = ['VIEWED','REPLIED','INTERVIEW','HIRED','LOST'].includes(j.status) ? new Date(Date.now() - (j.appliedDaysAgo - 1) * 86400000) : undefined;
+    const repliedAt   = ['REPLIED','INTERVIEW','HIRED'].includes(j.status) ? new Date(Date.now() - j.daysAgo * 86400000) : undefined;
+    const interviewAt = ['INTERVIEW','HIRED'].includes(j.status) ? new Date(Date.now() - (j.daysAgo - 1) * 86400000) : undefined;
+    const hiredAt     = j.status === 'HIRED' ? new Date(Date.now() - (j.daysAgo - 2) * 86400000) : undefined;
+    const lostAt      = j.status === 'LOST'  ? new Date(Date.now() - j.daysAgo * 86400000) : undefined;
+    const lastFollowUpAt = ['APPLIED','VIEWED'].includes(j.status) && j.appliedDaysAgo >= 3
+      ? new Date(Date.now() - 2 * 86400000) : undefined;
+
+    await flJobRepo.save(flJobRepo.create({
+      agentId: flAgent.id,
+      jobTitle: j.jobTitle, clientName: j.clientName,
+      status: j.status as any, proposalText: j.proposalText ?? undefined,
+      appliedAt, viewedAt, repliedAt, interviewAt, hiredAt, lostAt, lastFollowUpAt,
+      followUpCount: lastFollowUpAt ? 1 : 0,
+    }));
+  }
+  console.log(`[AutoSeed] Seeded ${sampleJobs.length} sample jobs for Hassan Ali`);
   // ────────────────────────────────────────────────────────────────────────────
 
   console.log('[AutoSeed] Done!');

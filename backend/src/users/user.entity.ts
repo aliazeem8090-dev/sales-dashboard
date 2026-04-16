@@ -3,11 +3,12 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateCol
 import { Rep } from '../reps/rep.entity';
 
 export enum Role {
-  ADMIN = 'ADMIN',
-  MANAGER = 'MANAGER',
-  REP = 'REP',
-  LEAD = 'LEAD',
-  LINKEDIN_AGENT = 'LINKEDIN_AGENT',
+  ADMIN             = 'ADMIN',
+  MANAGER           = 'MANAGER',
+  REP               = 'REP',
+  LEAD              = 'LEAD',
+  LINKEDIN_AGENT    = 'LINKEDIN_AGENT',
+  FREELANCER_AGENT  = 'FREELANCER_AGENT',
 }
 
 @Entity()

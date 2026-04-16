@@ -9,12 +9,14 @@ import { LocalStrategy } from './local.strategy';
 import { UsersModule } from '../users/users.module';
 import { RepsModule } from '../reps/reps.module';
 import { LinkedInAgentsModule } from '../linkedin-agents/linkedin-agents.module';
+import { FreelancerAgentsModule } from '../freelancer-agents/freelancer-agents.module';
 
 @Module({
   imports: [
     UsersModule,
     RepsModule,
     LinkedInAgentsModule,
+    FreelancerAgentsModule,
     PassportModule,
     JwtModule.registerAsync({
       useFactory: () => ({

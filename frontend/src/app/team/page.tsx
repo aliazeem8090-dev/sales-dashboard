@@ -12,14 +12,27 @@ const inputStyle = { background: '#0a0b10', border: '1px solid rgba(100,116,139,
 const ROLE_LABELS: Record<string, string> = {
   REP: 'Sales Rep',
   LINKEDIN_AGENT: 'LinkedIn Agent',
+  FREELANCER_AGENT: 'Freelancer Agent',
   MANAGER: 'Manager',
   ADMIN: 'Admin',
 }
 const ROLE_COLORS: Record<string, string> = {
   REP: '#67e8f9',
   LINKEDIN_AGENT: '#a5b4fc',
+  FREELANCER_AGENT: '#fbbf24',
   MANAGER: '#4ade80',
   ADMIN: '#f87171',
+}
+
+const AGENT_ROLES = ['REP', 'LINKEDIN_AGENT', 'FREELANCER_AGENT'] as const
+type AgentRole = typeof AGENT_ROLES[number]
+
+function nextRole(current: string): AgentRole {
+  const idx = AGENT_ROLES.indexOf(current as AgentRole)
+  return AGENT_ROLES[(idx + 1) % AGENT_ROLES.length]
+}
+function nextRoleLabel(current: string): string {
+  return ROLE_LABELS[nextRole(current)] ?? nextRole(current)
 }
 
 export default function TeamPage() {
@@ -37,7 +50,7 @@ export default function TeamPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [newUserRole, setNewUserRole] = useState<'REP' | 'LINKEDIN_AGENT'>('REP')
+  const [newUserRole, setNewUserRole] = useState<AgentRole>('REP')
 
   useEffect(() => {
     const u = getStoredUser()
@@ -53,7 +66,7 @@ export default function TeamPage() {
     try {
       const data = await api.get<any[]>('/users')
       // Show only non-admin/manager users
-      setUsers((data as any[]).filter(u => u.role === 'REP' || u.role === 'LINKEDIN_AGENT'))
+      setUsers((data as any[]).filter(u => u.role === 'REP' || u.role === 'LINKEDIN_AGENT' || u.role === 'FREELANCER_AGENT'))
     } catch { } finally { setLoading(false) }
   }
 
@@ -89,6 +102,7 @@ export default function TeamPage() {
 
   const repCount = users.filter(u => u.role === 'REP').length
   const agentCount = users.filter(u => u.role === 'LINKEDIN_AGENT').length
+  const freelancerCount = users.filter(u => u.role === 'FREELANCER_AGENT').length
 
   return (
     <div className="flex-1 relative z-10">
@@ -98,7 +112,7 @@ export default function TeamPage() {
           <div>
             <h1 className="text-lg font-semibold text-slate-200">Team Management</h1>
             <p className="text-xs text-slate-500 mt-0.5">
-              {repCount} sales rep{repCount !== 1 ? 's' : ''} · {agentCount} LinkedIn agent{agentCount !== 1 ? 's' : ''}
+              {repCount} sales rep{repCount !== 1 ? 's' : ''} · {agentCount} LinkedIn agent{agentCount !== 1 ? 's' : ''} · {freelancerCount} freelancer agent{freelancerCount !== 1 ? 's' : ''}
             </p>
           </div>
           <button
@@ -121,7 +135,7 @@ export default function TeamPage() {
             <div>
               <label className="block text-[10px] text-slate-500 mb-1 uppercase tracking-wide">Role</label>
               <div className="flex gap-2">
-                {(['REP', 'LINKEDIN_AGENT'] as const).map(r => (
+                {AGENT_ROLES.map(r => (
                   <button
                     key={r}
                     type="button"
@@ -198,13 +212,13 @@ export default function TeamPage() {
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {/* Role toggle */}
                     <button
-                      onClick={() => handleRoleChange(user.id, user.role === 'REP' ? 'LINKEDIN_AGENT' : 'REP')}
+                      onClick={() => handleRoleChange(user.id, nextRole(user.role))}
                       disabled={changingRoleId === user.id}
                       className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] rounded-lg text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10 border border-transparent hover:border-cyan-500/20 transition-colors disabled:opacity-40"
-                      title={`Switch to ${user.role === 'REP' ? 'LinkedIn Agent' : 'Sales Rep'}`}
+                      title={`Switch to ${nextRoleLabel(user.role)}`}
                     >
                       <RefreshCw size={11} />
-                      {changingRoleId === user.id ? '…' : user.role === 'REP' ? '→ LinkedIn' : '→ Sales Rep'}
+                      {changingRoleId === user.id ? '…' : `→ ${nextRoleLabel(user.role)}`}
                     </button>
                     <button
                       onClick={() => setConfirmDelete(user)}

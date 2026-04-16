@@ -105,6 +105,7 @@ export default function RegisterPage() {
             >
               <option value="REP">Sales Rep</option>
               <option value="LINKEDIN_AGENT">LinkedIn Agent</option>
+              <option value="FREELANCER_AGENT">Freelancer Agent</option>
               <option value="MANAGER">Manager</option>
               <option value="ADMIN">Admin</option>
             </select>

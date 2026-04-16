@@ -16,6 +16,10 @@ export default function DashboardPage() {
       router.replace('/linkedin/dashboard')
       return
     }
+    if (user?.role === 'FREELANCER_AGENT') {
+      router.replace('/freelancer/dashboard')
+      return
+    }
     setIsManager(user?.role === 'MANAGER' || user?.role === 'ADMIN')
   }, [])
 

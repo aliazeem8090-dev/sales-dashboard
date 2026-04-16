@@ -7,7 +7,7 @@ import { logout, getStoredUser, AuthUser } from '@/lib/auth'
 import {
   LayoutDashboard, FileText, MessageSquare, Lightbulb,
   ClipboardList, Star, LogOut, Users, BarChart2, Kanban, ClipboardCheck, UserCog, Target,
-  Network, BookOpen, UserSearch,
+  Network, BookOpen, UserSearch, Briefcase,
 } from 'lucide-react'
 
 const allNavItems = [
@@ -22,9 +22,15 @@ const allNavItems = [
   { href: '/insights',           label: 'Insights',        icon: Lightbulb,       roles: ['ADMIN', 'MANAGER', 'REP'] },
   { href: '/assignments',        label: 'Assignments',     icon: Users,           roles: ['ADMIN', 'MANAGER'] },
   // LinkedIn Agent items
-  { href: '/linkedin/dashboard', label: 'My Dashboard',    icon: LayoutDashboard, roles: ['LINKEDIN_AGENT'] },
-  { href: '/linkedin/log',       label: 'Daily Log',       icon: BookOpen,        roles: ['LINKEDIN_AGENT'] },
-  { href: '/linkedin/leads',     label: 'Lead Pipeline',   icon: UserSearch,      roles: ['LINKEDIN_AGENT'] },
+  { href: '/linkedin/dashboard', label: 'My Dashboard',      icon: LayoutDashboard, roles: ['LINKEDIN_AGENT'] },
+  { href: '/linkedin/log',       label: 'Daily Log',         icon: BookOpen,        roles: ['LINKEDIN_AGENT'] },
+  { href: '/linkedin/leads',     label: 'Lead Pipeline',     icon: UserSearch,      roles: ['LINKEDIN_AGENT'] },
+  // Freelancer Agent items
+  { href: '/freelancer/dashboard', label: 'My Dashboard',    icon: LayoutDashboard, roles: ['FREELANCER_AGENT'] },
+  { href: '/freelancer/log',       label: 'Daily Log',       icon: BookOpen,        roles: ['FREELANCER_AGENT'] },
+  { href: '/freelancer/jobs',      label: 'Job Pipeline',    icon: Briefcase,       roles: ['FREELANCER_AGENT'] },
+  // Manager items for agent teams
+  { href: '/manager/freelancer',   label: 'Freelancer Agents', icon: Briefcase,     roles: ['ADMIN', 'MANAGER'] },
 ]
 
 export function Sidebar() {
@@ -99,7 +105,7 @@ export function Sidebar() {
           <div className="mb-3">
             <p className="text-slate-300 text-xs font-medium truncate">{user.name}</p>
             <p className="text-[10px] capitalize" style={{ color: 'rgba(6,182,212,0.5)' }}>
-              {role === 'LINKEDIN_AGENT' ? 'linkedin agent' : role.toLowerCase()}
+              {role === 'LINKEDIN_AGENT' ? 'linkedin agent' : role === 'FREELANCER_AGENT' ? 'freelancer agent' : role.toLowerCase()}
             </p>
           </div>
         )}
