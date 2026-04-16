@@ -7,18 +7,24 @@ import { logout, getStoredUser, AuthUser } from '@/lib/auth'
 import {
   LayoutDashboard, FileText, MessageSquare, Lightbulb,
   ClipboardList, Star, LogOut, Users, BarChart2, Kanban, ClipboardCheck, UserCog, Target,
+  Network, BookOpen, UserSearch,
 } from 'lucide-react'
 
 const allNavItems = [
-  { href: '/dashboard',       label: 'Dashboard',    icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'REP'] },
-  { href: '/manager/reviews', label: 'Rep Reviews',  icon: ClipboardCheck,  roles: ['ADMIN', 'MANAGER'] },
-  { href: '/manager/kpis',    label: 'KPI Targets',  icon: Target,          roles: ['ADMIN', 'MANAGER'] },
-  { href: '/team',            label: 'Team',         icon: UserCog,         roles: ['ADMIN', 'MANAGER'] },
-  { href: '/board',           label: 'Lead Board',   icon: Kanban,          roles: ['ADMIN', 'MANAGER', 'REP'] },
-  { href: '/proposals',       label: 'Proposals',    icon: FileText,        roles: ['REP'] },
-  { href: '/chat',            label: 'AI Assistant', icon: MessageSquare,   roles: ['ADMIN', 'MANAGER', 'REP'] },
-  { href: '/insights',        label: 'Insights',     icon: Lightbulb,       roles: ['ADMIN', 'MANAGER', 'REP'] },
-  { href: '/assignments',     label: 'Assignments',  icon: Users,           roles: ['ADMIN', 'MANAGER'] },
+  { href: '/dashboard',          label: 'Dashboard',       icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'REP'] },
+  { href: '/manager/reviews',    label: 'Rep Reviews',     icon: ClipboardCheck,  roles: ['ADMIN', 'MANAGER'] },
+  { href: '/manager/kpis',       label: 'KPI Targets',     icon: Target,          roles: ['ADMIN', 'MANAGER'] },
+  { href: '/manager/linkedin',   label: 'LinkedIn Agents', icon: Network,         roles: ['ADMIN', 'MANAGER'] },
+  { href: '/team',               label: 'Team',            icon: UserCog,         roles: ['ADMIN', 'MANAGER'] },
+  { href: '/board',              label: 'Lead Board',      icon: Kanban,          roles: ['ADMIN', 'MANAGER', 'REP'] },
+  { href: '/proposals',          label: 'Proposals',       icon: FileText,        roles: ['REP'] },
+  { href: '/chat',               label: 'AI Assistant',    icon: MessageSquare,   roles: ['ADMIN', 'MANAGER', 'REP'] },
+  { href: '/insights',           label: 'Insights',        icon: Lightbulb,       roles: ['ADMIN', 'MANAGER', 'REP'] },
+  { href: '/assignments',        label: 'Assignments',     icon: Users,           roles: ['ADMIN', 'MANAGER'] },
+  // LinkedIn Agent items
+  { href: '/linkedin/dashboard', label: 'My Dashboard',    icon: LayoutDashboard, roles: ['LINKEDIN_AGENT'] },
+  { href: '/linkedin/log',       label: 'Daily Log',       icon: BookOpen,        roles: ['LINKEDIN_AGENT'] },
+  { href: '/linkedin/leads',     label: 'Lead Pipeline',   icon: UserSearch,      roles: ['LINKEDIN_AGENT'] },
 ]
 
 export function Sidebar() {
@@ -93,7 +99,7 @@ export function Sidebar() {
           <div className="mb-3">
             <p className="text-slate-300 text-xs font-medium truncate">{user.name}</p>
             <p className="text-[10px] capitalize" style={{ color: 'rgba(6,182,212,0.5)' }}>
-              {role.toLowerCase()}
+              {role === 'LINKEDIN_AGENT' ? 'linkedin agent' : role.toLowerCase()}
             </p>
           </div>
         )}

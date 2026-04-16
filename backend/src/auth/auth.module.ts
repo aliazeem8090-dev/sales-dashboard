@@ -8,11 +8,13 @@ import { JwtStrategy } from './jwt.strategy';
 import { LocalStrategy } from './local.strategy';
 import { UsersModule } from '../users/users.module';
 import { RepsModule } from '../reps/reps.module';
+import { LinkedInAgentsModule } from '../linkedin-agents/linkedin-agents.module';
 
 @Module({
   imports: [
     UsersModule,
     RepsModule,
+    LinkedInAgentsModule,
     PassportModule,
     JwtModule.registerAsync({
       useFactory: () => ({

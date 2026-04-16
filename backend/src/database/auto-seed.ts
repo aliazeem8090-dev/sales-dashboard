@@ -5,6 +5,9 @@ import { Rep } from '../reps/rep.entity';
 import { UpworkProfile } from '../upwork-profiles/upwork-profile.entity';
 import { Benchmark, ProfileType } from '../benchmarks/benchmark.entity';
 import { BidderAssignment } from '../bidder-assignments/bidder-assignment.entity';
+import { LinkedInAgent } from '../linkedin-agents/linkedin-agent.entity';
+import { LinkedInDailyLog } from '../linkedin-daily-logs/linkedin-daily-log.entity';
+import { LinkedInLead } from '../linkedin-leads/linkedin-lead.entity';
 
 const CANONICAL_PROFILES = [
   { title: 'Shayan Abbasi', primarySkills: ['AI/ML', 'Python', 'TensorFlow', 'PyTorch', 'LLMs'],          niche: 'AI_ML'   },
@@ -71,7 +74,7 @@ export async function autoSeedIfEmpty(): Promise<void> {
     username: process.env.DB_USERNAME || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'sales_dashboard',
-    entities: [User, Rep, UpworkProfile, Benchmark, BidderAssignment],
+    entities: [User, Rep, UpworkProfile, Benchmark, BidderAssignment, LinkedInAgent, LinkedInDailyLog, LinkedInLead],
     synchronize: false,
   });
 
@@ -135,6 +138,74 @@ export async function autoSeedIfEmpty(): Promise<void> {
 
     console.log(`[AutoSeed] Created: ${member.name} (${member.email})`);
   }
+
+  // ── LinkedIn Agent demo user ────────────────────────────────────────────────
+  const agentRepo   = ds.getRepository(LinkedInAgent);
+  const logRepo     = ds.getRepository(LinkedInDailyLog);
+  const leadRepo    = ds.getRepository(LinkedInLead);
+
+  const agentHashedPw = await bcrypt.hash('agent098', 10);
+  const agentUser = await userRepo.save(userRepo.create({
+    name: 'Sara Ahmed', email: 'sara@team.com', password: agentHashedPw, role: 'LINKEDIN_AGENT' as any,
+  }));
+  const agent = await agentRepo.save(agentRepo.create({
+    userId: agentUser.id,
+    targets: { dailyConnectionTarget: 35, monthlyInMailLimit: 50, minReplyRate: 12, minConversionRate: 5, leadProcessingRate: 50 },
+  }));
+  console.log(`[AutoSeed] Created LinkedIn Agent: Sara Ahmed (sara@team.com)`);
+
+  // Seed 14 days of daily logs
+  const today = new Date();
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    const conns = 28 + Math.floor(Math.random() * 12);  // 28–39
+    const inmails = i < 7 ? Math.floor(Math.random() * 3) : 0;
+    const replies = Math.floor(conns * (0.08 + Math.random() * 0.07));
+    await logRepo.save(logRepo.create({
+      agentId: agent.id, date: dateStr as any,
+      leadsSearched:   80 + Math.floor(Math.random() * 40),
+      leadsFiltered:   30 + Math.floor(Math.random() * 20),
+      leadsAnalyzed:   15 + Math.floor(Math.random() * 10),
+      connectionsSent: conns,
+      inMailsSent:     inmails,
+      repliesReceived: replies,
+      followUpsSent:   Math.floor(Math.random() * 5),
+      jobsApplied:     Math.floor(Math.random() * 3),
+      emailsChecked:   1 + Math.floor(Math.random() * 3),
+      notes: i === 0 ? 'Strong day — 3 warm replies, 2 calls booked.' : (null as any),
+    }));
+  }
+  console.log(`[AutoSeed] Seeded 14 days of activity logs for Sara Ahmed`);
+
+  // Seed sample leads across different lifecycle stages
+  const sampleLeads = [
+    { name: 'James Carter',    company: 'TechNova Inc',     status: 'CONVERTED',   source: 'LinkedIn Search', message: 'Hi James, saw your post on AI adoption — would love to connect and share how we helped similar teams scale.', daysAgo: 12, replied: true, converted: true },
+    { name: 'Priya Sharma',    company: 'DataFlow Ltd',     status: 'REPLIED',     source: 'Sales Navigator', message: 'Hi Priya, noticed DataFlow is expanding their ML team. Happy to share some resources that might help.', daysAgo: 7,  replied: true, converted: false },
+    { name: 'Michael Torres',  company: 'ScaleOps',         status: 'FOLLOWED_UP', source: 'LinkedIn Search', message: 'Hey Michael, reached out last week about your DevOps challenges — wanted to follow up.', daysAgo: 5,  replied: false, converted: false },
+    { name: 'Aisha Rahman',    company: 'FinanceAI',        status: 'CONTACTED',   source: 'Sales Navigator', message: 'Hi Aisha, your work on fintech automation caught my eye. Would love a quick chat this week.', daysAgo: 5,  replied: false, converted: false },
+    { name: 'Lucas Fernandez', company: 'CloudSphere',      status: 'CONTACTED',   source: 'LinkedIn Search', message: "Hi Lucas, CloudSphere's recent funding round is impressive — congrats! Curious if you're scaling the team?", daysAgo: 6,  replied: false, converted: false },
+    { name: 'Emma Wilson',     company: 'Nexus Solutions',  status: 'SEARCHED',    source: 'LinkedIn Search', message: null, daysAgo: 1, replied: false, converted: false },
+    { name: 'Omar Hassan',     company: 'GreenTech',        status: 'SEARCHED',    source: 'Sales Navigator', message: null, daysAgo: 0, replied: false, converted: false },
+    { name: 'Sarah Kim',       company: 'ByteWave',         status: 'REJECTED',    source: 'LinkedIn Search', message: "Hi Sarah, reaching out about ByteWave's latest engineering posts — keen to connect!", daysAgo: 10, replied: false, converted: false },
+  ];
+
+  for (const l of sampleLeads) {
+    const contactedAt  = l.status !== 'SEARCHED' ? new Date(Date.now() - l.daysAgo * 86400000) : null;
+    const repliedAt    = l.replied    ? new Date(Date.now() - (l.daysAgo - 2) * 86400000) : null;
+    const convertedAt  = l.converted  ? new Date(Date.now() - (l.daysAgo - 4) * 86400000) : null;
+    const lastFollowUpAt = l.status === 'FOLLOWED_UP' ? new Date(Date.now() - 1 * 86400000) : null;
+    await leadRepo.save(leadRepo.create({
+      agentId: agent.id,
+      name: l.name, company: l.company, status: l.status as any,
+      source: l.source, message: l.message ?? undefined,
+      contactedAt: contactedAt ?? undefined, repliedAt: repliedAt ?? undefined,
+      lastFollowUpAt: lastFollowUpAt ?? undefined, convertedAt: convertedAt ?? undefined,
+    }));
+  }
+  console.log(`[AutoSeed] Seeded ${sampleLeads.length} sample leads for Sara Ahmed`);
+  // ────────────────────────────────────────────────────────────────────────────
 
   console.log('[AutoSeed] Done!');
   await ds.destroy();

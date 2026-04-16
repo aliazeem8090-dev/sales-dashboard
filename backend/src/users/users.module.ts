@@ -10,9 +10,12 @@ import { ProposalStatusHistory } from '../proposal-status-history/proposal-statu
 import { ActivityLog } from '../activity-logs/activity-log.entity';
 import { CoachingInsight } from '../coaching-insights/coaching-insight.entity';
 import { BidderAssignment } from '../bidder-assignments/bidder-assignment.entity';
+import { LinkedInAgent } from '../linkedin-agents/linkedin-agent.entity';
+import { LinkedInDailyLog } from '../linkedin-daily-logs/linkedin-daily-log.entity';
+import { LinkedInLead } from '../linkedin-leads/linkedin-lead.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Rep, Proposal, ProposalReview, ProposalStatusHistory, ActivityLog, CoachingInsight, BidderAssignment])],
+  imports: [TypeOrmModule.forFeature([User, Rep, Proposal, ProposalReview, ProposalStatusHistory, ActivityLog, CoachingInsight, BidderAssignment, LinkedInAgent, LinkedInDailyLog, LinkedInLead])],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],

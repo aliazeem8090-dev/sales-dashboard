@@ -33,8 +33,22 @@ export default function RegisterPage() {
   const labelClass = "block text-[10px] font-medium text-slate-500 mb-1.5 uppercase tracking-wider"
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
-      <div className="w-full max-w-sm rounded-xl p-8" style={{ background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)' }}>
+    <div className="min-h-screen flex items-center justify-center relative" style={{ background: 'var(--background)' }}>
+      <div className="absolute inset-0 pointer-events-none" style={{
+        backgroundImage: 'linear-gradient(rgba(6,182,212,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.04) 1px, transparent 1px)',
+        backgroundSize: '40px 40px',
+      }} />
+      <div className="relative w-full max-w-sm mx-4">
+        <div className="flex items-center gap-2.5 mb-8">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)' }}>
+            <div className="w-3 h-3 rounded-sm" style={{ background: '#06b6d4' }} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-slate-200">Sales Intelligence</p>
+            <p className="text-[10px]" style={{ color: 'rgba(6,182,212,0.6)' }}>Platform</p>
+          </div>
+        </div>
+      <div className="rounded-2xl p-8" style={{ background: '#0a0b10', border: '1px solid rgba(6,182,212,0.12)' }}>
         <h1 className="text-xl font-semibold text-slate-200 mb-1">Create account</h1>
         <p className="text-xs text-slate-500 mb-6">Join your sales team</p>
 
@@ -90,9 +104,9 @@ export default function RegisterPage() {
               style={inputStyle}
             >
               <option value="REP">Sales Rep</option>
+              <option value="LINKEDIN_AGENT">LinkedIn Agent</option>
               <option value="MANAGER">Manager</option>
               <option value="ADMIN">Admin</option>
-              <option value="LEAD">Team Lead</option>
             </select>
           </div>
           <button
@@ -109,6 +123,7 @@ export default function RegisterPage() {
           Already have an account?{' '}
           <Link href="/login" className="text-cyan-400 hover:text-cyan-300 transition-colors">Sign in</Link>
         </p>
+      </div>
       </div>
     </div>
   )

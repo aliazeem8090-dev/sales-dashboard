@@ -7,6 +7,7 @@ export enum Role {
   MANAGER = 'MANAGER',
   REP = 'REP',
   LEAD = 'LEAD',
+  LINKEDIN_AGENT = 'LINKEDIN_AGENT',
 }
 
 @Entity()

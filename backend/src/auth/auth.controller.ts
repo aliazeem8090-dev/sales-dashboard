@@ -3,6 +3,7 @@ import { Controller, Request, Post, UseGuards, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { RepsService } from '../reps/reps.service';
+import { LinkedInAgentsService } from '../linkedin-agents/linkedin-agents.service';
 import { LocalAuthGuard } from './local-auth.guard';
 
 @Controller('auth')
@@ -11,6 +12,7 @@ export class AuthController {
     private authService: AuthService,
     private usersService: UsersService,
     private repsService: RepsService,
+    private agentsService: LinkedInAgentsService,
   ) {}
 
   @UseGuards(LocalAuthGuard)
@@ -22,6 +24,17 @@ export class AuthController {
       const { password, ...safeUser } = refreshed!;
       return this.authService.login(safeUser);
     }
+
+    if (req.user.role === 'LINKEDIN_AGENT') {
+      let agent = await this.agentsService.findByUserId(req.user.id);
+      if (!agent) {
+        agent = await this.agentsService.create({ userId: req.user.id });
+      }
+      const result = await this.authService.login(req.user);
+      result.user.agentId = agent.id;
+      return result;
+    }
+
     return this.authService.login(req.user);
   }
 
@@ -39,8 +52,19 @@ export class AuthController {
       await this.repsService.create({ userId: user.id });
     }
 
+    if (role === 'LINKEDIN_AGENT') {
+      await this.agentsService.create({ userId: user.id });
+    }
+
     const fullUser = await this.usersService.findByEmail(user.email);
     const { password, ...safeUser } = fullUser!;
-    return this.authService.login(safeUser);
+    const result = await this.authService.login(safeUser);
+
+    if (role === 'LINKEDIN_AGENT') {
+      const agent = await this.agentsService.findByUserId(user.id);
+      result.user.agentId = agent?.id || null;
+    }
+
+    return result;
   }
 }

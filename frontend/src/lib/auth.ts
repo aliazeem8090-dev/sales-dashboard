@@ -4,9 +4,10 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: 'ADMIN' | 'MANAGER' | 'REP' | 'LEAD';
+  role: 'ADMIN' | 'MANAGER' | 'REP' | 'LEAD' | 'LINKEDIN_AGENT';
   assignedProfileId?: string;
   repId?: string | null;
+  agentId?: string | null;
 }
 
 export interface AuthResponse {

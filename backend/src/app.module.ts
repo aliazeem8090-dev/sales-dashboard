@@ -19,6 +19,13 @@ import { BidderAssignmentsModule } from './bidder-assignments/bidder-assignments
 import { BidderAssignment } from './bidder-assignments/bidder-assignment.entity';
 import { ProposalStatusHistoryModule } from './proposal-status-history/proposal-status-history.module';
 import { ProposalStatusHistory } from './proposal-status-history/proposal-status-history.entity';
+import { LinkedInAgentsModule } from './linkedin-agents/linkedin-agents.module';
+import { LinkedInAgent } from './linkedin-agents/linkedin-agent.entity';
+import { LinkedInDailyLogsModule } from './linkedin-daily-logs/linkedin-daily-logs.module';
+import { LinkedInDailyLog } from './linkedin-daily-logs/linkedin-daily-log.entity';
+import { LinkedInLeadsModule } from './linkedin-leads/linkedin-leads.module';
+import { LinkedInLead } from './linkedin-leads/linkedin-lead.entity';
+import { LinkedInDashboardModule } from './linkedin-dashboard/linkedin-dashboard.module';
 import { User } from './users/user.entity';
 import { Rep } from './reps/rep.entity';
 import { UpworkProfile } from './upwork-profiles/upwork-profile.entity';
@@ -39,7 +46,7 @@ import { Benchmark } from './benchmarks/benchmark.entity';
       username: process.env.DB_USERNAME || 'root',
       password: process.env.DB_PASSWORD || '',
       database: process.env.DB_NAME || 'sales_dashboard',
-      entities: [User, Rep, UpworkProfile, Job, Proposal, ProposalReview, ActivityLog, CoachingInsight, Benchmark, BidderAssignment, ProposalStatusHistory],
+      entities: [User, Rep, UpworkProfile, Job, Proposal, ProposalReview, ActivityLog, CoachingInsight, Benchmark, BidderAssignment, ProposalStatusHistory, LinkedInAgent, LinkedInDailyLog, LinkedInLead],
       synchronize: true,
     }),
     AuthModule,
@@ -56,6 +63,10 @@ import { Benchmark } from './benchmarks/benchmark.entity';
     BenchmarksModule,
     BidderAssignmentsModule,
     ProposalStatusHistoryModule,
+    LinkedInAgentsModule,
+    LinkedInDailyLogsModule,
+    LinkedInLeadsModule,
+    LinkedInDashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

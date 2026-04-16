@@ -1,5 +1,5 @@
 // backend/src/users/users.controller.ts
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Patch, Delete, UseGuards, HttpCode } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -31,6 +31,12 @@ export class UsersController {
   @Roles('ADMIN', 'MANAGER')
   update(@Param('id') id: string, @Body() updateUserDto: any) {
     return this.usersService.update(id, updateUserDto);
+  }
+
+  @Patch(':id/role')
+  @Roles('ADMIN', 'MANAGER')
+  changeRole(@Param('id') id: string, @Body() body: { role: string }) {
+    return this.usersService.changeRole(id, body.role);
   }
 
   @Delete(':id')
