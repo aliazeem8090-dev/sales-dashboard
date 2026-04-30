@@ -33,8 +33,9 @@ const NAV_CONFIG = [
   {
     section: 'PIPELINE',
     items: [
-      { href: '/board',      label: 'Lead Board', icon: Kanban,   roles: ['ADMIN', 'MANAGER', 'REP'] },
-      { href: '/proposals',  label: 'Proposals',  icon: FileText, roles: ['REP'] },
+      { href: '/board',      label: 'Lead Board', icon: Kanban,        roles: ['ADMIN', 'MANAGER', 'REP'] },
+      { href: '/leads',      label: 'My Leads',   icon: UserCircle2,   roles: ['REP'] },
+      { href: '/proposals',  label: 'Proposals',  icon: FileText,      roles: ['REP'] },
     ],
   },
   {
