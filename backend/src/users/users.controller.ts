@@ -23,9 +23,11 @@ export class UsersController {
 
   @Post()
   @Roles('ADMIN', 'MANAGER')
-  create(@Request() req: any, @Body() createUserDto: any) {
+  async create(@Request() req: any, @Body() createUserDto: any) {
     const companyId = createUserDto.companyId?.trim() || req.user.companyId;
-    return this.usersService.create({ ...createUserDto, companyId });
+    const user = await this.usersService.create({ ...createUserDto, companyId });
+    await this.usersService.ensureProfile(user.id, user.role);
+    return user;
   }
 
   @Put(':id')
