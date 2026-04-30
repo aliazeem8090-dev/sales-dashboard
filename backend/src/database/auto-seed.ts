@@ -31,21 +31,7 @@ async function syncProfiles(ds: DataSource): Promise<void> {
   const existing = await profileRepo.find();
   const canonicalTitles = CANONICAL_PROFILES.map(p => p.title);
 
-  const toDelete = existing.filter(p => !canonicalTitles.includes(p.title));
-  if (toDelete.length > 0) {
-    const deleteIds = toDelete.map(p => p.id);
-    await assignmentRepo
-      .createQueryBuilder()
-      .delete()
-      .where('profileId IN (:...ids)', { ids: deleteIds })
-      .execute();
-    await ds.query(
-      `UPDATE proposal SET profileUsedId = NULL WHERE profileUsedId IN (${deleteIds.map(() => '?').join(',')})`,
-      deleteIds,
-    );
-    await profileRepo.delete(deleteIds);
-    console.log(`[AutoSeed] Removed ${toDelete.length} stale profile(s): ${toDelete.map(p => p.title).join(', ')}`);
-  }
+  // Do not delete non-canonical profiles — managers may have created custom ones.
 
   for (const canon of CANONICAL_PROFILES) {
     const match = existing.find(p => p.title === canon.title);

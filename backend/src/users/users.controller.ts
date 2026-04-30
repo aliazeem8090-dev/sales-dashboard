@@ -24,7 +24,8 @@ export class UsersController {
   @Post()
   @Roles('ADMIN', 'MANAGER')
   create(@Request() req: any, @Body() createUserDto: any) {
-    return this.usersService.create({ ...createUserDto, companyId: req.user.companyId });
+    const companyId = createUserDto.companyId?.trim() || req.user.companyId;
+    return this.usersService.create({ ...createUserDto, companyId });
   }
 
   @Put(':id')

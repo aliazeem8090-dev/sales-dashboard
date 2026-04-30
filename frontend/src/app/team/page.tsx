@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import { getStoredUser } from '@/lib/auth'
-import { UserPlus, Trash2, Mail, Shield, X, RefreshCw } from 'lucide-react'
+import { UserPlus, Trash2, Mail, X, RefreshCw } from 'lucide-react'
 
-const inputClass = "w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-cyan-500/50 transition-colors"
-const inputStyle = { background: '#0a0b10', border: '1px solid rgba(100,116,139,0.2)' }
+const inputClass = "w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-violet-500/50 transition-colors"
+const inputStyle = { background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.2)' }
 
 const ROLE_LABELS: Record<string, string> = {
   REP: 'Sales Rep',
@@ -17,7 +17,7 @@ const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Admin',
 }
 const ROLE_COLORS: Record<string, string> = {
-  REP: '#67e8f9',
+  REP: '#a78bfa',
   LINKEDIN_AGENT: '#a5b4fc',
   FREELANCER_AGENT: '#fbbf24',
   MANAGER: '#4ade80',
@@ -51,6 +51,7 @@ export default function TeamPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [newUserRole, setNewUserRole] = useState<AgentRole>('REP')
+  const [companyId, setCompanyId] = useState('')
 
   useEffect(() => {
     const u = getStoredUser()
@@ -65,7 +66,6 @@ export default function TeamPage() {
   async function fetchUsers() {
     try {
       const data = await api.get<any[]>('/users')
-      // Show only non-admin/manager users
       setUsers((data as any[]).filter(u => u.role === 'REP' || u.role === 'LINKEDIN_AGENT' || u.role === 'FREELANCER_AGENT'))
     } catch { } finally { setLoading(false) }
   }
@@ -76,11 +76,17 @@ export default function TeamPage() {
     if (!name.trim() || !email.trim() || !password.trim()) { setError('All fields are required.'); return }
     setSubmitting(true)
     try {
-      await api.post('/auth/register', { name: name.trim(), email: email.trim(), password, role: newUserRole })
-      setName(''); setEmail(''); setPassword(''); setShowForm(false)
+      await api.post('/users', {
+        name: name.trim(),
+        email: email.trim(),
+        password,
+        role: newUserRole,
+        ...(companyId.trim() ? { companyId: companyId.trim() } : {}),
+      })
+      setName(''); setEmail(''); setPassword(''); setCompanyId(''); setShowForm(false)
       await fetchUsers()
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to create user.')
+      setError(err?.message || 'Failed to create user.')
     } finally { setSubmitting(false) }
   }
 
@@ -107,7 +113,7 @@ export default function TeamPage() {
   return (
     <div className="flex-1 relative z-10">
       {/* Header */}
-      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', background: '#07080d' }}>
+      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(124,111,255,0.08)', background: 'var(--ink)' }}>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold text-slate-200">Team Management</h1>
@@ -118,7 +124,7 @@ export default function TeamPage() {
           <button
             onClick={() => { setShowForm(v => !v); setError('') }}
             className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
-            style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.25)', color: '#67e8f9' }}
+            style={{ background: 'rgba(124,111,255,0.1)', border: '1px solid rgba(124,111,255,0.25)', color: '#a78bfa' }}
           >
             {showForm ? <X size={13} /> : <UserPlus size={13} />}
             {showForm ? 'Cancel' : 'Add Member'}
@@ -130,8 +136,8 @@ export default function TeamPage() {
 
         {/* Create form */}
         {showForm && (
-          <form onSubmit={handleCreate} className="rounded-xl p-5 space-y-3" style={{ background: '#0a0b10', border: '1px solid rgba(6,182,212,0.15)' }}>
-            <p className="text-xs font-semibold text-cyan-400 uppercase tracking-widest">New Team Member</p>
+          <form onSubmit={handleCreate} className="rounded-xl p-5 space-y-3" style={{ background: 'var(--ink2)', border: '1px solid rgba(124,111,255,0.15)' }}>
+            <p className="text-xs font-semibold text-violet-400 uppercase tracking-widest">New Team Member</p>
             <div>
               <label className="block text-[10px] text-slate-500 mb-1 uppercase tracking-wide">Role</label>
               <div className="flex gap-2">
@@ -164,6 +170,18 @@ export default function TeamPage() {
               <label className="block text-[10px] text-slate-500 mb-1 uppercase tracking-wide">Password</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Set initial password" className={inputClass} style={inputStyle} />
             </div>
+            <div>
+              <label className="block text-[10px] text-slate-500 mb-1 uppercase tracking-wide">
+                Company ID <span className="text-slate-600 normal-case">(optional — leave blank to add to your company)</span>
+              </label>
+              <input
+                value={companyId}
+                onChange={e => setCompanyId(e.target.value)}
+                placeholder="e.g. company-3 (for a new company)"
+                className={inputClass}
+                style={inputStyle}
+              />
+            </div>
             {error && <p className="text-xs text-red-400">{error}</p>}
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => { setShowForm(false); setError('') }} className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-300">Cancel</button>
@@ -171,7 +189,7 @@ export default function TeamPage() {
                 type="submit"
                 disabled={submitting}
                 className="px-4 py-1.5 text-xs font-semibold rounded-lg disabled:opacity-50 transition-colors"
-                style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)', color: '#67e8f9' }}
+                style={{ background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)', color: '#a78bfa' }}
               >
                 {submitting ? 'Creating…' : `Create ${ROLE_LABELS[newUserRole]}`}
               </button>
@@ -183,7 +201,7 @@ export default function TeamPage() {
         {loading ? (
           <p className="text-slate-500 text-xs py-8">Loading team…</p>
         ) : users.length === 0 ? (
-          <div className="rounded-xl border border-slate-800/60 p-10 text-center" style={{ background: '#0a0b10' }}>
+          <div className="rounded-xl border border-[var(--bord)] p-10 text-center" style={{ background: 'var(--ink2)' }}>
             <p className="text-slate-500 text-sm">No team members yet.</p>
             <p className="text-xs text-slate-600 mt-1">Click "Add Member" to create the first profile.</p>
           </div>
@@ -195,7 +213,7 @@ export default function TeamPage() {
                 <div
                   key={user.id}
                   className="flex items-center justify-between gap-4 rounded-xl px-4 py-3"
-                  style={{ background: '#0a0b10', border: '1px solid rgba(100,116,139,0.1)' }}
+                  style={{ background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.1)' }}
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-slate-200 truncate">{user.name}</p>
@@ -207,14 +225,16 @@ export default function TeamPage() {
                       <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: `${roleColor}15`, color: roleColor, border: `1px solid ${roleColor}30` }}>
                         {ROLE_LABELS[user.role] || user.role}
                       </span>
+                      {user.companyId && (
+                        <span className="text-[10px] text-slate-600">{user.companyId}</span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {/* Role toggle */}
                     <button
                       onClick={() => handleRoleChange(user.id, nextRole(user.role))}
                       disabled={changingRoleId === user.id}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] rounded-lg text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10 border border-transparent hover:border-cyan-500/20 transition-colors disabled:opacity-40"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] rounded-lg text-slate-500 hover:text-violet-400 hover:bg-violet-500/10 border border-transparent hover:border-violet-500/20 transition-colors disabled:opacity-40"
                       title={`Switch to ${nextRoleLabel(user.role)}`}
                     >
                       <RefreshCw size={11} />
@@ -239,7 +259,7 @@ export default function TeamPage() {
       {/* Confirm delete modal */}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.7)' }}>
-          <div className="rounded-xl p-6 w-80 space-y-4" style={{ background: '#0f1117', border: '1px solid rgba(239,68,68,0.2)' }}>
+          <div className="rounded-xl p-6 w-80 space-y-4" style={{ background: 'var(--ink2)', border: '1px solid rgba(239,68,68,0.2)' }}>
             <p className="text-sm font-semibold text-slate-200">Delete member?</p>
             <p className="text-xs text-slate-400">
               This will permanently remove <span className="text-slate-200 font-medium">{confirmDelete.name}</span> and all their data. This cannot be undone.

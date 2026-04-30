@@ -2,7 +2,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './user.entity';
+import { User, Role } from './user.entity';
 import { Rep } from '../reps/rep.entity';
 import { Proposal } from '../proposals/proposal.entity';
 import { ProposalReview } from '../proposal-reviews/proposal-review.entity';
@@ -66,11 +66,24 @@ export class UsersService {
 
   async create(userData: Partial<User>): Promise<User> {
     const hashedPassword = await bcrypt.hash(userData.password as string, 10);
-    const user = this.usersRepository.create({
-      ...userData,
-      password: hashedPassword,
-    });
-    return this.usersRepository.save(user) as Promise<User>;
+    const user = await this.usersRepository.save(
+      this.usersRepository.create({ ...userData, password: hashedPassword }),
+    ) as User;
+
+    if (user.role === Role.REP) {
+      const existing = await this.repsRepository.findOne({ where: { userId: user.id } });
+      if (!existing) await this.repsRepository.save(this.repsRepository.create({ userId: user.id }));
+    }
+    if (user.role === Role.LINKEDIN_AGENT) {
+      const existing = await this.linkedInAgentsRepository.findOne({ where: { userId: user.id } });
+      if (!existing) await this.linkedInAgentsRepository.save(this.linkedInAgentsRepository.create({ userId: user.id }));
+    }
+    if (user.role === Role.FREELANCER_AGENT) {
+      const existing = await this.freelancerAgentsRepository.findOne({ where: { userId: user.id } });
+      if (!existing) await this.freelancerAgentsRepository.save(this.freelancerAgentsRepository.create({ userId: user.id }));
+    }
+
+    return user;
   }
 
   async update(id: string, userData: Partial<User>): Promise<User | null> {
