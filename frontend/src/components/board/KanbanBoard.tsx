@@ -15,6 +15,7 @@ import {
 import { arrayMove } from '@dnd-kit/sortable'
 import { KanbanColumn } from './KanbanColumn'
 import { ProposalCard } from './ProposalCard'
+import { InterviewLeadModal } from './InterviewLeadModal'
 import { api } from '@/lib/api'
 
 // Column definitions — maps to ProposalStatus enum values on backend
@@ -48,6 +49,9 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
   const [proposals, setProposals] = useState<any[]>(initialProposals)
   const [activeProposal, setActiveProposal] = useState<any | null>(null)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [pendingInterview, setPendingInterview] = useState<{
+    proposalId: string; repId: string; originalStatus: string
+  } | null>(null)
   const dragOriginStatus = useRef<string | null>(null)
   const isDragging = useRef(false)
 
@@ -129,6 +133,17 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
     // No change if dropped back on the same column it came from
     if (originalStatus === targetCol) return
 
+    // Intercept moves to INTERVIEW — show lead capture modal first
+    if (targetCol === 'INTERVIEW') {
+      const proposal = proposals.find(p => p.id === activeId)
+      setPendingInterview({
+        proposalId: activeId,
+        repId: proposal?.repId || '',
+        originalStatus: originalStatus || 'SENT',
+      })
+      return
+    }
+
     // Persist to backend
     setUpdatingId(activeId)
     try {
@@ -142,6 +157,31 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
     } finally {
       setUpdatingId(null)
     }
+  }
+
+  async function confirmInterview() {
+    if (!pendingInterview) return
+    const { proposalId, originalStatus } = pendingInterview
+    setPendingInterview(null)
+    setUpdatingId(proposalId)
+    try {
+      await api.patch(`/proposals/${proposalId}/status`, { status: 'INTERVIEW' })
+    } catch {
+      setProposals(prev => prev.map(p =>
+        p.id === proposalId ? { ...p, status: originalStatus } : p
+      ))
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  function cancelInterview() {
+    if (!pendingInterview) return
+    const { proposalId, originalStatus } = pendingInterview
+    setProposals(prev => prev.map(p =>
+      p.id === proposalId ? { ...p, status: originalStatus } : p
+    ))
+    setPendingInterview(null)
   }
 
   return (
@@ -170,5 +210,15 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
         ) : null}
       </DragOverlay>
     </DndContext>
+
+    {pendingInterview && (
+      <InterviewLeadModal
+        proposalId={pendingInterview.proposalId}
+        repId={pendingInterview.repId}
+        onSaved={confirmInterview}
+        onSkip={confirmInterview}
+        onCancel={cancelInterview}
+      />
+    )}
   )
 }
