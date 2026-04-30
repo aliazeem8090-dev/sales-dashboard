@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -21,5 +21,10 @@ export class JobsController {
   @Post()
   create(@Body() body: any) {
     return this.jobsService.findOrCreate(body);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() body: any) {
+    return this.jobsService.update(id, body);
   }
 }

@@ -16,6 +16,7 @@ import {
 import { KanbanColumn } from './KanbanColumn'
 import { ProposalCard } from './ProposalCard'
 import { InterviewLeadModal } from './InterviewLeadModal'
+import { EditProposalPanel } from './EditProposalPanel'
 import { api } from '@/lib/api'
 
 const COLUMNS = [
@@ -66,6 +67,7 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
   const [pendingInterview, setPendingInterview] = useState<{
     proposalId: string; repId: string; originalStatus: string
   } | null>(null)
+  const [editingProposal, setEditingProposal] = useState<any | null>(null)
 
   // Always-current ref — avoids stale closure in drag handlers
   const proposalsRef = useRef(proposals)
@@ -194,6 +196,8 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
               key={col.id}
               column={col}
               proposals={grouped[col.id] || []}
+              onEdit={p => setEditingProposal(p)}
+              onDelete={id => setProposals(prev => prev.filter(p => p.id !== id))}
             />
           ))}
         </div>
@@ -214,6 +218,17 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
           onSaved={confirmInterview}
           onSkip={confirmInterview}
           onCancel={cancelInterview}
+        />
+      )}
+
+      {editingProposal && (
+        <EditProposalPanel
+          proposal={editingProposal}
+          onSaved={updated => {
+            setProposals(prev => prev.map(p => p.id === updated.id ? { ...p, ...updated } : p))
+            setEditingProposal(null)
+          }}
+          onClose={() => setEditingProposal(null)}
         />
       )}
     </>

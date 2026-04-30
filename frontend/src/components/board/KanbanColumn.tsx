@@ -14,15 +14,17 @@ interface ColumnConfig {
 interface KanbanColumnProps {
   column: ColumnConfig
   proposals: any[]
+  onEdit?: (proposal: any) => void
+  onDelete?: (id: string) => void
 }
 
-export function KanbanColumn({ column, proposals }: KanbanColumnProps) {
+export function KanbanColumn({ column, proposals, onEdit, onDelete }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id })
 
   return (
     <div className="flex flex-col min-w-[240px] w-[240px] shrink-0">
       {/* Column header */}
-      <div className={`flex items-center justify-between px-3 py-2 rounded-t-lg border-t-2 ${column.accent} bg-[#0a0b10]`}>
+      <div className={`flex items-center justify-between px-3 py-2 rounded-t-lg border-t-2 ${column.accent} bg-[#111425]`}>
         <div className="flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${column.dotColor}`} />
           <span className="text-xs font-semibold text-slate-300 tracking-wide uppercase">
@@ -40,13 +42,13 @@ export function KanbanColumn({ column, proposals }: KanbanColumnProps) {
         className={`
           flex-1 min-h-[120px] p-2 rounded-b-lg border border-t-0 border-slate-800/60 bg-[#080810]
           transition-colors duration-150
-          ${isOver ? 'bg-cyan-500/5 border-cyan-500/30' : ''}
+          ${isOver ? 'bg-violet-500/5 border-violet-500/30' : ''}
         `}
       >
         <SortableContext items={proposals.map(p => p.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-2">
             {proposals.map(proposal => (
-              <ProposalCard key={proposal.id} proposal={proposal} />
+              <ProposalCard key={proposal.id} proposal={proposal} onEdit={onEdit} onDelete={onDelete} />
             ))}
           </div>
         </SortableContext>
@@ -55,7 +57,7 @@ export function KanbanColumn({ column, proposals }: KanbanColumnProps) {
           <div className={`
             flex items-center justify-center h-16 rounded-md border border-dashed
             text-[10px] text-slate-700 transition-colors duration-150
-            ${isOver ? 'border-cyan-500/40 text-cyan-700' : 'border-slate-800'}
+            ${isOver ? 'border-violet-500/40 text-cyan-700' : 'border-slate-800'}
           `}>
             {isOver ? 'Drop here' : 'No proposals'}
           </div>

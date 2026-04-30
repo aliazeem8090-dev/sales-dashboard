@@ -6,12 +6,16 @@ import { CSS } from '@dnd-kit/utilities'
 import {
   ExternalLink, Zap, Calendar, DollarSign, Tag,
   ChevronDown, ChevronUp, FileText, Briefcase,
-  AlertTriangle, Star, StickyNote,
+  AlertTriangle, Star, StickyNote, Pencil, Trash2,
 } from 'lucide-react'
+import { getStoredUser } from '@/lib/auth'
+import { api } from '@/lib/api'
 
 interface ProposalCardProps {
   proposal: any
   isDragging?: boolean
+  onEdit?: (proposal: any) => void
+  onDelete?: (id: string) => void
 }
 
 const NICHE_COLORS: Record<string, string> = {
@@ -55,8 +59,23 @@ function ScoreBar({ label, score, max }: { label: string; score: number; max: nu
   )
 }
 
-export function ProposalCard({ proposal, isDragging }: ProposalCardProps) {
+export function ProposalCard({ proposal, isDragging, onEdit, onDelete }: ProposalCardProps) {
   const [expanded, setExpanded] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const user = typeof window !== 'undefined' ? getStoredUser() : null
+  const isRep = user?.role === 'REP'
+
+  async function handleDelete() {
+    setDeleting(true)
+    try {
+      await api.delete(`/proposals/${proposal.id}`)
+      onDelete?.(proposal.id)
+    } catch {
+      setDeleting(false)
+      setConfirmDelete(false)
+    }
+  }
 
   const {
     attributes, listeners, setNodeRef,
@@ -87,9 +106,9 @@ export function ProposalCard({ proposal, isDragging }: ProposalCardProps) {
       style={style}
       className={`
         group bg-[#0f1117] border border-cyan-500/10 rounded-lg
-        hover:border-cyan-500/30 hover:shadow-[0_0_12px_rgba(6,182,212,0.1)]
+        hover:border-violet-500/30 hover:shadow-[0_0_12px_rgba(124,111,255,0.1)]
         transition-all duration-150 select-none overflow-hidden
-        ${isDragging ? 'shadow-[0_0_20px_rgba(6,182,212,0.3)] border-cyan-500/50 rotate-1' : ''}
+        ${isDragging ? 'shadow-[0_0_20px_rgba(124,111,255,0.3)] border-violet-500/50 rotate-1' : ''}
       `}
     >
       {/* ── Drag handle area ─────────────────────────────────── */}
@@ -108,7 +127,7 @@ export function ProposalCard({ proposal, isDragging }: ProposalCardProps) {
               rel="noopener noreferrer"
               onPointerDown={e => e.stopPropagation()}
               onClick={e => e.stopPropagation()}
-              className="shrink-0 text-slate-600 hover:text-cyan-400 transition-colors mt-0.5"
+              className="shrink-0 text-slate-600 hover:text-violet-400 transition-colors mt-0.5"
             >
               <ExternalLink size={11} />
             </a>
@@ -180,7 +199,7 @@ export function ProposalCard({ proposal, isDragging }: ProposalCardProps) {
         onClick={e => { e.stopPropagation(); setExpanded(v => !v) }}
         className={`w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-medium transition-all border-t ${
           expanded
-            ? 'text-cyan-400 hover:text-cyan-300 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10'
+            ? 'text-violet-400 hover:text-violet-300 border-violet-500/20 bg-violet-500/5 hover:bg-violet-500/10'
             : 'text-slate-400 hover:text-slate-200 border-slate-700/60 hover:bg-slate-800/60'
         }`}
       >
@@ -297,6 +316,48 @@ export function ProposalCard({ proposal, isDragging }: ProposalCardProps) {
             <div className="rounded-lg p-2 flex items-center justify-between" style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)' }}>
               <span className="text-[9px] font-semibold text-emerald-500 uppercase tracking-wider">Contract Value</span>
               <span className="text-sm font-bold font-mono text-emerald-400">${proposal.contractValue.toLocaleString()}</span>
+            </div>
+          )}
+
+          {/* Edit / Delete — rep only */}
+          {isRep && (
+            <div className="pt-1 flex items-center gap-2">
+              <button
+                onPointerDown={e => e.stopPropagation()}
+                onClick={e => { e.stopPropagation(); onEdit?.(proposal) }}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] rounded-lg text-slate-500 hover:text-violet-400 hover:bg-violet-500/10 border border-transparent hover:border-violet-500/20 transition-colors"
+              >
+                <Pencil size={11} /> Edit
+              </button>
+
+              {confirmDelete ? (
+                <div className="flex items-center gap-1.5 ml-auto">
+                  <span className="text-[10px] text-slate-500">Delete this proposal?</span>
+                  <button
+                    onPointerDown={e => e.stopPropagation()}
+                    onClick={e => { e.stopPropagation(); handleDelete() }}
+                    disabled={deleting}
+                    className="px-2 py-1 text-[10px] font-semibold rounded text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                  >
+                    {deleting ? '…' : 'Yes'}
+                  </button>
+                  <button
+                    onPointerDown={e => e.stopPropagation()}
+                    onClick={e => { e.stopPropagation(); setConfirmDelete(false) }}
+                    className="px-2 py-1 text-[10px] rounded text-slate-500 hover:text-slate-300 transition-colors"
+                  >
+                    No
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onPointerDown={e => e.stopPropagation()}
+                  onClick={e => { e.stopPropagation(); setConfirmDelete(true) }}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-colors ml-auto"
+                >
+                  <Trash2 size={11} /> Delete
+                </button>
+              )}
             </div>
           )}
         </div>
