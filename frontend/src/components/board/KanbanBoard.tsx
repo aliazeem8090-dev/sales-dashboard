@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   DndContext,
   DragEndEvent,
@@ -12,9 +12,7 @@ import {
   useSensors,
   pointerWithin,
   rectIntersection,
-  UniqueIdentifier,
 } from '@dnd-kit/core'
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { KanbanColumn } from './KanbanColumn'
 import { ProposalCard } from './ProposalCard'
 import { InterviewLeadModal } from './InterviewLeadModal'
@@ -43,11 +41,19 @@ function groupByStatus(proposals: any[]): Record<string, any[]> {
   return groups
 }
 
-// Prefer pointer-within detection (better for column drops), fall back to rect intersection
+function resolveColFromId(id: string, proposals: any[]): ColumnId | null {
+  // Direct column hit
+  if (COLUMN_IDS.has(id)) return id as ColumnId
+  // It's a card id — look up its current status
+  const card = proposals.find((p: any) => p.id === id)
+  if (!card) return null
+  const s = card.status === 'REJECTED' ? 'LOST' : (card.status || 'SENT')
+  return COLUMN_IDS.has(s) ? (s as ColumnId) : null
+}
+
 function collisionDetect(args: Parameters<typeof pointerWithin>[0]) {
   const pw = pointerWithin(args)
-  if (pw.length > 0) return pw
-  return rectIntersection(args)
+  return pw.length > 0 ? pw : rectIntersection(args)
 }
 
 interface KanbanBoardProps {
@@ -57,13 +63,15 @@ interface KanbanBoardProps {
 export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
   const [proposals, setProposals] = useState<any[]>(initialProposals)
   const [activeProposal, setActiveProposal] = useState<any | null>(null)
-  const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [pendingInterview, setPendingInterview] = useState<{
     proposalId: string; repId: string; originalStatus: string
   } | null>(null)
 
+  // Always-current ref — avoids stale closure in drag handlers
+  const proposalsRef = useRef(proposals)
+  proposalsRef.current = proposals
+
   const dragOriginStatus = useRef<string | null>(null)
-  const pendingTargetCol = useRef<ColumnId | null>(null)
   const isDragging = useRef(false)
 
   useEffect(() => {
@@ -76,21 +84,10 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   )
 
-  // Map proposal id → its current column id
-  const findColumn = useCallback((id: UniqueIdentifier): ColumnId | null => {
-    const sid = id as string
-    if (COLUMN_IDS.has(sid)) return sid as ColumnId
-    for (const col of COLUMNS) {
-      if (grouped[col.id]?.some((p: any) => p.id === sid)) return col.id as ColumnId
-    }
-    return null
-  }, [grouped])
-
   function handleDragStart(event: DragStartEvent) {
     const proposal = proposals.find(p => p.id === event.active.id)
     setActiveProposal(proposal ?? null)
     dragOriginStatus.current = proposal?.status ?? null
-    pendingTargetCol.current = null
     isDragging.current = true
   }
 
@@ -99,20 +96,15 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
     if (!over) return
 
     const activeId = active.id as string
-    const overId = over.id as string
-
-    const sourceCol = findColumn(activeId)
-    const targetCol = findColumn(overId)
-
+    const targetCol = resolveColFromId(over.id as string, proposalsRef.current)
     if (!targetCol) return
-    pendingTargetCol.current = targetCol
 
-    if (!sourceCol || sourceCol === targetCol) return
-
-    // Optimistically move card to target column
-    setProposals(prev => prev.map(p =>
-      p.id === activeId ? { ...p, status: targetCol } : p
-    ))
+    // Optimistic visual update — move card to target column while dragging
+    setProposals(prev => {
+      const current = resolveColFromId(activeId, prev)
+      if (current === targetCol) return prev
+      return prev.map(p => p.id === activeId ? { ...p, status: targetCol } : p)
+    })
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -122,26 +114,31 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
 
     const activeId = active.id as string
     const originalStatus = dragOriginStatus.current
-    const targetCol = pendingTargetCol.current
     dragOriginStatus.current = null
-    pendingTargetCol.current = null
 
-    // Dropped outside — revert
-    if (!over || !targetCol) {
-      if (originalStatus) {
-        setProposals(prev => prev.map(p =>
-          p.id === activeId ? { ...p, status: originalStatus } : p
-        ))
-      }
+    if (!over) {
+      // Dropped outside — revert
+      setProposals(prev => prev.map(p =>
+        p.id === activeId ? { ...p, status: originalStatus ?? p.status } : p
+      ))
       return
     }
 
-    // No status change
+    // Derive target column from the drop event (authoritative — don't rely on handleDragOver side-effects)
+    const targetCol = resolveColFromId(over.id as string, proposalsRef.current)
+    if (!targetCol) return
+
+    // Ensure card is visually in the target column (in case handleDragOver missed it)
+    setProposals(prev => prev.map(p =>
+      p.id === activeId ? { ...p, status: targetCol } : p
+    ))
+
+    // No actual status change
     if (originalStatus === targetCol) return
 
-    // Moving to INTERVIEW — show lead capture modal first
+    // Moving to INTERVIEW → show lead capture modal, persist after modal confirms
     if (targetCol === 'INTERVIEW') {
-      const proposal = proposals.find(p => p.id === activeId)
+      const proposal = proposalsRef.current.find((p: any) => p.id === activeId)
       setPendingInterview({
         proposalId: activeId,
         repId: proposal?.repId || '',
@@ -150,16 +147,13 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
       return
     }
 
-    // Persist status change
-    setUpdatingId(activeId)
+    // Persist all other status changes
     try {
       await api.patch(`/proposals/${activeId}/status`, { status: targetCol })
     } catch {
       setProposals(prev => prev.map(p =>
         p.id === activeId ? { ...p, status: originalStatus ?? p.status } : p
       ))
-    } finally {
-      setUpdatingId(null)
     }
   }
 
@@ -167,15 +161,12 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
     if (!pendingInterview) return
     const { proposalId, originalStatus } = pendingInterview
     setPendingInterview(null)
-    setUpdatingId(proposalId)
     try {
       await api.patch(`/proposals/${proposalId}/status`, { status: 'INTERVIEW' })
     } catch {
       setProposals(prev => prev.map(p =>
         p.id === proposalId ? { ...p, status: originalStatus } : p
       ))
-    } finally {
-      setUpdatingId(null)
     }
   }
 
