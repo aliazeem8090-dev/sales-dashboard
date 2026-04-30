@@ -94,6 +94,34 @@ async function seedCompany2(ds: DataSource): Promise<void> {
   }
 }
 
+async function ensureCompany2Extra(ds: DataSource): Promise<void> {
+  const userRepo = ds.getRepository(User);
+  const repRepo  = ds.getRepository(Rep);
+
+  const extraMembers = [
+    { name: 'Hadia Kamran', email: 'hadiakamran@gsd.com', password: 'hadiagsd098', role: 'REP' },
+  ];
+
+  for (const member of extraMembers) {
+    const existing = await userRepo.findOne({ where: { email: member.email } });
+    if (existing) continue;
+    const hashed = await bcrypt.hash(member.password, 10);
+    const user = await userRepo.save(userRepo.create({
+      name: member.name, email: member.email, password: hashed,
+      role: member.role as any, companyId: COMPANY_2,
+    }));
+    if (member.role === 'REP') {
+      await repRepo.save(repRepo.create({
+        userId: user.id,
+        targets: { dailyProposals: 5, weeklyHires: 2 },
+        currentConnects: 60,
+        weeklyGoals: { proposals: 25, hires: 2 },
+      }));
+    }
+    console.log(`[AutoSeed] Created Company 2 extra: ${member.name} (${member.email})`);
+  }
+}
+
 export async function autoSeedIfEmpty(): Promise<void> {
   const ds = new DataSource({
     type: 'mysql',
@@ -128,6 +156,7 @@ export async function autoSeedIfEmpty(): Promise<void> {
   if (existingCount > 0) {
     console.log(`[AutoSeed] ${existingCount} users already exist — skipping Company 1 seed`);
     await seedCompany2(ds);
+    await ensureCompany2Extra(ds);
     await ds.destroy();
     return;
   }
