@@ -136,8 +136,8 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
     // No actual status change
     if (originalStatus === targetCol) return
 
-    // Moving to INTERVIEW → show lead capture modal, persist after modal confirms
-    if (targetCol === 'INTERVIEW') {
+    // Moving to REPLIED → show lead capture modal, persist after modal confirms
+    if (targetCol === 'REPLIED') {
       const proposal = proposalsRef.current.find((p: any) => p.id === activeId)
       setPendingInterview({
         proposalId: activeId,
@@ -162,7 +162,7 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
     const { proposalId, originalStatus } = pendingInterview
     setPendingInterview(null)
     try {
-      await api.patch(`/proposals/${proposalId}/status`, { status: 'INTERVIEW' })
+      await api.patch(`/proposals/${proposalId}/status`, { status: 'REPLIED' })
     } catch {
       setProposals(prev => prev.map(p =>
         p.id === proposalId ? { ...p, status: originalStatus } : p
