@@ -10,15 +10,16 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  closestCenter,
+  pointerWithin,
+  rectIntersection,
+  UniqueIdentifier,
 } from '@dnd-kit/core'
-import { arrayMove } from '@dnd-kit/sortable'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { KanbanColumn } from './KanbanColumn'
 import { ProposalCard } from './ProposalCard'
 import { InterviewLeadModal } from './InterviewLeadModal'
 import { api } from '@/lib/api'
 
-// Column definitions — maps to ProposalStatus enum values on backend
 const COLUMNS = [
   { id: 'SENT',      label: 'Sent',      accent: 'border-slate-500',   dotColor: 'bg-slate-400' },
   { id: 'VIEWED',    label: 'Viewed',    accent: 'border-blue-500',    dotColor: 'bg-blue-400' },
@@ -28,6 +29,7 @@ const COLUMNS = [
   { id: 'LOST',      label: 'Lost',      accent: 'border-red-500',     dotColor: 'bg-red-400' },
 ]
 
+const COLUMN_IDS = new Set(COLUMNS.map(c => c.id))
 type ColumnId = 'SENT' | 'VIEWED' | 'REPLIED' | 'INTERVIEW' | 'HIRED' | 'LOST'
 
 function groupByStatus(proposals: any[]): Record<string, any[]> {
@@ -41,6 +43,13 @@ function groupByStatus(proposals: any[]): Record<string, any[]> {
   return groups
 }
 
+// Prefer pointer-within detection (better for column drops), fall back to rect intersection
+function collisionDetect(args: Parameters<typeof pointerWithin>[0]) {
+  const pw = pointerWithin(args)
+  if (pw.length > 0) return pw
+  return rectIntersection(args)
+}
+
 interface KanbanBoardProps {
   initialProposals: any[]
 }
@@ -52,14 +61,13 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
   const [pendingInterview, setPendingInterview] = useState<{
     proposalId: string; repId: string; originalStatus: string
   } | null>(null)
+
   const dragOriginStatus = useRef<string | null>(null)
+  const pendingTargetCol = useRef<ColumnId | null>(null)
   const isDragging = useRef(false)
 
-  // Sync internal state when search filter changes (only when not dragging)
   useEffect(() => {
-    if (!isDragging.current) {
-      setProposals(initialProposals)
-    }
+    if (!isDragging.current) setProposals(initialProposals)
   }, [initialProposals])
 
   const grouped = groupByStatus(proposals)
@@ -68,17 +76,21 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   )
 
-  const findColumn = useCallback((proposalId: string): ColumnId | null => {
+  // Map proposal id → its current column id
+  const findColumn = useCallback((id: UniqueIdentifier): ColumnId | null => {
+    const sid = id as string
+    if (COLUMN_IDS.has(sid)) return sid as ColumnId
     for (const col of COLUMNS) {
-      if (grouped[col.id]?.find((p: any) => p.id === proposalId)) return col.id as ColumnId
+      if (grouped[col.id]?.some((p: any) => p.id === sid)) return col.id as ColumnId
     }
     return null
   }, [grouped])
 
   function handleDragStart(event: DragStartEvent) {
     const proposal = proposals.find(p => p.id === event.active.id)
-    setActiveProposal(proposal || null)
+    setActiveProposal(proposal ?? null)
     dragOriginStatus.current = proposal?.status ?? null
+    pendingTargetCol.current = null
     isDragging.current = true
   }
 
@@ -89,14 +101,15 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
     const activeId = active.id as string
     const overId = over.id as string
 
-    // Determine source and target column
     const sourceCol = findColumn(activeId)
-    const targetCol = COLUMNS.find(c => c.id === overId)?.id as ColumnId
-      || findColumn(overId)
+    const targetCol = findColumn(overId)
 
-    if (!sourceCol || !targetCol || sourceCol === targetCol) return
+    if (!targetCol) return
+    pendingTargetCol.current = targetCol
 
-    // Optimistically move card to new column
+    if (!sourceCol || sourceCol === targetCol) return
+
+    // Optimistically move card to target column
     setProposals(prev => prev.map(p =>
       p.id === activeId ? { ...p, status: targetCol } : p
     ))
@@ -109,10 +122,12 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
 
     const activeId = active.id as string
     const originalStatus = dragOriginStatus.current
+    const targetCol = pendingTargetCol.current
     dragOriginStatus.current = null
+    pendingTargetCol.current = null
 
-    if (!over) {
-      // Dropped outside any column — revert optimistic update
+    // Dropped outside — revert
+    if (!over || !targetCol) {
       if (originalStatus) {
         setProposals(prev => prev.map(p =>
           p.id === activeId ? { ...p, status: originalStatus } : p
@@ -121,19 +136,10 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
       return
     }
 
-    const overId = over.id as string
-
-    const currentProposal = proposals.find(p => p.id === activeId)
-    if (!currentProposal) return
-
-    const targetCol = COLUMNS.find(c => c.id === overId)?.id as ColumnId
-      || findColumn(overId)
-    if (!targetCol) return
-
-    // No change if dropped back on the same column it came from
+    // No status change
     if (originalStatus === targetCol) return
 
-    // Intercept moves to INTERVIEW — show lead capture modal first
+    // Moving to INTERVIEW — show lead capture modal first
     if (targetCol === 'INTERVIEW') {
       const proposal = proposals.find(p => p.id === activeId)
       setPendingInterview({
@@ -144,13 +150,11 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
       return
     }
 
-    // Persist to backend
+    // Persist status change
     setUpdatingId(activeId)
     try {
       await api.patch(`/proposals/${activeId}/status`, { status: targetCol })
-    } catch (err) {
-      console.error('Failed to update proposal status', err)
-      // Revert on failure
+    } catch {
       setProposals(prev => prev.map(p =>
         p.id === activeId ? { ...p, status: originalStatus ?? p.status } : p
       ))
@@ -185,40 +189,42 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="flex gap-3 overflow-x-auto pb-4 min-h-[calc(100vh-180px)]">
-        {COLUMNS.map(col => (
-          <KanbanColumn
-            key={col.id}
-            column={col}
-            proposals={grouped[col.id] || []}
-          />
-        ))}
-      </div>
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={collisionDetect}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex gap-3 overflow-x-auto pb-4 min-h-[calc(100vh-180px)]">
+          {COLUMNS.map(col => (
+            <KanbanColumn
+              key={col.id}
+              column={col}
+              proposals={grouped[col.id] || []}
+            />
+          ))}
+        </div>
 
-      <DragOverlay>
-        {activeProposal ? (
-          <div className="rotate-2 scale-105">
-            <ProposalCard proposal={activeProposal} isDragging />
-          </div>
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+        <DragOverlay>
+          {activeProposal ? (
+            <div className="rotate-2 scale-105">
+              <ProposalCard proposal={activeProposal} isDragging />
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
-    {pendingInterview && (
-      <InterviewLeadModal
-        proposalId={pendingInterview.proposalId}
-        repId={pendingInterview.repId}
-        onSaved={confirmInterview}
-        onSkip={confirmInterview}
-        onCancel={cancelInterview}
-      />
-    )}
+      {pendingInterview && (
+        <InterviewLeadModal
+          proposalId={pendingInterview.proposalId}
+          repId={pendingInterview.repId}
+          onSaved={confirmInterview}
+          onSkip={confirmInterview}
+          onCancel={cancelInterview}
+        />
+      )}
+    </>
   )
 }
