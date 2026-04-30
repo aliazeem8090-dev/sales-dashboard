@@ -10,8 +10,13 @@ export class RepsService {
     private repsRepository: Repository<Rep>,
   ) {}
 
-  async findAll(): Promise<Rep[]> {
-    return this.repsRepository.find({ relations: ['user'] });
+  async findAll(companyId?: string): Promise<Rep[]> {
+    if (!companyId) return this.repsRepository.find({ relations: ['user'] });
+    return this.repsRepository
+      .createQueryBuilder('rep')
+      .leftJoinAndSelect('rep.user', 'user')
+      .where('user.companyId = :companyId', { companyId })
+      .getMany();
   }
 
   async findOne(id: string): Promise<Rep> {

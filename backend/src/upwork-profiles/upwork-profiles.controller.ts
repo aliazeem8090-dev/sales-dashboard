@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, UseGuards, Request } from '@nestjs/common';
 import { UpworkProfilesService } from './upwork-profiles.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -8,8 +8,8 @@ export class UpworkProfilesController {
   constructor(private readonly upworkProfilesService: UpworkProfilesService) {}
 
   @Get()
-  findAll() {
-    return this.upworkProfilesService.findAll();
+  findAll(@Request() req: any) {
+    return this.upworkProfilesService.findAll(req.user.companyId);
   }
 
   @Get(':id')
@@ -18,8 +18,8 @@ export class UpworkProfilesController {
   }
 
   @Post()
-  create(@Body() body: any) {
-    return this.upworkProfilesService.create(body);
+  create(@Body() body: any, @Request() req: any) {
+    return this.upworkProfilesService.create({ ...body, companyId: req.user.companyId });
   }
 
   @Patch(':id')

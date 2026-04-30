@@ -11,8 +11,8 @@ export class BidderAssignmentsController {
 
   @Get()
   @Roles('ADMIN', 'MANAGER')
-  getAll() {
-    return this.service.getAllAssignments();
+  getAll(@Request() req: any) {
+    return this.service.getAllAssignments(req.user.companyId);
   }
 
   // Any authenticated user can look up their own assignments by their userId

@@ -43,11 +43,21 @@ export class BidderAssignmentsService {
     });
   }
 
-  async getAllAssignments() {
-    return this.repo.find({
-      where: { isActive: true },
-      relations: ['bidder', 'profile'],
-      order: { assignedAt: 'DESC' },
-    });
+  async getAllAssignments(companyId?: string) {
+    if (!companyId) {
+      return this.repo.find({
+        where: { isActive: true },
+        relations: ['bidder', 'profile'],
+        order: { assignedAt: 'DESC' },
+      });
+    }
+    return this.repo
+      .createQueryBuilder('a')
+      .leftJoinAndSelect('a.bidder', 'bidder')
+      .leftJoinAndSelect('a.profile', 'profile')
+      .where('a.isActive = :active', { active: true })
+      .andWhere('bidder.companyId = :companyId', { companyId })
+      .orderBy('a.assignedAt', 'DESC')
+      .getMany();
   }
 }

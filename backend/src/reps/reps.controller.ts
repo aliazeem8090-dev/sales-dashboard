@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, UseGuards, Request } from '@nestjs/common';
 import { RepsService } from './reps.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -8,8 +8,8 @@ export class RepsController {
   constructor(private readonly repsService: RepsService) {}
 
   @Get()
-  findAll() {
-    return this.repsService.findAll();
+  findAll(@Request() req: any) {
+    return this.repsService.findAll(req.user.companyId);
   }
 
   @Get(':id')

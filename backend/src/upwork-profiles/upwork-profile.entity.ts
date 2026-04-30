@@ -20,6 +20,9 @@ export class UpworkProfile {
   @Column({ nullable: true })
   niche: string;
 
+  @Column({ nullable: true })
+  companyId: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

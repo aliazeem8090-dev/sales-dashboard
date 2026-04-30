@@ -26,11 +26,20 @@ export class CoachingInsightsService {
     });
   }
 
-  async findTeamInsights(): Promise<CoachingInsight[]> {
-    return this.insightsRepository.find({
-      relations: ['rep', 'rep.user'],
-      order: { createdAt: 'DESC' },
-    });
+  async findTeamInsights(companyId?: string): Promise<CoachingInsight[]> {
+    if (!companyId) {
+      return this.insightsRepository.find({
+        relations: ['rep', 'rep.user'],
+        order: { createdAt: 'DESC' },
+      });
+    }
+    return this.insightsRepository
+      .createQueryBuilder('insight')
+      .leftJoinAndSelect('insight.rep', 'rep')
+      .leftJoinAndSelect('rep.user', 'user')
+      .where('user.companyId = :companyId', { companyId })
+      .orderBy('insight.createdAt', 'DESC')
+      .getMany();
   }
 
   async markRead(id: string): Promise<CoachingInsight | null> {

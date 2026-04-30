@@ -29,21 +29,30 @@ async function syncProfiles(ds: DataSource): Promise<void> {
   const assignmentRepo = ds.getRepository(BidderAssignment);
 
   const existing = await profileRepo.find();
-  const canonicalTitles = CANONICAL_PROFILES.map(p => p.title);
+
+  // Migration: assign any profiles without a companyId to Company 1
+  for (const p of existing) {
+    if (!p.companyId) {
+      await profileRepo.update(p.id, { companyId: COMPANY_1 });
+    }
+  }
 
   // Do not delete non-canonical profiles — managers may have created custom ones.
 
   for (const canon of CANONICAL_PROFILES) {
     const match = existing.find(p => p.title === canon.title);
     if (!match) {
-      await profileRepo.save(profileRepo.create(canon));
+      await profileRepo.save(profileRepo.create({ ...canon, companyId: COMPANY_1 }));
       console.log(`[AutoSeed] Created profile: ${canon.title}`);
-    } else if (
-      JSON.stringify(match.primarySkills) !== JSON.stringify(canon.primarySkills) ||
-      match.niche !== canon.niche
-    ) {
-      await profileRepo.update(match.id, { primarySkills: canon.primarySkills, niche: canon.niche });
-      console.log(`[AutoSeed] Updated profile: ${canon.title}`);
+    } else {
+      const needsUpdate =
+        JSON.stringify(match.primarySkills) !== JSON.stringify(canon.primarySkills) ||
+        match.niche !== canon.niche ||
+        !match.companyId;
+      if (needsUpdate) {
+        await profileRepo.update(match.id, { primarySkills: canon.primarySkills, niche: canon.niche, companyId: COMPANY_1 });
+        console.log(`[AutoSeed] Updated profile: ${canon.title}`);
+      }
     }
   }
 }

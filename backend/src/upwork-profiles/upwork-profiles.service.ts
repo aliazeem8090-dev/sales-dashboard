@@ -10,8 +10,9 @@ export class UpworkProfilesService {
     private profilesRepository: Repository<UpworkProfile>,
   ) {}
 
-  async findAll(): Promise<UpworkProfile[]> {
-    return this.profilesRepository.find();
+  async findAll(companyId?: string): Promise<UpworkProfile[]> {
+    const where: any = companyId ? { companyId } : {};
+    return this.profilesRepository.find({ where });
   }
 
   async findOne(id: string): Promise<UpworkProfile> {

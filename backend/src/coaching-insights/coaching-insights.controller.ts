@@ -13,8 +13,8 @@ export class CoachingInsightsController {
   // Team view — managers only
   @Get('team')
   @Roles('ADMIN', 'MANAGER')
-  findTeamInsights() {
-    return this.coachingInsightsService.findTeamInsights();
+  findTeamInsights(@Request() req: any) {
+    return this.coachingInsightsService.findTeamInsights(req.user.companyId);
   }
 
   // Per-rep view — reps can only see their own (enforced by caller passing correct repId)
