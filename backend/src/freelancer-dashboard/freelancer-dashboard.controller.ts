@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Request } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -16,11 +16,7 @@ export class FreelancerDashboardController {
 
   @Get('all')
   @Roles('ADMIN', 'MANAGER')
-  getAllAgents() { return this.service.getAllAgentsPerformance(); }
-
-  @Post('targets/:agentId')
-  @Roles('ADMIN', 'MANAGER')
-  setTargets(@Param('agentId') agentId: string, @Body() body: any) {
-    return this.service.setTargets(agentId, body);
+  getAllAgents(@Request() req: any) {
+    return this.service.getAllAgentsPerformance(req.user.companyId);
   }
 }

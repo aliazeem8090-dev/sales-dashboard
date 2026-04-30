@@ -288,68 +288,39 @@ function FreelancerProgressPanel({ agents }: { agents: any[] }) {
         {agents.length === 0 ? (
           <p className="text-[11px] text-slate-600 text-center py-8">No Freelancer agents yet</p>
         ) : agents.map(agent => {
-          const kpis    = agent.kpis || {}
-          const allPass = FL_KPI_KEYS.every(k => kpis[k]?.status === 'pass')
-          const hasFail = FL_KPI_KEYS.some(k => kpis[k]?.status === 'fail')
-          const dotColor = allPass ? '#4ade80' : hasFail ? '#f87171' : '#fbbf24'
-          const critCount = (agent.alerts || []).filter((a: any) => a.level === 'critical').length
+          const convRate = agent.totalLeads > 0 ? Math.round((agent.wonLeads / agent.totalLeads) * 100) : 0
+          const dotColor = convRate >= 20 ? '#4ade80' : convRate >= 5 ? '#fbbf24' : '#64748b'
 
           return (
             <div key={agent.agentId} className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-800/40 last:border-0 hover:bg-slate-800/20 transition-colors">
               <span className="w-2 h-2 rounded-full shrink-0" style={{ background: dotColor }} />
               <span className="flex-1 text-xs text-slate-300 font-medium truncate">{agent.name}</span>
-
-              {/* key metrics */}
               <div className="flex items-center gap-3">
                 <div className="text-center">
-                  <p className="text-[11px] font-mono text-slate-400">{agent.totalProposals ?? 0}</p>
-                  <p className="text-[9px] text-slate-600">Prop</p>
+                  <p className="text-[11px] font-mono text-slate-400">{agent.totalLeads ?? 0}</p>
+                  <p className="text-[9px] text-slate-600">Leads</p>
                 </div>
                 <div className="text-center">
-                  <p className={`text-[11px] font-mono ${(agent.responseRate ?? 0) >= 20 ? 'text-emerald-400' : (agent.responseRate ?? 0) >= 10 ? 'text-amber-400' : 'text-red-400'}`}>
-                    {agent.responseRate ?? 0}%
-                  </p>
-                  <p className="text-[9px] text-slate-600">Reply</p>
+                  <p className="text-[11px] font-mono text-emerald-400">{agent.wonLeads ?? 0}</p>
+                  <p className="text-[9px] text-slate-600">Hired</p>
                 </div>
                 <div className="text-center">
-                  <p className={`text-[11px] font-mono ${(agent.interviewRate ?? 0) >= 30 ? 'text-emerald-400' : (agent.interviewRate ?? 0) >= 15 ? 'text-amber-400' : 'text-red-400'}`}>
-                    {agent.interviewRate ?? 0}%
-                  </p>
-                  <p className="text-[9px] text-slate-600">Intv</p>
+                  <p className="text-[11px] font-mono text-amber-400">{agent.totalApplied ?? 0}</p>
+                  <p className="text-[9px] text-slate-600">Applied</p>
                 </div>
                 <div className="text-center">
-                  <p className={`text-[11px] font-mono ${(agent.hireRate ?? 0) >= 25 ? 'text-emerald-400' : (agent.hireRate ?? 0) >= 12 ? 'text-amber-400' : 'text-red-400'}`}>
-                    {agent.hireRate ?? 0}%
-                  </p>
-                  <p className="text-[9px] text-slate-600">Hire</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-[11px] font-mono text-slate-400">{agent.totalDeals ?? 0}</p>
-                  <p className="text-[9px] text-slate-600">Won</p>
+                  <p className={`text-[11px] font-mono ${convRate >= 20 ? 'text-emerald-400' : convRate >= 10 ? 'text-amber-400' : 'text-slate-400'}`}>{convRate}%</p>
+                  <p className="text-[9px] text-slate-600">Conv.</p>
                 </div>
               </div>
-
-              {/* KPI dots */}
-              <div className="flex items-center gap-0.5">
-                {FL_KPI_KEYS.map(k => <KpiDot key={k} status={kpis[k]?.status || 'fail'} />)}
-              </div>
-
-              {critCount > 0 && (
-                <span className="text-[10px] px-1 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 shrink-0">
-                  {critCount}!
-                </span>
-              )}
             </div>
           )
         })}
       </div>
 
-      {/* footer legend */}
+      {/* footer */}
       <div className="px-4 py-2 flex items-center gap-3" style={{ borderTop: '1px solid rgba(251,191,36,0.06)', background: '#07080d' }}>
-        <span className="text-[10px] text-slate-600">KPIs:</span>
-        {['Prop/day', 'Reply%', 'Intv%', 'Hire%', 'FollowUp%'].map((l, i) => (
-          <span key={i} className="text-[10px] text-slate-600">{l}</span>
-        ))}
+        <span className="text-[10px] text-slate-600">Dot = conversion rate · green ≥20% · amber ≥10%</span>
       </div>
     </div>
   )

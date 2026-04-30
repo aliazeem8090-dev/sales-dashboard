@@ -33,6 +33,9 @@ export class User {
   role: Role;
 
   @Column({ nullable: true })
+  companyId: string;
+
+  @Column({ nullable: true })
   assignedProfileId: string;
 
   @Column({ default: true })

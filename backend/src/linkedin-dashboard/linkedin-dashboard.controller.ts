@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, UseGuards, Request } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -16,7 +16,7 @@ export class LinkedInDashboardController {
 
   @Get('all')
   @Roles('ADMIN', 'MANAGER')
-  getAllAgents() { return this.service.getAllAgentsPerformance(); }
+  getAllAgents(@Request() req: any) { return this.service.getAllAgentsPerformance(req.user.companyId); }
 
   @Post('targets/:agentId')
   @Roles('ADMIN', 'MANAGER')

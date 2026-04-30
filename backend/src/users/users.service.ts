@@ -14,8 +14,8 @@ import { LinkedInAgent } from '../linkedin-agents/linkedin-agent.entity';
 import { LinkedInDailyLog } from '../linkedin-daily-logs/linkedin-daily-log.entity';
 import { LinkedInLead } from '../linkedin-leads/linkedin-lead.entity';
 import { FreelancerAgent } from '../freelancer-agents/freelancer-agent.entity';
-import { FreelancerDailyLog } from '../freelancer-daily-logs/freelancer-daily-log.entity';
-import { FreelancerJob } from '../freelancer-jobs/freelancer-job.entity';
+import { FreelancerLead } from '../freelancer-leads/freelancer-lead.entity';
+import { FreelancerAppliedJob } from '../freelancer-applied-jobs/freelancer-applied-job.entity';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -45,14 +45,15 @@ export class UsersService {
     private linkedInLeadsRepository: Repository<LinkedInLead>,
     @InjectRepository(FreelancerAgent)
     private freelancerAgentsRepository: Repository<FreelancerAgent>,
-    @InjectRepository(FreelancerDailyLog)
-    private freelancerDailyLogsRepository: Repository<FreelancerDailyLog>,
-    @InjectRepository(FreelancerJob)
-    private freelancerJobsRepository: Repository<FreelancerJob>,
+    @InjectRepository(FreelancerLead)
+    private freelancerLeadsRepository: Repository<FreelancerLead>,
+    @InjectRepository(FreelancerAppliedJob)
+    private freelancerAppliedJobsRepository: Repository<FreelancerAppliedJob>,
   ) {}
 
-  async findAll(): Promise<User[]> {
-    return this.usersRepository.find({ relations: ['rep'] });
+  async findAll(companyId?: string): Promise<User[]> {
+    const where: any = companyId ? { companyId } : {};
+    return this.usersRepository.find({ where, relations: ['rep'] });
   }
 
   async findOne(id: string): Promise<User | null> {
@@ -97,7 +98,12 @@ export class UsersService {
         await this.linkedInAgentsRepository.save(this.linkedInAgentsRepository.create({ userId: id }));
       }
       await this.repsRepository.delete({ userId: id });
-      await this.freelancerAgentsRepository.delete({ userId: id });
+      const flAgent = await this.freelancerAgentsRepository.findOne({ where: { userId: id } });
+      if (flAgent) {
+        await this.freelancerLeadsRepository.delete({ agentId: flAgent.id });
+        await this.freelancerAppliedJobsRepository.delete({ agentId: flAgent.id });
+        await this.freelancerAgentsRepository.delete({ userId: id });
+      }
     }
 
     if (newRole === 'FREELANCER_AGENT') {
@@ -139,8 +145,8 @@ export class UsersService {
     // Handle Freelancer Agent cleanup
     const flAgent = await this.freelancerAgentsRepository.findOne({ where: { userId: id } });
     if (flAgent) {
-      await this.freelancerJobsRepository.delete({ agentId: flAgent.id });
-      await this.freelancerDailyLogsRepository.delete({ agentId: flAgent.id });
+      await this.freelancerLeadsRepository.delete({ agentId: flAgent.id });
+      await this.freelancerAppliedJobsRepository.delete({ agentId: flAgent.id });
       await this.freelancerAgentsRepository.delete({ userId: id });
     }
 

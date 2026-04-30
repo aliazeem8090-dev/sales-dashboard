@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { LinkedInAgent } from '../linkedin-agents/linkedin-agent.entity';
 import { LinkedInDailyLog } from '../linkedin-daily-logs/linkedin-daily-log.entity';
 import { LinkedInLead, LeadStatus } from '../linkedin-leads/linkedin-lead.entity';
-import { User } from '../users/user.entity';
+import { User, Role } from '../users/user.entity';
 
 const DEFAULT_TARGETS = {
   dailyConnectionTarget: 35,
@@ -119,8 +119,11 @@ export class LinkedInDashboardService {
     };
   }
 
-  async getAllAgentsPerformance() {
-    const agents = await this.agentRepo.find({ relations: ['user'] });
+  async getAllAgentsPerformance(companyId: string) {
+    const users = await this.userRepo.find({ where: { companyId, role: Role.LINKEDIN_AGENT } });
+    if (users.length === 0) return [];
+    const userIds = users.map(u => u.id);
+    const agents = await this.agentRepo.find({ where: { userId: In(userIds) }, relations: ['user'] });
     return Promise.all(agents.map(async agent => {
       const dash = await this.getAgentDashboard(agent.id);
       return {

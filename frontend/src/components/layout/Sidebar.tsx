@@ -27,8 +27,8 @@ const allNavItems = [
   { href: '/linkedin/leads',     label: 'Lead Pipeline',     icon: UserSearch,      roles: ['LINKEDIN_AGENT'] },
   // Freelancer Agent items
   { href: '/freelancer/dashboard', label: 'My Dashboard',    icon: LayoutDashboard, roles: ['FREELANCER_AGENT'] },
-  { href: '/freelancer/log',       label: 'Daily Log',       icon: BookOpen,        roles: ['FREELANCER_AGENT'] },
-  { href: '/freelancer/jobs',      label: 'Job Pipeline',    icon: Briefcase,       roles: ['FREELANCER_AGENT'] },
+  { href: '/freelancer/leads',     label: 'Leads',           icon: UserSearch,      roles: ['FREELANCER_AGENT'] },
+  { href: '/freelancer/applied',   label: 'Applied Jobs',    icon: Briefcase,       roles: ['FREELANCER_AGENT'] },
   // Manager items for agent teams
   { href: '/manager/freelancer',   label: 'Freelancer Agents', icon: Briefcase,     roles: ['ADMIN', 'MANAGER'] },
 ]

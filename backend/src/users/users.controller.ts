@@ -1,5 +1,5 @@
 // backend/src/users/users.controller.ts
-import { Controller, Get, Post, Body, Param, Put, Patch, Delete, UseGuards, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Patch, Delete, UseGuards, HttpCode, Request } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -12,8 +12,8 @@ export class UsersController {
 
   @Get()
   @Roles('ADMIN', 'MANAGER')
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Request() req: any) {
+    return this.usersService.findAll(req.user.companyId);
   }
 
   @Get(':id')
@@ -23,8 +23,8 @@ export class UsersController {
 
   @Post()
   @Roles('ADMIN', 'MANAGER')
-  create(@Body() createUserDto: any) {
-    return this.usersService.create(createUserDto);
+  create(@Request() req: any, @Body() createUserDto: any) {
+    return this.usersService.create({ ...createUserDto, companyId: req.user.companyId });
   }
 
   @Put(':id')

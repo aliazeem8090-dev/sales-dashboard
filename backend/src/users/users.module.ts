@@ -14,11 +14,11 @@ import { LinkedInAgent } from '../linkedin-agents/linkedin-agent.entity';
 import { LinkedInDailyLog } from '../linkedin-daily-logs/linkedin-daily-log.entity';
 import { LinkedInLead } from '../linkedin-leads/linkedin-lead.entity';
 import { FreelancerAgent } from '../freelancer-agents/freelancer-agent.entity';
-import { FreelancerDailyLog } from '../freelancer-daily-logs/freelancer-daily-log.entity';
-import { FreelancerJob } from '../freelancer-jobs/freelancer-job.entity';
+import { FreelancerLead } from '../freelancer-leads/freelancer-lead.entity';
+import { FreelancerAppliedJob } from '../freelancer-applied-jobs/freelancer-applied-job.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Rep, Proposal, ProposalReview, ProposalStatusHistory, ActivityLog, CoachingInsight, BidderAssignment, LinkedInAgent, LinkedInDailyLog, LinkedInLead, FreelancerAgent, FreelancerDailyLog, FreelancerJob])],
+  imports: [TypeOrmModule.forFeature([User, Rep, Proposal, ProposalReview, ProposalStatusHistory, ActivityLog, CoachingInsight, BidderAssignment, LinkedInAgent, LinkedInDailyLog, LinkedInLead, FreelancerAgent, FreelancerLead, FreelancerAppliedJob])],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],

@@ -1,7 +1,7 @@
 // backend/src/dashboard/dashboard.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository, Between, In } from 'typeorm';
 import { Proposal, ProposalStatus } from '../proposals/proposal.entity';
 import { User, Role } from '../users/user.entity';
 import { ActivityLog } from '../activity-logs/activity-log.entity';
@@ -28,16 +28,32 @@ export class DashboardService {
     return { submittedAt: Between(new Date(Date.now() - days * 24 * 60 * 60 * 1000), new Date()) };
   }
 
-  async getTeamOverview(days?: number) {
-    const df = this.dateFilter(days);
-    const totalProposals = await this.proposalsRepository.count({ where: df });
-    const totalViewed = await this.proposalsRepository.count({ where: { ...df, status: ProposalStatus.VIEWED } });
-    const totalReplied = await this.proposalsRepository.count({ where: { ...df, status: ProposalStatus.REPLIED } });
-    const totalInterviews = await this.proposalsRepository.count({ where: { ...df, status: ProposalStatus.INTERVIEW } });
-    const totalHires = await this.proposalsRepository.count({ where: { ...df, status: ProposalStatus.HIRED } });
+  private async getCompanyRepIds(companyId: string): Promise<string[]> {
+    const users = await this.usersRepository.find({
+      where: { role: Role.REP, companyId },
+      relations: ['rep'],
+    });
+    return users.filter(u => u.rep?.id).map(u => u.rep!.id);
+  }
 
-    const qb = this.proposalsRepository.createQueryBuilder('p');
-    if (days) qb.where('p.submittedAt >= :from', { from: new Date(Date.now() - days * 24 * 60 * 60 * 1000) });
+  async getTeamOverview(companyId: string, days?: number) {
+    const repIds = await this.getCompanyRepIds(companyId);
+    if (repIds.length === 0) {
+      return { totalProposals: 0, totalViewed: 0, totalReplied: 0, totalInterviews: 0, totalHires: 0, totalConnectsUsed: 0, totalEarnings: 0, viewRate: 0, replyRate: 0, interviewRate: 0, hireRate: 0 };
+    }
+
+    const df = this.dateFilter(days);
+    const repFilter = { repId: In(repIds) };
+
+    const totalProposals  = await this.proposalsRepository.count({ where: { ...df, ...repFilter } });
+    const totalViewed     = await this.proposalsRepository.count({ where: { ...df, ...repFilter, status: ProposalStatus.VIEWED } });
+    const totalReplied    = await this.proposalsRepository.count({ where: { ...df, ...repFilter, status: ProposalStatus.REPLIED } });
+    const totalInterviews = await this.proposalsRepository.count({ where: { ...df, ...repFilter, status: ProposalStatus.INTERVIEW } });
+    const totalHires      = await this.proposalsRepository.count({ where: { ...df, ...repFilter, status: ProposalStatus.HIRED } });
+
+    const qb = this.proposalsRepository.createQueryBuilder('p')
+      .where('p.repId IN (:...repIds)', { repIds });
+    if (days) qb.andWhere('p.submittedAt >= :from', { from: new Date(Date.now() - days * 24 * 60 * 60 * 1000) });
 
     const connectsResult = await qb.clone().select('SUM(p.connectsUsed)', 'total').getRawOne();
     const earningsResult = await qb.clone().select('SUM(p.contractValue)', 'total').getRawOne();
@@ -53,10 +69,10 @@ export class DashboardService {
       totalHires,
       totalConnectsUsed,
       totalEarnings,
-      viewRate: totalProposals > 0 ? Math.round((totalViewed / totalProposals) * 10000) / 100 : 0,
-      replyRate: totalProposals > 0 ? Math.round((totalReplied / totalProposals) * 10000) / 100 : 0,
+      viewRate:      totalProposals > 0 ? Math.round((totalViewed     / totalProposals) * 10000) / 100 : 0,
+      replyRate:     totalProposals > 0 ? Math.round((totalReplied    / totalProposals) * 10000) / 100 : 0,
       interviewRate: totalProposals > 0 ? Math.round((totalInterviews / totalProposals) * 10000) / 100 : 0,
-      hireRate: totalProposals > 0 ? Math.round((totalHires / totalProposals) * 10000) / 100 : 0,
+      hireRate:      totalProposals > 0 ? Math.round((totalHires      / totalProposals) * 10000) / 100 : 0,
     };
   }
 
@@ -68,13 +84,13 @@ export class DashboardService {
       order: { submittedAt: 'DESC' },
     });
 
-    const total = proposals.length;
-    const viewed = proposals.filter(p => [ProposalStatus.VIEWED, ProposalStatus.REPLIED, ProposalStatus.INTERVIEW, ProposalStatus.HIRED].includes(p.status)).length;
-    const replied = proposals.filter(p => [ProposalStatus.REPLIED, ProposalStatus.INTERVIEW, ProposalStatus.HIRED].includes(p.status)).length;
+    const total      = proposals.length;
+    const viewed     = proposals.filter(p => [ProposalStatus.VIEWED, ProposalStatus.REPLIED, ProposalStatus.INTERVIEW, ProposalStatus.HIRED].includes(p.status)).length;
+    const replied    = proposals.filter(p => [ProposalStatus.REPLIED, ProposalStatus.INTERVIEW, ProposalStatus.HIRED].includes(p.status)).length;
     const interviews = proposals.filter(p => [ProposalStatus.INTERVIEW, ProposalStatus.HIRED].includes(p.status)).length;
-    const hires = proposals.filter(p => p.status === ProposalStatus.HIRED).length;
-    const connectsUsed = proposals.reduce((sum, p) => sum + (p.connectsUsed || 0), 0);
-    const totalEarnings = proposals.reduce((sum, p) => sum + (p.contractValue || 0), 0);
+    const hires      = proposals.filter(p => p.status === ProposalStatus.HIRED).length;
+    const connectsUsed   = proposals.reduce((sum, p) => sum + (p.connectsUsed || 0), 0);
+    const totalEarnings  = proposals.reduce((sum, p) => sum + (p.contractValue || 0), 0);
 
     const rep = await this.repsRepository.findOne({ where: { id: repId } });
 
@@ -101,31 +117,28 @@ export class DashboardService {
     return {
       repId,
       totalProposals: total,
-      viewed,
-      replied,
-      interviews,
-      hires,
+      viewed, replied, interviews, hires,
       connectsUsed,
       currentConnects: rep?.currentConnects || 0,
       targets: rep?.targets || {},
-      viewRate: total > 0 ? Math.round((viewed / total) * 10000) / 100 : 0,
-      replyRate: total > 0 ? Math.round((replied / total) * 10000) / 100 : 0,
+      viewRate:      total > 0 ? Math.round((viewed     / total) * 10000) / 100 : 0,
+      replyRate:     total > 0 ? Math.round((replied    / total) * 10000) / 100 : 0,
       interviewRate: total > 0 ? Math.round((interviews / total) * 10000) / 100 : 0,
-      hireRate: total > 0 ? Math.round((hires / total) * 10000) / 100 : 0,
+      hireRate:      total > 0 ? Math.round((hires      / total) * 10000) / 100 : 0,
       connectEfficiency: connectsUsed > 0 ? Math.round((replied / connectsUsed) * 100) / 100 : 0,
       consistencyScore,
-      totalEarnings: Math.round(totalEarnings * 100) / 100,
-      earningsThisMonth: Math.round(earningsThisMonth * 100) / 100,
+      totalEarnings:      Math.round(totalEarnings * 100) / 100,
+      earningsThisMonth:  Math.round(earningsThisMonth * 100) / 100,
       lastActivityDate,
-      lastProposalDate: proposals[0]?.submittedAt || null,
+      lastProposalDate:   proposals[0]?.submittedAt || null,
       proposalsThisWeek,
-      recentProposals: proposals.slice(0, 5),
+      recentProposals:    proposals.slice(0, 5),
     };
   }
 
-  async getAllRepsPerformance(days?: number) {
+  async getAllRepsPerformance(companyId: string, days?: number) {
     const users = await this.usersRepository.find({
-      where: { role: Role.REP },
+      where: { role: Role.REP, companyId },
       relations: ['rep'],
     });
 
@@ -140,8 +153,14 @@ export class DashboardService {
     );
   }
 
-  async getNicheStats() {
-    const proposals = await this.proposalsRepository.find({ relations: ['profileUsed'] });
+  async getNicheStats(companyId: string) {
+    const repIds = await this.getCompanyRepIds(companyId);
+    if (repIds.length === 0) return [];
+
+    const proposals = await this.proposalsRepository.find({
+      where: { repId: In(repIds) },
+      relations: ['profileUsed'],
+    });
     const niches: Record<string, { sent: number; hired: number }> = {};
     for (const p of proposals) {
       const niche = (p.profileUsed as any)?.niche || 'General';
@@ -157,10 +176,13 @@ export class DashboardService {
     }));
   }
 
-  async getTeamTrends(days: number = 30) {
+  async getTeamTrends(companyId: string, days: number = 30) {
+    const repIds = await this.getCompanyRepIds(companyId);
+    if (repIds.length === 0) return [];
+
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     const proposals = await this.proposalsRepository.find({
-      where: { submittedAt: Between(startDate, new Date()) },
+      where: { repId: In(repIds), submittedAt: Between(startDate, new Date()) },
       order: { submittedAt: 'ASC' },
     });
 
@@ -173,48 +195,53 @@ export class DashboardService {
     return Object.entries(byDate).map(([date, count]) => ({ date, proposals: count }));
   }
 
-  async getDealDetail() {
+  async getDealDetail(companyId: string) {
+    const repIds = await this.getCompanyRepIds(companyId);
+    if (repIds.length === 0) return [];
+
     const deals = await this.proposalsRepository.find({
-      where: { status: ProposalStatus.HIRED },
+      where: { repId: In(repIds), status: ProposalStatus.HIRED },
       relations: ['rep', 'rep.user', 'profileUsed', 'job'],
       order: { hiredAt: 'DESC' },
     });
     return deals.map(d => ({
       id: d.id,
       repId: d.repId,
-      repName: (d.rep as any)?.user?.name || d.repId,
-      profileNiche: (d.profileUsed as any)?.niche || '—',
-      profileTitle: (d.profileUsed as any)?.title || '—',
-      jobTitle: (d.job as any)?.title || '—',
+      repName:       (d.rep as any)?.user?.name || d.repId,
+      profileNiche:  (d.profileUsed as any)?.niche || '—',
+      profileTitle:  (d.profileUsed as any)?.title || '—',
+      jobTitle:      (d.job as any)?.title || '—',
       contractValue: d.contractValue || null,
-      hiredAt: d.hiredAt,
+      hiredAt:       d.hiredAt,
     }));
   }
 
-  async getWeeklySummary() {
-    const now = new Date();
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  async getWeeklySummary(companyId: string) {
+    const repIds = await this.getCompanyRepIds(companyId);
+    if (repIds.length === 0) return { thisWeek: 0, lastWeek: 0, change: 0 };
+
+    const now            = new Date();
+    const sevenDaysAgo   = new Date(now.getTime() - 7  * 24 * 60 * 60 * 1000);
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
     const thisWeek = await this.proposalsRepository.count({
-      where: { submittedAt: Between(sevenDaysAgo, now) },
+      where: { repId: In(repIds), submittedAt: Between(sevenDaysAgo, now) },
     });
     const lastWeek = await this.proposalsRepository.count({
-      where: { submittedAt: Between(fourteenDaysAgo, sevenDaysAgo) },
+      where: { repId: In(repIds), submittedAt: Between(fourteenDaysAgo, sevenDaysAgo) },
     });
 
     return { thisWeek, lastWeek, change: thisWeek - lastWeek };
   }
 
-  async getLeaderboard(days?: number) {
-    const reps = await this.getAllRepsPerformance(days);
+  async getLeaderboard(companyId: string, days?: number) {
+    const reps = await this.getAllRepsPerformance(companyId, days);
     return reps
       .sort((a, b) => (b.hireRate + b.replyRate * 0.3) - (a.hireRate + a.replyRate * 0.3))
       .map((rep, index) => ({ rank: index + 1, ...rep }));
   }
 
   async getRepSelfDashboard(userId: string) {
-    // Find the rep record for the given userId
     const user = await this.usersRepository.findOne({ where: { id: userId }, relations: ['rep'] });
     const rep = user?.rep;
     if (!rep) return null;
@@ -226,13 +253,13 @@ export class DashboardService {
       order: { submittedAt: 'DESC' },
     });
 
-    const total = proposals.length;
-    const viewed = proposals.filter(p => ['VIEWED', 'REPLIED', 'INTERVIEW', 'HIRED'].includes(p.status)).length;
-    const replied = proposals.filter(p => ['REPLIED', 'INTERVIEW', 'HIRED'].includes(p.status)).length;
+    const total      = proposals.length;
+    const viewed     = proposals.filter(p => ['VIEWED', 'REPLIED', 'INTERVIEW', 'HIRED'].includes(p.status)).length;
+    const replied    = proposals.filter(p => ['REPLIED', 'INTERVIEW', 'HIRED'].includes(p.status)).length;
     const interviews = proposals.filter(p => ['INTERVIEW', 'HIRED'].includes(p.status)).length;
-    const hires = proposals.filter(p => p.status === 'HIRED').length;
-    const lost = proposals.filter(p => p.status === 'LOST' || p.status === 'REJECTED').length;
-    const connectsUsed = proposals.reduce((sum, p) => sum + (p.connectsUsed || 0), 0);
+    const hires      = proposals.filter(p => p.status === 'HIRED').length;
+    const lost       = proposals.filter(p => p.status === 'LOST' || p.status === 'REJECTED').length;
+    const connectsUsed  = proposals.reduce((sum, p) => sum + (p.connectsUsed || 0), 0);
     const totalEarnings = proposals.reduce((sum, p) => sum + (p.contractValue || 0), 0);
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -259,35 +286,30 @@ export class DashboardService {
     });
 
     return {
-      repId,
-      userId,
-      name: user?.name,
+      repId, userId,
+      name:            user?.name,
       currentConnects: rep.currentConnects || 0,
-      weeklyGoals: rep.weeklyGoals,
-      targets: rep.targets,
-      totalProposals: total,
-      viewed,
-      replied,
-      interviews,
-      hires,
-      lost,
+      weeklyGoals:     rep.weeklyGoals,
+      targets:         rep.targets,
+      totalProposals:  total,
+      viewed, replied, interviews, hires, lost,
       connectsUsed,
-      totalEarnings: Math.round(totalEarnings * 100) / 100,
-      viewRate: total > 0 ? Math.round((viewed / total) * 10000) / 100 : 0,
-      replyRate: total > 0 ? Math.round((replied / total) * 10000) / 100 : 0,
+      totalEarnings:      Math.round(totalEarnings * 100) / 100,
+      viewRate:      total > 0 ? Math.round((viewed     / total) * 10000) / 100 : 0,
+      replyRate:     total > 0 ? Math.round((replied    / total) * 10000) / 100 : 0,
       interviewRate: total > 0 ? Math.round((interviews / total) * 10000) / 100 : 0,
-      hireRate: total > 0 ? Math.round((hires / total) * 10000) / 100 : 0,
+      hireRate:      total > 0 ? Math.round((hires      / total) * 10000) / 100 : 0,
       consistencyScore,
-      lastActivityDate: lastLog?.date || null,
+      lastActivityDate:   lastLog?.date || null,
       proposalsThisWeek,
-      earningsThisMonth: Math.round(earningsThisMonth * 100) / 100,
-      assignedProfiles: assignments.map(a => ({ id: a.profileId, title: a.profile?.title, niche: a.profile?.niche })),
-      recentProposals: proposals.slice(0, 5),
+      earningsThisMonth:  Math.round(earningsThisMonth * 100) / 100,
+      assignedProfiles:   assignments.map(a => ({ id: a.profileId, title: a.profile?.title, niche: a.profile?.niche })),
+      recentProposals:    proposals.slice(0, 5),
     };
   }
 
   async getBidderReport(repId: string) {
-    const rep = await this.repsRepository.findOne({ where: { id: repId } });
+    const rep  = await this.repsRepository.findOne({ where: { id: repId } });
     const user = rep ? await this.usersRepository.findOne({ where: { id: rep.userId } }) : null;
 
     const assignments = await this.assignmentsRepository.find({
@@ -300,15 +322,15 @@ export class DashboardService {
       order: { submittedAt: 'DESC' },
     });
 
-    const total = proposals.length;
-    const viewed = proposals.filter(p => [ProposalStatus.VIEWED, ProposalStatus.REPLIED, ProposalStatus.INTERVIEW, ProposalStatus.HIRED].includes(p.status)).length;
-    const replied = proposals.filter(p => [ProposalStatus.REPLIED, ProposalStatus.INTERVIEW, ProposalStatus.HIRED].includes(p.status)).length;
+    const total      = proposals.length;
+    const viewed     = proposals.filter(p => [ProposalStatus.VIEWED, ProposalStatus.REPLIED, ProposalStatus.INTERVIEW, ProposalStatus.HIRED].includes(p.status)).length;
+    const replied    = proposals.filter(p => [ProposalStatus.REPLIED, ProposalStatus.INTERVIEW, ProposalStatus.HIRED].includes(p.status)).length;
     const interviews = proposals.filter(p => [ProposalStatus.INTERVIEW, ProposalStatus.HIRED].includes(p.status)).length;
-    const hires = proposals.filter(p => p.status === ProposalStatus.HIRED).length;
+    const hires      = proposals.filter(p => p.status === ProposalStatus.HIRED).length;
     const connectsUsed = proposals.reduce((sum, p) => sum + (p.connectsUsed || 0), 0);
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const activityLogs = await this.activityLogsRepository.find({
+    const activityLogs  = await this.activityLogsRepository.find({
       where: { repId, date: Between(thirtyDaysAgo, new Date()) },
       order: { date: 'DESC' },
     });
@@ -318,14 +340,13 @@ export class DashboardService {
       : 0;
     const consistencyScore = Math.min(100, Math.round((activityLogs.length / 20) * 100));
 
-    // Per-profile breakdown
     const profileBreakdown = assignments.map(a => {
       const profileProposals = proposals.filter(p => p.profileUsedId === a.profileId);
       const ph = profileProposals.filter(p => p.status === ProposalStatus.HIRED).length;
       return {
-        profileId: a.profileId,
-        profileTitle: a.profile?.title || 'Unknown',
-        niche: a.profile?.niche || '',
+        profileId:     a.profileId,
+        profileTitle:  a.profile?.title || 'Unknown',
+        niche:         a.profile?.niche || '',
         proposalCount: profileProposals.length,
         hires: ph,
         hireRate: profileProposals.length > 0 ? Math.round((ph / profileProposals.length) * 10000) / 100 : 0,
@@ -334,22 +355,18 @@ export class DashboardService {
 
     return {
       bidder: {
-        id: user?.id,
-        name: user?.name,
-        email: user?.email,
-        repId,
+        id: user?.id, name: user?.name, email: user?.email, repId,
         currentConnects: rep?.currentConnects || 0,
         weeklyGoals: rep?.weeklyGoals,
         targets: rep?.targets,
       },
       assignedProfiles: assignments.map(a => ({ id: a.profileId, title: a.profile?.title, niche: a.profile?.niche })),
       stats: {
-        totalProposals: total,
-        viewed, replied, interviews, hires, connectsUsed,
-        viewRate: total > 0 ? Math.round((viewed / total) * 10000) / 100 : 0,
-        replyRate: total > 0 ? Math.round((replied / total) * 10000) / 100 : 0,
+        totalProposals: total, viewed, replied, interviews, hires, connectsUsed,
+        viewRate:      total > 0 ? Math.round((viewed     / total) * 10000) / 100 : 0,
+        replyRate:     total > 0 ? Math.round((replied    / total) * 10000) / 100 : 0,
         interviewRate: total > 0 ? Math.round((interviews / total) * 10000) / 100 : 0,
-        hireRate: total > 0 ? Math.round((hires / total) * 10000) / 100 : 0,
+        hireRate:      total > 0 ? Math.round((hires      / total) * 10000) / 100 : 0,
       },
       activity: { totalLogsAllTime: totalLogs, logsLast30Days: activityLogs.length, avgProposalsPerDay, consistencyScore },
       profileBreakdown,

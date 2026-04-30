@@ -10,53 +10,51 @@ import { Roles } from '../common/decorators/roles.decorator';
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
-  // Rep self-service — returns only the calling rep's own data
   @Get('rep-self')
   getRepSelfDashboard(@Request() req: any) {
     return this.dashboardService.getRepSelfDashboard(req.user.userId);
   }
 
-  // Manager/Admin only endpoints
   @Get('team-overview')
   @Roles('ADMIN', 'MANAGER')
-  getTeamOverview(@Query('days') days?: string) {
-    return this.dashboardService.getTeamOverview(days ? parseInt(days) : undefined);
+  getTeamOverview(@Request() req: any, @Query('days') days?: string) {
+    return this.dashboardService.getTeamOverview(req.user.companyId, days ? parseInt(days) : undefined);
   }
 
   @Get('reps-performance')
   @Roles('ADMIN', 'MANAGER')
-  getAllRepsPerformance() {
-    return this.dashboardService.getAllRepsPerformance();
+  getAllRepsPerformance(@Request() req: any) {
+    return this.dashboardService.getAllRepsPerformance(req.user.companyId);
   }
 
   @Get('leaderboard')
   @Roles('ADMIN', 'MANAGER')
-  getLeaderboard(@Query('days') days?: string) {
-    return this.dashboardService.getLeaderboard(days ? parseInt(days) : undefined);
+  getLeaderboard(@Request() req: any, @Query('days') days?: string) {
+    return this.dashboardService.getLeaderboard(req.user.companyId, days ? parseInt(days) : undefined);
   }
 
   @Get('team-trends')
   @Roles('ADMIN', 'MANAGER')
-  getTeamTrends(@Query('days') days?: string) {
-    return this.dashboardService.getTeamTrends(days ? parseInt(days) : 30);
+  getTeamTrends(@Request() req: any, @Query('days') days?: string) {
+    return this.dashboardService.getTeamTrends(req.user.companyId, days ? parseInt(days) : 30);
   }
 
   @Get('weekly-summary')
   @Roles('ADMIN', 'MANAGER')
-  getWeeklySummary() {
-    return this.dashboardService.getWeeklySummary();
+  getWeeklySummary(@Request() req: any) {
+    return this.dashboardService.getWeeklySummary(req.user.companyId);
   }
 
   @Get('deals-detail')
   @Roles('ADMIN', 'MANAGER')
-  getDealDetail() {
-    return this.dashboardService.getDealDetail();
+  getDealDetail(@Request() req: any) {
+    return this.dashboardService.getDealDetail(req.user.companyId);
   }
 
   @Get('niche-stats')
   @Roles('ADMIN', 'MANAGER')
-  getNicheStats() {
-    return this.dashboardService.getNicheStats();
+  getNicheStats(@Request() req: any) {
+    return this.dashboardService.getNicheStats(req.user.companyId);
   }
 
   @Get('report/:repId')
@@ -65,7 +63,6 @@ export class DashboardController {
     return this.dashboardService.getBidderReport(repId);
   }
 
-  // Rep performance by repId — manager only
   @Get('rep/:repId')
   @Roles('ADMIN', 'MANAGER')
   getRepPerformance(@Param('repId') repId: string) {
