@@ -119,8 +119,7 @@ export async function autoSeedIfEmpty(): Promise<void> {
   const userRepo = ds.getRepository(User);
 
   // Migration: assign any users without a companyId to Company 1
-  const migrated = await userRepo
-    .createQueryBuilder()
+  const migrated = await ds.createQueryBuilder()
     .update(User)
     .set({ companyId: COMPANY_1 })
     .where('companyId IS NULL')
