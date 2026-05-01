@@ -99,7 +99,7 @@ export class ProposalsService {
           this.jobNotificationsService.create({
             jobUrl: job.upworkJobUrl,
             jobTitle: job.title || 'Untitled Job',
-            repName: context.repEmail || 'Company 1 Rep',
+            repName: context?.repEmail || 'Company 1 Rep',
             sourceCompanyId: 'company-1',
             targetCompanyId: 'company-2',
           }).catch(() => {});
