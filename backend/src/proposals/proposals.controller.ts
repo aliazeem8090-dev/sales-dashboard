@@ -34,11 +34,11 @@ export class ProposalsController {
       return this.proposalsService.findAll({ status, companyId });
     }
 
-    // Managers and admins can see all or filter by rep
+    // Managers and admins can see all or filter by rep — always scoped to their own company
     if (repId) {
       return this.proposalsService.findByRepWithFilters(repId, { status, startDate: start, endDate: end, profileId });
     }
-    return this.proposalsService.findAll({ status });
+    return this.proposalsService.findAll({ status, companyId: req.user.companyId || 'company-1' });
   }
 
   @Get('status-history/:proposalId')

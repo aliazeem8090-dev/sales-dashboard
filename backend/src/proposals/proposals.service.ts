@@ -91,7 +91,9 @@ export class ProposalsService {
     );
 
     // Cross-company job lead notification: Company 1 → Company 2
-    if (context?.companyId === 'company-1' && saved.jobId) {
+    // Treat null companyId as company-1 (legacy JWTs before the migration fix)
+    const repCompanyId = context?.companyId || 'company-1';
+    if (repCompanyId === 'company-1' && saved.jobId) {
       this.jobRepository.findOne({ where: { id: saved.jobId } }).then(job => {
         if (job?.upworkJobUrl) {
           this.jobNotificationsService.create({

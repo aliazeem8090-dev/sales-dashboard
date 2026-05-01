@@ -11,12 +11,16 @@ export class RepsService {
   ) {}
 
   async findAll(companyId?: string): Promise<Rep[]> {
-    if (!companyId) return this.repsRepository.find({ relations: ['user'] });
-    return this.repsRepository
+    const company = companyId || 'company-1';
+    const qb = this.repsRepository
       .createQueryBuilder('rep')
-      .leftJoinAndSelect('rep.user', 'user')
-      .where('user.companyId = :companyId', { companyId })
-      .getMany();
+      .leftJoinAndSelect('rep.user', 'user');
+    if (company === 'company-1') {
+      qb.where('(user.companyId = :company OR user.companyId IS NULL)', { company });
+    } else {
+      qb.where('user.companyId = :company', { company });
+    }
+    return qb.getMany();
   }
 
   async findOne(id: string): Promise<Rep> {
