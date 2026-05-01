@@ -141,14 +141,24 @@ export async function autoSeedIfEmpty(): Promise<void> {
 
   const userRepo = ds.getRepository(User);
 
-  // Migration: assign any users without a companyId to Company 1
+  // Migration: assign null-companyId users to Company 1, but never touch @gsd.com (Company 2) emails
   const migrated = await ds.createQueryBuilder()
     .update(User)
     .set({ companyId: COMPANY_1 })
-    .where('companyId IS NULL')
+    .where('companyId IS NULL AND email NOT LIKE :pattern', { pattern: '%@gsd.com' })
     .execute();
   if (migrated.affected && migrated.affected > 0) {
     console.log(`[AutoSeed] Migrated ${migrated.affected} user(s) to ${COMPANY_1}`);
+  }
+
+  // Repair: if any @gsd.com users were incorrectly assigned to company-1 by an older migration, fix them
+  const repaired = await ds.createQueryBuilder()
+    .update(User)
+    .set({ companyId: COMPANY_2 })
+    .where('email LIKE :pattern AND companyId != :c2', { pattern: '%@gsd.com', c2: COMPANY_2 })
+    .execute();
+  if (repaired.affected && repaired.affected > 0) {
+    console.log(`[AutoSeed] Repaired ${repaired.affected} Company 2 user(s) back to ${COMPANY_2}`);
   }
 
   const existingCount = await userRepo.count();
