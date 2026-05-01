@@ -38,7 +38,7 @@ function ProposalCard({ proposal }: { proposal: any }) {
   const statusColor = STATUS_COLORS[proposal.status] || STATUS_COLORS.SENT
 
   return (
-    <div className="rounded-xl overflow-hidden transition-all" style={{ background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)' }}>
+    <div className="rounded-xl overflow-hidden transition-all" style={{ background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)' }}>
       {/* Card header — always visible */}
       <div className="px-5 py-4">
         <div className="flex items-start justify-between gap-3">
@@ -65,7 +65,7 @@ function ProposalCard({ proposal }: { proposal: any }) {
             <h3 className="text-sm font-medium text-slate-200 truncate">{job.title || 'Untitled Job'}</h3>
             <div className="flex items-center gap-3 mt-1">
               {job.upworkJobUrl && (
-                <a href={job.upworkJobUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[10px] text-slate-600 hover:text-cyan-400 transition-colors">
+                <a href={job.upworkJobUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[10px] text-slate-600 hover:text-violet-400 transition-colors">
                   <ExternalLink size={9} />
                   View job
                 </a>
@@ -178,8 +178,8 @@ export default function RepReviewDetailPage() {
   const STATUSES = ['SENT', 'VIEWED', 'REPLIED', 'INTERVIEW', 'HIRED', 'LOST']
   const filtered = statusFilter ? proposals.filter(p => p.status === statusFilter) : proposals
 
-  const cardStyle = { background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)' }
-  const bgDark = { background: '#07080d' }
+  const cardStyle = { background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)' }
+  const bgDark = { background: 'var(--ink)' }
 
   // Summary stats
   const total = proposals.length
@@ -189,7 +189,7 @@ export default function RepReviewDetailPage() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 shrink-0" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', ...bgDark }}>
+        <div className="px-6 py-4 shrink-0" style={{ borderBottom: '1px solid rgba(124,111,255,0.08)', ...bgDark }}>
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
               <Link href="/manager/reviews" className="text-slate-600 hover:text-slate-300 transition-colors">
@@ -207,7 +207,7 @@ export default function RepReviewDetailPage() {
                   onClick={() => handleFilter(f.days)}
                   className={`px-3 py-1 text-[10px] font-semibold rounded-md transition-all ${
                     days === f.days
-                      ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                      ? 'bg-violet-500/20 text-violet-400 border border-violet-500/30'
                       : 'text-slate-600 hover:text-slate-400 border border-transparent'
                   }`}
                 >
@@ -225,7 +225,7 @@ export default function RepReviewDetailPage() {
                 onClick={() => setStatusFilter(s)}
                 className={`px-3 py-1 text-[10px] font-semibold uppercase tracking-wide rounded-lg border transition-colors ${
                   statusFilter === s
-                    ? 'bg-cyan-500/20 border-cyan-500/30 text-cyan-400'
+                    ? 'bg-violet-500/20 border-violet-500/30 text-violet-400'
                     : 'border-slate-800 text-slate-600 hover:border-slate-600 hover:text-slate-400'
                 }`}
               >
@@ -240,9 +240,9 @@ export default function RepReviewDetailPage() {
           {loading ? (
             <div className="flex items-center justify-center py-24">
               <div className="flex items-center gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" style={{ animationDelay: '150ms' }} />
-                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" style={{ animationDelay: '300ms' }} />
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" style={{ animationDelay: '150ms' }} />
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           ) : filtered.length === 0 ? (

@@ -6,7 +6,7 @@ import { api } from '@/lib/api'
 import { getStoredUser } from '@/lib/auth'
 import { Plus, X, ExternalLink, AlertTriangle, Clock, RefreshCw, ChevronDown } from 'lucide-react'
 
-const inputClass = "w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-cyan-500/50 transition-colors"
+const inputClass = "w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-violet-500/50 transition-colors"
 const inputStyle = { background: '#0d0e14', border: '1px solid rgba(100,116,139,0.2)' }
 
 const STATUS_ORDER = ['FOUND', 'APPLIED', 'VIEWED', 'REPLIED', 'INTERVIEW', 'HIRED', 'LOST'] as const
@@ -14,7 +14,7 @@ type JobStatus = typeof STATUS_ORDER[number]
 
 const STATUS_COLORS: Record<JobStatus, string> = {
   FOUND:     '#64748b',
-  APPLIED:   '#67e8f9',
+  APPLIED:   '#a78bfa',
   VIEWED:    '#a5b4fc',
   REPLIED:   '#fbbf24',
   INTERVIEW: '#fb923c',
@@ -144,7 +144,7 @@ export default function FreelancerJobsPage() {
   return (
     <div className="flex-1 relative z-10">
       {/* Header */}
-      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', background: '#07080d' }}>
+      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(124,111,255,0.08)', background: 'var(--ink)' }}>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold text-slate-200">Job Pipeline</h1>
@@ -153,7 +153,7 @@ export default function FreelancerJobsPage() {
           <button
             onClick={() => setShowForm(v => !v)}
             className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
-            style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.25)', color: '#67e8f9' }}
+            style={{ background: 'rgba(124,111,255,0.1)', border: '1px solid rgba(124,111,255,0.25)', color: '#a78bfa' }}
           >
             {showForm ? <X size={13} /> : <Plus size={13} />}
             {showForm ? 'Cancel' : 'Add Job'}
@@ -178,8 +178,8 @@ export default function FreelancerJobsPage() {
 
         {/* Add form */}
         {showForm && (
-          <form onSubmit={handleCreate} className="rounded-xl p-5 space-y-3" style={{ background: '#0a0b10', border: '1px solid rgba(6,182,212,0.15)' }}>
-            <p className="text-[10px] font-semibold text-cyan-400 uppercase tracking-widest">New Job</p>
+          <form onSubmit={handleCreate} className="rounded-xl p-5 space-y-3" style={{ background: 'var(--ink2)', border: '1px solid rgba(124,111,255,0.15)' }}>
+            <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-widest">New Job</p>
             <div>
               <label className="block text-[10px] text-slate-500 mb-1 uppercase tracking-wide">Job Title *</label>
               <input value={jobTitle} onChange={e => setJobTitle(e.target.value)} placeholder="e.g. React Developer for E-commerce App" className={inputClass} style={inputStyle} required />
@@ -204,7 +204,7 @@ export default function FreelancerJobsPage() {
             </div>
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => setShowForm(false)} className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-300">Cancel</button>
-              <button type="submit" disabled={submitting || !jobTitle.trim()} className="px-4 py-1.5 text-xs font-semibold rounded-lg disabled:opacity-50 transition-colors" style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)', color: '#67e8f9' }}>
+              <button type="submit" disabled={submitting || !jobTitle.trim()} className="px-4 py-1.5 text-xs font-semibold rounded-lg disabled:opacity-50 transition-colors" style={{ background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)', color: '#a78bfa' }}>
                 {submitting ? 'Adding…' : 'Add Job'}
               </button>
             </div>
@@ -219,9 +219,9 @@ export default function FreelancerJobsPage() {
               onClick={() => setFilterStatus(s)}
               className="px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors"
               style={{
-                background: filterStatus === s ? (s === 'ALL' ? 'rgba(6,182,212,0.15)' : `${STATUS_COLORS[s as JobStatus]}18`) : 'transparent',
-                border: `1px solid ${filterStatus === s ? (s === 'ALL' ? 'rgba(6,182,212,0.3)' : `${STATUS_COLORS[s as JobStatus]}40`) : 'rgba(100,116,139,0.15)'}`,
-                color: filterStatus === s ? (s === 'ALL' ? '#67e8f9' : STATUS_COLORS[s as JobStatus]) : '#64748b',
+                background: filterStatus === s ? (s === 'ALL' ? 'rgba(124,111,255,0.15)' : `${STATUS_COLORS[s as JobStatus]}18`) : 'transparent',
+                border: `1px solid ${filterStatus === s ? (s === 'ALL' ? 'rgba(124,111,255,0.3)' : `${STATUS_COLORS[s as JobStatus]}40`) : 'rgba(100,116,139,0.15)'}`,
+                color: filterStatus === s ? (s === 'ALL' ? '#a78bfa' : STATUS_COLORS[s as JobStatus]) : '#64748b',
               }}
             >
               {s === 'ALL' ? 'All' : STATUS_LABELS[s as JobStatus]}
@@ -236,7 +236,7 @@ export default function FreelancerJobsPage() {
         {loading ? (
           <p className="text-slate-500 text-xs py-8">Loading jobs…</p>
         ) : filtered.length === 0 ? (
-          <div className="rounded-xl border border-slate-800/60 p-10 text-center" style={{ background: '#0a0b10' }}>
+          <div className="rounded-xl border border-slate-800/60 p-10 text-center" style={{ background: 'var(--ink2)' }}>
             <p className="text-slate-500 text-sm">{filterStatus === 'ALL' ? 'No jobs yet.' : `No jobs with status "${STATUS_LABELS[filterStatus as JobStatus]}".`}</p>
             {filterStatus === 'ALL' && <p className="text-xs text-slate-600 mt-1">Click "Add Job" to track your first opportunity.</p>}
           </div>
@@ -252,7 +252,7 @@ export default function FreelancerJobsPage() {
                 <div
                   key={job.id}
                   className="rounded-xl"
-                  style={{ background: '#0a0b10', border: job.needsFollowUp ? '1px solid rgba(251,191,36,0.25)' : '1px solid rgba(100,116,139,0.1)' }}
+                  style={{ background: 'var(--ink2)', border: job.needsFollowUp ? '1px solid rgba(251,191,36,0.25)' : '1px solid rgba(100,116,139,0.1)' }}
                 >
                   <div className="flex items-center gap-3 px-4 py-3">
                     {/* Status dot */}
@@ -281,7 +281,7 @@ export default function FreelancerJobsPage() {
                     {/* Actions */}
                     <div className="flex items-center gap-1.5 shrink-0">
                       {job.jobUrl && (
-                        <a href={job.jobUrl} target="_blank" rel="noreferrer" className="p-1.5 text-slate-600 hover:text-cyan-400 transition-colors">
+                        <a href={job.jobUrl} target="_blank" rel="noreferrer" className="p-1.5 text-slate-600 hover:text-violet-400 transition-colors">
                           <ExternalLink size={13} />
                         </a>
                       )}

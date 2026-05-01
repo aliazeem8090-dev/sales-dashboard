@@ -73,7 +73,7 @@ export default function LogActivityPage() {
   }
 
   const inputClass = "w-full px-3 py-2.5 rounded-lg text-sm text-slate-200 focus:outline-none transition-colors"
-  const inputStyle = { background: '#07080d', border: '1px solid rgba(100,116,139,0.2)' }
+  const inputStyle = { background: 'var(--ink)', border: '1px solid rgba(100,116,139,0.2)' }
   const labelClass = "block text-[10px] font-medium text-slate-500 mb-1.5 uppercase tracking-wider"
 
   return (
@@ -104,7 +104,7 @@ export default function LogActivityPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="rounded-xl p-6 space-y-5" style={{ background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)' }}>
+        <form onSubmit={handleSubmit} className="rounded-xl p-6 space-y-5" style={{ background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)' }}>
 
           {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && reps.length > 0 && (
             <div>
@@ -193,7 +193,7 @@ export default function LogActivityPage() {
             type="submit"
             disabled={loading}
             className="w-full py-2.5 px-4 text-sm font-semibold rounded-lg transition-all disabled:opacity-50"
-            style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)', color: '#67e8f9' }}
+            style={{ background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)', color: '#a78bfa' }}
           >
             {loading ? 'Saving…' : 'Save Activity Log'}
           </button>

@@ -6,7 +6,7 @@ import { getStoredUser } from '@/lib/auth'
 import { KanbanBoard } from '@/components/board/KanbanBoard'
 import {
   Plus, Kanban, Users, ChevronDown, Search, Calendar,
-  X, ArrowLeft, ArrowRight, Zap, ChevronLeft, ExternalLink,
+  X, ArrowLeft, ArrowRight, Zap, ChevronLeft, ExternalLink, Building2,
 } from 'lucide-react'
 
 // ─── Mini Calendar ────────────────────────────────────────────────────────────
@@ -47,7 +47,7 @@ function MiniCalendar({
   for (let d = 1; d <= daysInMonth; d++) cells.push(d)
 
   return (
-    <div className="absolute top-full mt-2 right-0 z-50 rounded-xl p-4 w-72 shadow-2xl" style={{ background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)', boxShadow: '0 16px 40px rgba(0,0,0,0.6)' }}>
+    <div className="absolute top-full mt-2 right-0 z-50 rounded-xl p-4 w-72 shadow-2xl" style={{ background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)', boxShadow: '0 16px 40px rgba(0,0,0,0.6)' }}>
       <div className="flex items-center justify-between mb-3">
         <button onClick={prevMonth} className="p-1 rounded text-slate-500 hover:text-slate-300 transition-colors"><ChevronLeft size={14} /></button>
         <span className="text-xs font-semibold text-slate-300">{MONTHS[month]} {year}</span>
@@ -72,14 +72,14 @@ function MiniCalendar({
               key={i}
               onClick={() => onSelect(isSelected ? null : date)}
               className={`relative flex flex-col items-center py-1 rounded-lg text-xs transition-all ${
-                isSelected ? 'bg-cyan-500/30 text-cyan-300' :
+                isSelected ? 'bg-violet-500/30 text-violet-300' :
                 isToday ? 'bg-slate-800/80 text-slate-200' :
                 'text-slate-500 hover:bg-slate-800/50 hover:text-slate-300'
               }`}
             >
               {day}
               {count > 0 && (
-                <span className={`text-[8px] font-bold leading-none mt-0.5 ${isSelected ? 'text-cyan-400' : 'text-cyan-500'}`}>
+                <span className={`text-[8px] font-bold leading-none mt-0.5 ${isSelected ? 'text-violet-400' : 'text-violet-500'}`}>
                   {count}
                 </span>
               )}
@@ -124,7 +124,7 @@ function DayView({ proposals, date }: { proposals: any[]; date: Date }) {
   return (
     <div className="space-y-3">
       {proposals.map(p => (
-        <div key={p.id} className="rounded-xl p-4 flex items-start gap-4" style={{ background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)' }}>
+        <div key={p.id} className="rounded-xl p-4 flex items-start gap-4" style={{ background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)' }}>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className={`text-[9px] px-1.5 py-0.5 rounded border font-semibold uppercase tracking-wide ${STATUS_COLORS[p.status] || STATUS_COLORS.SENT}`}>
@@ -138,7 +138,7 @@ function DayView({ proposals, date }: { proposals: any[]; date: Date }) {
             </div>
             <p className="text-sm font-medium text-slate-300">{p.job?.title || 'Untitled Job'}</p>
             {p.job?.upworkJobUrl && (
-              <a href={p.job.upworkJobUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[10px] text-slate-600 hover:text-cyan-400 transition-colors mt-0.5">
+              <a href={p.job.upworkJobUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[10px] text-slate-600 hover:text-violet-400 transition-colors mt-0.5">
                 <ExternalLink size={9} />
                 View job
               </a>
@@ -215,7 +215,7 @@ function NewProposalPanel({
   }
 
   const inputClass = "w-full px-3 py-2.5 rounded-lg text-sm text-slate-200 focus:outline-none transition-colors"
-  const inputStyle = { background: '#07080d', border: '1px solid rgba(100,116,139,0.2)' }
+  const inputStyle = { background: 'var(--ink)', border: '1px solid rgba(100,116,139,0.2)' }
   const labelClass = "block text-[10px] font-medium text-slate-500 mb-1.5 uppercase tracking-wider"
 
   return (
@@ -224,7 +224,7 @@ function NewProposalPanel({
       <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Panel */}
-      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-xl overflow-y-auto flex flex-col" style={{ background: '#07080d', borderLeft: '1px solid rgba(6,182,212,0.12)' }}>
+      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-xl overflow-y-auto flex flex-col" style={{ background: 'var(--ink)', borderLeft: '1px solid rgba(124,111,255,0.12)' }}>
         {/* Panel header */}
         <div className="px-6 py-4 shrink-0 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(30,37,51,0.8)' }}>
           <div>
@@ -336,7 +336,7 @@ function NewProposalPanel({
             </div>
             <div>
               <label className={labelClass}>Total Connects</label>
-              <div className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg" style={{ background: '#0d0e15', border: '1px solid rgba(6,182,212,0.15)' }}>
+              <div className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg" style={{ background: '#0d0e15', border: '1px solid rgba(124,111,255,0.15)' }}>
                 <Zap size={12} className="text-amber-500" />
                 <span className="text-sm font-bold font-mono text-amber-400">{totalConnects}</span>
               </div>
@@ -347,7 +347,7 @@ function NewProposalPanel({
             type="submit"
             disabled={loading}
             className="w-full py-2.5 text-sm font-semibold rounded-lg transition-all disabled:opacity-50 mt-2"
-            style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)', color: '#67e8f9' }}
+            style={{ background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)', color: '#a78bfa' }}
           >
             {loading ? 'Saving…' : 'Save Proposal'}
           </button>
@@ -357,13 +357,92 @@ function NewProposalPanel({
   )
 }
 
+// ─── Company 1 Read-only Board ────────────────────────────────────────────────
+
+const STATUS_ORDER = ['SENT', 'VIEWED', 'REPLIED', 'INTERVIEW', 'HIRED', 'LOST'] as const
+const STATUS_LABELS: Record<string, string> = {
+  SENT: 'Sent', VIEWED: 'Viewed', REPLIED: 'Replied',
+  INTERVIEW: 'Interview', HIRED: 'Closed', LOST: 'Lost',
+}
+const STATUS_COLORS: Record<string, string> = {
+  SENT: '#64748b', VIEWED: '#60a5fa', REPLIED: '#818cf8',
+  INTERVIEW: '#a78bfa', HIRED: '#4ade80', LOST: '#f87171',
+}
+
+function Company1BoardView({ proposals }: { proposals: any[] }) {
+  const grouped: Record<string, any[]> = {}
+  for (const s of STATUS_ORDER) grouped[s] = []
+  for (const p of proposals) {
+    const key = p.status === 'REJECTED' ? 'LOST' : (p.status || 'SENT')
+    if (grouped[key]) grouped[key].push(p)
+    else grouped['SENT'].push(p)
+  }
+
+  if (proposals.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <p className="text-slate-500 text-sm">No proposals from Company 1 yet.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex gap-3 overflow-x-auto pb-4 min-h-[calc(100vh-220px)]">
+      {STATUS_ORDER.map(status => {
+        const items = grouped[status] || []
+        const color = STATUS_COLORS[status]
+        return (
+          <div key={status} className="flex flex-col min-w-[240px] w-[240px] shrink-0">
+            <div className="flex items-center justify-between px-3 py-2 rounded-t-lg" style={{ background: '#111425', borderTop: `2px solid ${color}` }}>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full" style={{ background: color, opacity: 0.7 }} />
+                <span className="text-xs font-semibold text-slate-300 tracking-wide uppercase">{STATUS_LABELS[status]}</span>
+              </div>
+              <span className="text-xs font-mono text-slate-500 bg-slate-800/60 px-1.5 py-0.5 rounded">{items.length}</span>
+            </div>
+            <div className="flex-1 min-h-[120px] p-2 rounded-b-lg space-y-2" style={{ background: '#080810', border: '1px solid rgba(30,41,59,0.6)', borderTop: 'none' }}>
+              {items.length === 0 ? (
+                <div className="flex items-center justify-center h-16 rounded-md border border-dashed border-slate-800">
+                  <span className="text-[10px] text-slate-700">No proposals</span>
+                </div>
+              ) : items.map(p => (
+                <div key={p.id} className="rounded-lg p-3 space-y-1.5" style={{ background: 'rgba(17,20,37,0.9)', border: '1px solid rgba(30,41,59,0.6)' }}>
+                  <p className="text-xs font-medium text-slate-300 leading-tight line-clamp-2">{p.job?.title || 'Untitled Job'}</p>
+                  {p.job?.upworkJobUrl && (
+                    <a
+                      href={p.job.upworkJobUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-[10px] text-violet-400 hover:text-violet-300 transition-colors"
+                    >
+                      <ExternalLink size={9} />
+                      View job
+                    </a>
+                  )}
+                  {p.rep?.user?.name && (
+                    <p className="text-[9px] text-slate-600">{p.rep.user.name}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 // ─── Board Page ───────────────────────────────────────────────────────────────
 
 export default function BoardPage() {
   const [isManager, setIsManager] = useState(false)
+  const [isCompany2Manager, setIsCompany2Manager] = useState(false)
+  const [boardTab, setBoardTab] = useState<'mine' | 'company1'>('mine')
   const [repId, setRepId] = useState('')
   const [profiles, setProfiles] = useState<any[]>([])
   const [proposals, setProposals] = useState<any[]>([])
+  const [company1Proposals, setCompany1Proposals] = useState<any[]>([])
+  const [company1Loading, setCompany1Loading] = useState(false)
   const [allReps, setAllReps] = useState<any[]>([])
   const [selectedRepId, setSelectedRepId] = useState('')
   const [loading, setLoading] = useState(true)
@@ -384,6 +463,8 @@ export default function BoardPage() {
 
     if (mgr) {
       setIsManager(true)
+      const c2mgr = u.companyId === 'company-2'
+      setIsCompany2Manager(c2mgr)
       api.get<any[]>('/reps').then(setAllReps).catch(() => {})
       loadProposals({ mgr: true })
     } else {
@@ -407,6 +488,23 @@ export default function BoardPage() {
         .catch(() => {})
     }
   }, [])
+
+  async function loadCompany1Proposals() {
+    setCompany1Loading(true)
+    try {
+      const data = await api.get<any[]>('/proposals?companyId=company-1')
+      setCompany1Proposals(data)
+    } catch { } finally {
+      setCompany1Loading(false)
+    }
+  }
+
+  function handleTabSwitch(tab: 'mine' | 'company1') {
+    setBoardTab(tab)
+    if (tab === 'company1' && company1Proposals.length === 0) {
+      loadCompany1Proposals()
+    }
+  }
 
   async function loadProposals(opts?: { mgr?: boolean; rid?: string; repFilter?: string }) {
     setLoading(true)
@@ -462,28 +560,53 @@ export default function BoardPage() {
       {/* Page header */}
       <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.2)' }}>
-            <Kanban size={15} className="text-cyan-400" />
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(124,111,255,0.1)', border: '1px solid rgba(124,111,255,0.2)' }}>
+            <Kanban size={15} className="text-violet-400" />
           </div>
           <div>
             <h1 className="text-lg font-semibold text-slate-200 tracking-tight">Lead Board</h1>
             <p className="text-xs text-slate-500 mt-0.5">
               {selectedDate
                 ? `Proposals on ${selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}`
+                : boardTab === 'company1' ? 'Company 1 proposals — read-only view'
                 : isManager ? 'Team-wide proposal pipeline' : 'Your active proposal pipeline'}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Manager rep filter */}
-          {isManager && (
+          {/* Company 2 manager: tab switcher */}
+          {isCompany2Manager && (
+            <div className="flex rounded-lg p-0.5 gap-0.5" style={{ background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)' }}>
+              {([
+                { key: 'mine',     label: 'My Team' },
+                { key: 'company1', label: 'Company 1 Board' },
+              ] as const).map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => handleTabSwitch(tab.key)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all"
+                  style={{
+                    background: boardTab === tab.key ? 'rgba(124,111,255,0.2)' : 'transparent',
+                    color: boardTab === tab.key ? '#a78bfa' : 'var(--t3)',
+                    border: boardTab === tab.key ? '1px solid rgba(124,111,255,0.3)' : '1px solid transparent',
+                  }}
+                >
+                  {tab.key === 'company1' && <Building2 size={11} />}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Manager rep filter — only on own team tab */}
+          {isManager && boardTab !== 'company1' && (
             <div className="relative">
               <select
                 value={selectedRepId}
                 onChange={e => { setSelectedRepId(e.target.value); loadProposals({ mgr: true, repFilter: e.target.value }) }}
                 className="appearance-none text-xs rounded-lg px-3 py-2 pr-8 focus:outline-none cursor-pointer text-slate-300"
-                style={{ background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)' }}
+                style={{ background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)' }}
               >
                 <option value="">All Reps</option>
                 {allReps.map(rep => (
@@ -494,7 +617,8 @@ export default function BoardPage() {
             </div>
           )}
 
-          {/* Search */}
+          {/* Search — own board only */}
+          {boardTab !== 'company1' && (
           <div className="relative">
             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
             <input
@@ -503,7 +627,7 @@ export default function BoardPage() {
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search job title or keyword…"
               className="pl-9 pr-3 py-2 text-xs text-slate-300 rounded-lg focus:outline-none w-52"
-              style={{ background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)' }}
+              style={{ background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)' }}
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400">
@@ -511,17 +635,19 @@ export default function BoardPage() {
               </button>
             )}
           </div>
+          )}
 
-          {/* Calendar toggle */}
+          {/* Calendar toggle — own board only */}
+          {boardTab !== 'company1' && (
           <div className="relative" ref={calendarRef}>
             <button
               onClick={() => setShowCalendar(c => !c)}
               className={`flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
                 showCalendar || selectedDate
-                  ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400'
+                  ? 'bg-violet-500/15 border-violet-500/30 text-violet-400'
                   : 'text-slate-400 hover:text-slate-300'
               }`}
-              style={{ border: showCalendar || selectedDate ? '1px solid rgba(6,182,212,0.3)' : '1px solid rgba(30,37,51,0.8)' }}
+              style={{ border: showCalendar || selectedDate ? '1px solid rgba(124,111,255,0.3)' : '1px solid rgba(30,37,51,0.8)' }}
             >
               <Calendar size={13} />
               {selectedDate
@@ -537,13 +663,14 @@ export default function BoardPage() {
               />
             )}
           </div>
+          )}
 
           {/* New Proposal — reps only */}
           {!isManager && (
             <button
               onClick={() => setShowForm(true)}
               className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg transition-colors"
-              style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.2)', color: '#67e8f9' }}
+              style={{ background: 'rgba(124,111,255,0.1)', border: '1px solid rgba(124,111,255,0.2)', color: '#a78bfa' }}
             >
               <Plus size={13} />
               New Proposal
@@ -556,9 +683,9 @@ export default function BoardPage() {
       {(selectedDate || searchQuery) && (
         <div className="flex items-center gap-2 mb-4 flex-wrap">
           {selectedDate && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs" style={{ background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.15)' }}>
-              <Calendar size={11} className="text-cyan-500" />
-              <span className="text-cyan-400">{selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs" style={{ background: 'rgba(124,111,255,0.08)', border: '1px solid rgba(124,111,255,0.15)' }}>
+              <Calendar size={11} className="text-violet-500" />
+              <span className="text-violet-400">{selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
               <span className="text-slate-600">·</span>
               <span className="text-slate-500">{dayProposals.length} proposal{dayProposals.length !== 1 ? 's' : ''}</span>
               <button onClick={() => setSelectedDate(null)} className="text-slate-600 hover:text-slate-400 ml-1"><X size={11} /></button>
@@ -577,12 +704,25 @@ export default function BoardPage() {
       )}
 
       {/* Content */}
-      {loading ? (
+      {boardTab === 'company1' ? (
+        company1Loading ? (
+          <div className="flex items-center justify-center py-24">
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+              <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" style={{ animationDelay: '150ms' }} />
+              <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" style={{ animationDelay: '300ms' }} />
+              <span className="text-xs text-slate-500 ml-1">Loading Company 1 board…</span>
+            </div>
+          </div>
+        ) : (
+          <Company1BoardView proposals={company1Proposals} />
+        )
+      ) : loading ? (
         <div className="flex items-center justify-center py-24">
           <div className="flex items-center gap-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" style={{ animationDelay: '150ms' }} />
-            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" style={{ animationDelay: '300ms' }} />
+            <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+            <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" style={{ animationDelay: '150ms' }} />
+            <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" style={{ animationDelay: '300ms' }} />
             <span className="text-xs text-slate-500 ml-1">Loading pipeline…</span>
           </div>
         </div>

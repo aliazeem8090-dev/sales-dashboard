@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { logout, getStoredUser, AuthUser } from '@/lib/auth'
+import { api } from '@/lib/api'
 import {
   LayoutDashboard, FileText, MessageSquare, Lightbulb,
   ClipboardList, Star, LogOut, Users, BarChart2, Kanban,
   ClipboardCheck, UserCog, Target, Network, BookOpen,
-  UserSearch, Briefcase, UserCircle2,
+  UserSearch, Briefcase, UserCircle2, Bell,
 } from 'lucide-react'
 
 const NAV_CONFIG = [
@@ -26,6 +27,7 @@ const NAV_CONFIG = [
       { href: '/manager/linkedin',   label: 'LinkedIn Agents',   icon: Network,        roles: ['ADMIN', 'MANAGER'] },
       { href: '/manager/freelancer', label: 'Freelancer Agents', icon: Briefcase,      roles: ['ADMIN', 'MANAGER'] },
       { href: '/manager/leads',      label: 'Leads',             icon: UserCircle2,    roles: ['ADMIN', 'MANAGER'] },
+      { href: '/notifications',      label: 'Job Leads',         icon: Bell,           roles: ['ADMIN', 'MANAGER'] },
       { href: '/assignments',        label: 'Assignments',       icon: Users,          roles: ['ADMIN', 'MANAGER'] },
       { href: '/team',               label: 'Team',              icon: UserCog,        roles: ['ADMIN', 'MANAGER'] },
     ],
@@ -77,8 +79,17 @@ export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const [user, setUser] = useState<AuthUser | null>(null)
+  const [jobLeadCount, setJobLeadCount] = useState(0)
 
-  useEffect(() => { setUser(getStoredUser()) }, [])
+  useEffect(() => {
+    const u = getStoredUser()
+    setUser(u)
+    if (u && (u.role === 'MANAGER' || u.role === 'ADMIN') && u.companyId === 'company-2') {
+      api.get<{ count: number }>('/job-notifications/unread-count')
+        .then(r => setJobLeadCount(r.count))
+        .catch(() => {})
+    }
+  }, [])
 
   const role = user?.role || 'REP'
 
@@ -138,6 +149,8 @@ export function Sidebar() {
             }}>{section}</p>
             {items.map(({ href, label, icon: Icon }) => {
               const active = pathname === href || pathname.startsWith(href + '/')
+              const isJobLeads = href === '/notifications'
+              const badge = isJobLeads && jobLeadCount > 0 ? jobLeadCount : 0
               return (
                 <Link
                   key={href}
@@ -160,13 +173,23 @@ export function Sidebar() {
                     style={{ flexShrink: 0, color: active ? 'var(--v1)' : 'inherit' }}
                   />
                   {label}
-                  {active && (
-                    <div style={{
-                      marginLeft: 'auto', width: '5px', height: '5px',
-                      borderRadius: '50%', background: 'var(--v1)',
-                      boxShadow: '0 0 6px var(--v1)',
-                    }} />
-                  )}
+                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {badge > 0 && (
+                      <span style={{
+                        fontSize: '9px', fontWeight: 700, fontFamily: 'var(--mono)',
+                        padding: '1px 5px', borderRadius: '8px',
+                        background: 'rgba(251,191,36,0.15)', color: '#fbbf24',
+                        border: '1px solid rgba(251,191,36,0.3)',
+                      }}>{badge}</span>
+                    )}
+                    {active && !badge && (
+                      <div style={{
+                        width: '5px', height: '5px',
+                        borderRadius: '50%', background: 'var(--v1)',
+                        boxShadow: '0 0 6px var(--v1)',
+                      }} />
+                    )}
+                  </div>
                 </Link>
               )
             })}

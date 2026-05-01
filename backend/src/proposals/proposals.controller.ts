@@ -19,6 +19,7 @@ export class ProposalsController {
     @Query('start') start?: string,
     @Query('end') end?: string,
     @Query('profileId') profileId?: string,
+    @Query('companyId') companyId?: string,
   ) {
     const { role } = req.user;
 
@@ -26,6 +27,11 @@ export class ProposalsController {
     if (role === 'REP') {
       const filterRepId = repId || '';
       return this.proposalsService.findByRepWithFilters(filterRepId, { status, startDate: start, endDate: end, profileId });
+    }
+
+    // Managers and admins can filter by company (cross-company view)
+    if (companyId) {
+      return this.proposalsService.findAll({ status, companyId });
     }
 
     // Managers and admins can see all or filter by rep
@@ -52,7 +58,10 @@ export class ProposalsController {
 
   @Post()
   create(@Body() createProposalDto: any, @Request() req: any) {
-    return this.proposalsService.create(createProposalDto, req.user.userId);
+    return this.proposalsService.create(createProposalDto, req.user.userId, {
+      companyId: req.user.companyId,
+      repEmail: req.user.email,
+    });
   }
 
   @Put(':id')

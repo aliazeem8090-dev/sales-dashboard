@@ -51,13 +51,14 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() body: { name: string; email: string; password: string; role?: string }) {
+  async register(@Body() body: { name: string; email: string; password: string; role?: string; companyId?: string }) {
     const role = (body.role as any) || 'REP';
     const user = await this.usersService.create({
       name: body.name,
       email: body.email,
       password: body.password,
       role,
+      companyId: body.companyId || 'company-1',
     });
 
     if (role === 'REP') {

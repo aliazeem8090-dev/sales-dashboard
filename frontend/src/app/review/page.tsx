@@ -83,8 +83,8 @@ function ReviewContent() {
     }
   }
 
-  const cardStyle = { background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)' }
-  const inputStyle = { background: '#07080d', border: '1px solid rgba(100,116,139,0.2)' }
+  const cardStyle = { background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)' }
+  const inputStyle = { background: 'var(--ink)', border: '1px solid rgba(100,116,139,0.2)' }
   const inputClass = "w-full px-3 py-2.5 rounded-lg text-sm text-slate-200 focus:outline-none transition-colors"
   const labelClass = "block text-[10px] font-medium text-slate-500 mb-1.5 uppercase tracking-wider"
 
@@ -141,7 +141,7 @@ function ReviewContent() {
               onClick={handleReview}
               disabled={loading || !proposalText.trim()}
               className="w-full py-2.5 text-sm font-semibold rounded-lg transition-all disabled:opacity-50"
-              style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)', color: '#67e8f9' }}
+              style={{ background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)', color: '#a78bfa' }}
             >
               {loading ? 'Analyzing…' : 'Analyze Proposal'}
             </button>
@@ -151,8 +151,8 @@ function ReviewContent() {
           <div>
             {!result && !loading && (
               <div className="rounded-xl p-8 text-center" style={cardStyle}>
-                <div className="w-10 h-10 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: 'rgba(6,182,212,0.05)', border: '1px solid rgba(6,182,212,0.1)' }}>
-                  <div className="w-3 h-3 rounded-full bg-cyan-500/30" />
+                <div className="w-10 h-10 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: 'rgba(124,111,255,0.05)', border: '1px solid rgba(124,111,255,0.1)' }}>
+                  <div className="w-3 h-3 rounded-full bg-violet-500/30" />
                 </div>
                 <p className="text-slate-500 text-sm">Results will appear here after analysis.</p>
               </div>
@@ -161,9 +161,9 @@ function ReviewContent() {
             {loading && (
               <div className="rounded-xl p-8 text-center" style={cardStyle}>
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" style={{ animationDelay: '150ms' }} />
-                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" style={{ animationDelay: '300ms' }} />
+                  <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" style={{ animationDelay: '300ms' }} />
                 </div>
                 <p className="text-slate-400 text-sm">Analyzing with AI…</p>
                 <p className="text-slate-600 text-xs mt-1">This takes about 10–15 seconds.</p>
@@ -215,7 +215,7 @@ function ReviewContent() {
                         onClick={() => setActiveTab(tab)}
                         className={`flex-1 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition-colors ${
                           activeTab === tab
-                            ? 'text-cyan-400 border-b-2 border-cyan-500'
+                            ? 'text-violet-400 border-b-2 border-violet-500'
                             : 'text-slate-600 hover:text-slate-400'
                         }`}
                       >
@@ -246,7 +246,7 @@ function ReviewContent() {
                         {result.rewrittenVersion && (
                           <div>
                             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Full Rewrite</p>
-                            <div className="px-3 py-2.5 rounded-lg text-[11px] text-slate-400 whitespace-pre-wrap font-mono leading-relaxed" style={{ background: '#07080d', border: '1px solid rgba(30,37,51,1)' }}>
+                            <div className="px-3 py-2.5 rounded-lg text-[11px] text-slate-400 whitespace-pre-wrap font-mono leading-relaxed" style={{ background: 'var(--ink)', border: '1px solid rgba(30,37,51,1)' }}>
                               {result.rewrittenVersion}
                             </div>
                           </div>
@@ -271,7 +271,7 @@ function ReviewContent() {
                         )}
                         {result.suggestions?.length > 0 && (
                           <div>
-                            <p className="text-[10px] font-semibold text-cyan-400 uppercase tracking-wider mb-2">Recommendations</p>
+                            <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-wider mb-2">Recommendations</p>
                             <ul className="space-y-1.5">
                               {result.suggestions.map((item: string, i: number) => (
                                 <li key={i} className="flex items-start gap-2 text-xs text-slate-400">

@@ -11,15 +11,15 @@ type Status = typeof STATUSES[number]
 
 const STATUS_STYLES: Record<Status, { bg: string; color: string; label: string }> = {
   SEARCHED:    { bg: 'rgba(100,116,139,0.15)', color: '#94a3b8', label: 'Searched' },
-  CONTACTED:   { bg: 'rgba(6,182,212,0.12)',   color: '#67e8f9', label: 'Contacted' },
+  CONTACTED:   { bg: 'rgba(124,111,255,0.12)',   color: '#a78bfa', label: 'Contacted' },
   REPLIED:     { bg: 'rgba(99,102,241,0.12)',   color: '#a5b4fc', label: 'Replied' },
   FOLLOWED_UP: { bg: 'rgba(250,204,21,0.12)',   color: '#facc15', label: 'Followed Up' },
   CONVERTED:   { bg: 'rgba(74,222,128,0.12)',   color: '#4ade80', label: 'Converted' },
   REJECTED:    { bg: 'rgba(239,68,68,0.10)',    color: '#f87171', label: 'Rejected' },
 }
 
-const inputClass = "w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-cyan-500/50 transition-colors"
-const inputStyle = { background: '#07080d', border: '1px solid rgba(100,116,139,0.2)' }
+const inputClass = "w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-violet-500/50 transition-colors"
+const inputStyle = { background: 'var(--ink)', border: '1px solid rgba(100,116,139,0.2)' }
 
 export default function LinkedInLeadsPage() {
   const router = useRouter()
@@ -83,7 +83,7 @@ export default function LinkedInLeadsPage() {
 
   return (
     <div className="flex-1 relative z-10">
-      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', background: '#07080d' }}>
+      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(124,111,255,0.08)', background: 'var(--ink)' }}>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold text-slate-200">Lead Pipeline</h1>
@@ -92,7 +92,7 @@ export default function LinkedInLeadsPage() {
           <button
             onClick={() => setShowForm(v => !v)}
             className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
-            style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.25)', color: '#67e8f9' }}
+            style={{ background: 'rgba(124,111,255,0.1)', border: '1px solid rgba(124,111,255,0.25)', color: '#a78bfa' }}
           >
             {showForm ? <X size={13} /> : <UserPlus size={13} />}
             {showForm ? 'Cancel' : 'Add Lead'}
@@ -104,8 +104,8 @@ export default function LinkedInLeadsPage() {
 
         {/* Add lead form */}
         {showForm && (
-          <form onSubmit={addLead} className="rounded-xl p-5 space-y-3" style={{ background: '#0a0b10', border: '1px solid rgba(6,182,212,0.15)' }}>
-            <p className="text-xs font-semibold text-cyan-400 uppercase tracking-widest">New Lead</p>
+          <form onSubmit={addLead} className="rounded-xl p-5 space-y-3" style={{ background: 'var(--ink2)', border: '1px solid rgba(124,111,255,0.15)' }}>
+            <p className="text-xs font-semibold text-violet-400 uppercase tracking-widest">New Lead</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
                 <label className="block text-[10px] text-slate-500 mb-1 uppercase tracking-wide">Name *</label>
@@ -127,8 +127,8 @@ export default function LinkedInLeadsPage() {
                 onChange={e => setMessage(e.target.value)}
                 placeholder="Paste the connection request or InMail message you sent…"
                 rows={3}
-                className="w-full px-3 py-2 rounded-lg text-xs text-slate-300 resize-none focus:outline-none focus:border-cyan-500/50 transition-colors"
-                style={{ background: '#07080d', border: '1px solid rgba(100,116,139,0.2)' }}
+                className="w-full px-3 py-2 rounded-lg text-xs text-slate-300 resize-none focus:outline-none focus:border-violet-500/50 transition-colors"
+                style={{ background: 'var(--ink)', border: '1px solid rgba(100,116,139,0.2)' }}
               />
             </div>
             <div className="flex justify-end gap-2">
@@ -137,7 +137,7 @@ export default function LinkedInLeadsPage() {
                 type="submit"
                 disabled={submitting || !name.trim()}
                 className="px-4 py-1.5 text-xs font-semibold rounded-lg disabled:opacity-50 transition-colors"
-                style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)', color: '#67e8f9' }}
+                style={{ background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)', color: '#a78bfa' }}
               >
                 {submitting ? 'Adding…' : 'Add Lead'}
               </button>
@@ -167,7 +167,7 @@ export default function LinkedInLeadsPage() {
         {loading ? (
           <p className="text-slate-500 text-xs py-8">Loading leads…</p>
         ) : filtered.length === 0 ? (
-          <div className="rounded-xl border border-slate-800/60 p-10 text-center" style={{ background: '#0a0b10' }}>
+          <div className="rounded-xl border border-[var(--bord)] p-10 text-center" style={{ background: 'var(--ink2)' }}>
             <p className="text-slate-500 text-sm">{filter === 'ALL' ? 'No leads yet.' : `No ${STATUS_STYLES[filter as Status]?.label} leads.`}</p>
           </div>
         ) : (
@@ -179,7 +179,7 @@ export default function LinkedInLeadsPage() {
                 <div
                   key={lead.id}
                   className="rounded-xl px-4 py-3"
-                  style={{ background: '#0a0b10', border: '1px solid rgba(100,116,139,0.1)' }}
+                  style={{ background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.1)' }}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
@@ -208,7 +208,7 @@ export default function LinkedInLeadsPage() {
                         onChange={e => updateStatus(lead, e.target.value as Status)}
                         disabled={updatingId === lead.id}
                         className="text-[10px] px-2 py-1 rounded-lg cursor-pointer focus:outline-none disabled:opacity-50"
-                        style={{ background: '#07080d', border: '1px solid rgba(100,116,139,0.2)', color: '#94a3b8' }}
+                        style={{ background: 'var(--ink)', border: '1px solid rgba(100,116,139,0.2)', color: '#94a3b8' }}
                       >
                         {STATUSES.map(s => (
                           <option key={s} value={s}>{STATUS_STYLES[s].label}</option>

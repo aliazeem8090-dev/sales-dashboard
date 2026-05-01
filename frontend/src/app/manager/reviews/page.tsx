@@ -65,24 +65,24 @@ export default function RepReviewsPage() {
     load(d)
   }
 
-  const cardStyle = { background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)' }
+  const cardStyle = { background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)' }
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 shrink-0 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', background: '#07080d' }}>
+        <div className="px-6 py-4 shrink-0 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(124,111,255,0.08)', background: 'var(--ink)' }}>
           <div>
             <h1 className="text-lg font-semibold text-slate-200">Rep Reviews</h1>
             <p className="text-xs text-slate-500 mt-0.5">Click a rep to review their proposals against job descriptions</p>
           </div>
-          <div className="flex items-center gap-1 p-1 rounded-lg" style={{ background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)' }}>
+          <div className="flex items-center gap-1 p-1 rounded-lg" style={{ background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)' }}>
             {TIME_FILTERS.map(f => (
               <button
                 key={f.label}
                 onClick={() => handleFilter(f.days)}
                 className={`px-3 py-1 text-[10px] font-semibold rounded-md transition-all ${
                   days === f.days
-                    ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                    ? 'bg-violet-500/20 text-violet-400 border border-violet-500/30'
                     : 'text-slate-600 hover:text-slate-400 border border-transparent'
                 }`}
               >
@@ -96,9 +96,9 @@ export default function RepReviewsPage() {
           {loading ? (
             <div className="flex items-center justify-center py-24">
               <div className="flex items-center gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" style={{ animationDelay: '150ms' }} />
-                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" style={{ animationDelay: '300ms' }} />
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" style={{ animationDelay: '150ms' }} />
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           ) : reps.length === 0 ? (
@@ -115,14 +115,14 @@ export default function RepReviewsPage() {
                   <a
                     key={rep.userId || rep.repId}
                     href={`/manager/reviews/${rep.repId}`}
-                    className="block rounded-xl p-5 transition-all hover:border-cyan-500/30 group"
+                    className="block rounded-xl p-5 transition-all hover:border-violet-500/30 group"
                     style={cardStyle}
                   >
                     {/* Rep name + flag indicator */}
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold text-slate-200 group-hover:text-cyan-300 transition-colors">{rep.name}</p>
+                          <p className="text-sm font-semibold text-slate-200 group-hover:text-violet-300 transition-colors">{rep.name}</p>
                           {flags.length > 0 && (
                             <AlertTriangle size={12} className={hasCritical ? 'text-red-400' : 'text-amber-400'} />
                           )}
@@ -132,7 +132,7 @@ export default function RepReviewsPage() {
                           <span className="text-[10px] text-slate-600">{formatDate(rep.lastActivityDate)}</span>
                         </div>
                       </div>
-                      <ChevronRight size={14} className="text-slate-700 group-hover:text-cyan-500 transition-colors mt-0.5" />
+                      <ChevronRight size={14} className="text-slate-700 group-hover:text-violet-500 transition-colors mt-0.5" />
                     </div>
 
                     {/* Stats grid */}
@@ -162,7 +162,7 @@ export default function RepReviewsPage() {
                         <span className="text-[9px] text-slate-500">{rep.consistencyScore || 0}%</span>
                       </div>
                       <div className="h-1 rounded-full" style={{ background: 'rgba(30,37,51,1)' }}>
-                        <div className="h-1 bg-cyan-500 rounded-full" style={{ width: `${rep.consistencyScore || 0}%` }} />
+                        <div className="h-1 bg-violet-500 rounded-full" style={{ width: `${rep.consistencyScore || 0}%` }} />
                       </div>
                     </div>
 

@@ -6,8 +6,8 @@ import { api } from '@/lib/api'
 import { getStoredUser } from '@/lib/auth'
 import { Save, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react'
 
-const inputClass = "w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-cyan-500/50 transition-colors"
-const inputStyle = { background: '#0a0b10', border: '1px solid rgba(100,116,139,0.2)' }
+const inputClass = "w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-violet-500/50 transition-colors"
+const inputStyle = { background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.2)' }
 
 const FIELDS = [
   { key: 'jobsFound',       label: 'Jobs Found',         desc: 'Total job posts browsed today' },
@@ -100,7 +100,7 @@ export default function FreelancerLogPage() {
   return (
     <div className="flex-1 relative z-10">
       {/* Header */}
-      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', background: '#07080d' }}>
+      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(124,111,255,0.08)', background: 'var(--ink)' }}>
         <h1 className="text-lg font-semibold text-slate-200">Daily Activity Log</h1>
         <p className="text-xs text-slate-500 mt-0.5">{dateStr} — updates automatically if you save again</p>
       </div>
@@ -109,13 +109,13 @@ export default function FreelancerLogPage() {
         {loading ? (
           <p className="text-slate-500 text-xs">Loading…</p>
         ) : error && !agentId ? (
-          <div className="rounded-xl p-5 text-sm text-red-400" style={{ background: '#0a0b10', border: '1px solid rgba(239,68,68,0.2)' }}>
+          <div className="rounded-xl p-5 text-sm text-red-400" style={{ background: 'var(--ink2)', border: '1px solid rgba(239,68,68,0.2)' }}>
             {error}
           </div>
         ) : (
           <form onSubmit={handleSave} className="space-y-4">
-            <div className="rounded-xl p-5 space-y-4" style={{ background: '#0a0b10', border: '1px solid rgba(6,182,212,0.1)' }}>
-              <p className="text-[10px] font-semibold text-cyan-400 uppercase tracking-widest">Activity Numbers</p>
+            <div className="rounded-xl p-5 space-y-4" style={{ background: 'var(--ink2)', border: '1px solid rgba(124,111,255,0.1)' }}>
+              <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-widest">Activity Numbers</p>
               <div className="grid grid-cols-2 gap-3">
                 {FIELDS.map(f => (
                   <div key={f.key}>
@@ -135,8 +135,8 @@ export default function FreelancerLogPage() {
               </div>
             </div>
 
-            <div className="rounded-xl p-5 space-y-3" style={{ background: '#0a0b10', border: '1px solid rgba(6,182,212,0.1)' }}>
-              <p className="text-[10px] font-semibold text-cyan-400 uppercase tracking-widest">Notes</p>
+            <div className="rounded-xl p-5 space-y-3" style={{ background: 'var(--ink2)', border: '1px solid rgba(124,111,255,0.1)' }}>
+              <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-widest">Notes</p>
               <textarea
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
@@ -158,7 +158,7 @@ export default function FreelancerLogPage() {
                 type="submit"
                 disabled={saving}
                 className="flex items-center gap-2 px-5 py-2 text-xs font-semibold rounded-lg disabled:opacity-50 transition-colors"
-                style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)', color: '#67e8f9' }}
+                style={{ background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)', color: '#a78bfa' }}
               >
                 {saving ? <RefreshCw size={13} className="animate-spin" /> : <Save size={13} />}
                 {saving ? 'Saving…' : 'Save Log'}

@@ -64,11 +64,11 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen relative z-10" style={{ background: 'var(--background)' }}>
+    <div className="flex flex-col h-screen relative z-10" style={{ background: 'var(--ink)' }}>
       {/* Header */}
-      <div className="px-6 py-4 shrink-0 flex items-center gap-3" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', background: '#07080d' }}>
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.2)' }}>
-          <MessageSquare size={13} className="text-cyan-400" />
+      <div className="px-6 py-4 shrink-0 flex items-center gap-3" style={{ borderBottom: '1px solid rgba(124,111,255,0.08)', background: 'var(--ink)' }}>
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(124,111,255,0.1)', border: '1px solid rgba(124,111,255,0.2)' }}>
+          <MessageSquare size={13} className="text-violet-400" />
         </div>
         <div>
           <h1 className="text-sm font-semibold text-slate-200">AI Assistant</h1>
@@ -87,7 +87,7 @@ export default function ChatPage() {
                   key={i}
                   onClick={() => send(p)}
                   className="text-left px-4 py-3 rounded-xl text-xs text-slate-400 hover:text-slate-300 transition-colors"
-                  style={{ background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)' }}
+                  style={{ background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)' }}
                 >
                   {p}
                 </button>
@@ -103,8 +103,8 @@ export default function ChatPage() {
                 msg.role === 'user' ? 'rounded-br-sm' : 'rounded-bl-sm'
               }`}
               style={msg.role === 'user'
-                ? { background: 'rgba(6,182,212,0.12)', border: '1px solid rgba(6,182,212,0.2)', color: '#e2e8f0' }
-                : { background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)', color: '#94a3b8' }
+                ? { background: 'rgba(124,111,255,0.12)', border: '1px solid rgba(124,111,255,0.2)', color: '#e2e8f0' }
+                : { background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)', color: '#94a3b8' }
               }
             >
               {msg.content}
@@ -114,10 +114,10 @@ export default function ChatPage() {
 
         {loading && (
           <div className="flex justify-start">
-            <div className="rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-2" style={{ background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)' }}>
-              <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-              <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" style={{ animationDelay: '150ms' }} />
-              <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" style={{ animationDelay: '300ms' }} />
+            <div className="rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-2" style={{ background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)' }}>
+              <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+              <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" style={{ animationDelay: '150ms' }} />
+              <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" style={{ animationDelay: '300ms' }} />
             </div>
           </div>
         )}
@@ -125,7 +125,7 @@ export default function ChatPage() {
       </div>
 
       {/* Input */}
-      <div className="px-6 py-4 shrink-0" style={{ borderTop: '1px solid rgba(30,37,51,0.8)', background: '#07080d' }}>
+      <div className="px-6 py-4 shrink-0" style={{ borderTop: '1px solid rgba(30,37,51,0.8)', background: 'var(--ink)' }}>
         <div className="max-w-3xl mx-auto flex items-end gap-3">
           <textarea
             value={input}
@@ -134,15 +134,15 @@ export default function ChatPage() {
             rows={2}
             placeholder="Ask about proposals, job fit, profile strategy…"
             className="flex-1 px-4 py-2.5 rounded-xl text-sm text-slate-200 resize-none focus:outline-none transition-colors"
-            style={{ background: '#0a0b10', border: '1px solid rgba(100,116,139,0.2)' }}
+            style={{ background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.2)' }}
           />
           <button
             onClick={() => send()}
             disabled={loading || !input.trim()}
             className="p-2.5 rounded-xl transition-all disabled:opacity-30 shrink-0"
-            style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)' }}
+            style={{ background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)' }}
           >
-            <Send size={15} className="text-cyan-400" />
+            <Send size={15} className="text-violet-400" />
           </button>
         </div>
         <p className="text-[10px] text-slate-700 text-center mt-2">Enter to send · Shift+Enter for new line</p>

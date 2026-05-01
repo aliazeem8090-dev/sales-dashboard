@@ -5,6 +5,14 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { register } from '@/lib/auth'
 
+const inputStyle: React.CSSProperties = {
+  width: '100%', padding: '10px 12px', borderRadius: 'var(--r3)',
+  background: 'var(--ink)', border: '1px solid var(--bord2)',
+  color: 'var(--t1)', fontSize: '13px', outline: 'none',
+  fontFamily: 'var(--sans)', transition: 'border-color 0.2s',
+  boxSizing: 'border-box',
+}
+
 export default function RegisterPage() {
   const router = useRouter()
   const [name, setName] = useState('')
@@ -28,103 +36,111 @@ export default function RegisterPage() {
     }
   }
 
-  const inputClass = "w-full px-3 py-2.5 rounded-lg text-sm text-slate-200 focus:outline-none transition-colors"
-  const inputStyle = { background: '#07080d', border: '1px solid rgba(100,116,139,0.2)' }
-  const labelClass = "block text-[10px] font-medium text-slate-500 mb-1.5 uppercase tracking-wider"
+  const focusStyle = (e: React.FocusEvent<any>) => (e.currentTarget.style.borderColor = 'var(--v1)')
+  const blurStyle  = (e: React.FocusEvent<any>) => (e.currentTarget.style.borderColor = 'var(--bord2)')
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative" style={{ background: 'var(--background)' }}>
-      <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: 'linear-gradient(rgba(6,182,212,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.04) 1px, transparent 1px)',
-        backgroundSize: '40px 40px',
-      }} />
-      <div className="relative w-full max-w-sm mx-4">
-        <div className="flex items-center gap-2.5 mb-8">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)' }}>
-            <div className="w-3 h-3 rounded-sm" style={{ background: '#06b6d4' }} />
-          </div>
+    <div style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'radial-gradient(ellipse 120% 80% at 50% -20%, rgba(90,60,200,0.18) 0%, transparent 60%), var(--ink)',
+      fontFamily: 'var(--sans)',
+    }}>
+      <div style={{ width: '100%', maxWidth: '360px', margin: '0 16px' }}>
+        {/* Brand */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
+          <div style={{
+            width: '38px', height: '38px', borderRadius: '11px',
+            background: 'linear-gradient(135deg,#6c47ff,#a78bfa)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'var(--mono)', fontSize: '12px', fontWeight: 500, color: '#fff',
+            boxShadow: '0 0 0 1px rgba(124,111,255,0.3), 0 4px 16px rgba(100,60,255,0.3)',
+          }}>SI</div>
           <div>
-            <p className="text-sm font-semibold text-slate-200">Sales Intelligence</p>
-            <p className="text-[10px]" style={{ color: 'rgba(6,182,212,0.6)' }}>Platform</p>
+            <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--t1)', letterSpacing: '-0.2px' }}>Sales Intelligence</p>
+            <p style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--t3)', letterSpacing: '1px' }}>PLATFORM v3</p>
           </div>
         </div>
-      <div className="rounded-2xl p-8" style={{ background: '#0a0b10', border: '1px solid rgba(6,182,212,0.12)' }}>
-        <h1 className="text-xl font-semibold text-slate-200 mb-1">Create account</h1>
-        <p className="text-xs text-slate-500 mb-6">Join your sales team</p>
 
-        {error && (
-          <div className="mb-4 px-3 py-2.5 text-sm text-red-400 rounded-lg" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
-            {error}
-          </div>
-        )}
+        {/* Card */}
+        <div style={{
+          background: 'rgba(17,20,37,0.9)',
+          border: '1px solid var(--bord2)',
+          borderRadius: 'var(--r)',
+          padding: '32px',
+          backdropFilter: 'blur(20px)',
+          boxShadow: 'var(--shadow)',
+        }}>
+          <h1 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--t1)', marginBottom: '4px', letterSpacing: '-0.3px' }}>Create account</h1>
+          <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--t3)', marginBottom: '24px', letterSpacing: '0.3px' }}>Join your sales team</p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className={labelClass}>Full name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              required
-              className={inputClass}
-              style={inputStyle}
-              placeholder="Waqas Ahmed"
-            />
-          </div>
-          <div>
-            <label className={labelClass}>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              className={inputClass}
-              style={inputStyle}
-              placeholder="you@example.com"
-            />
-          </div>
-          <div>
-            <label className={labelClass}>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              className={inputClass}
-              style={inputStyle}
-              placeholder="••••••••"
-            />
-          </div>
-          <div>
-            <label className={labelClass}>Role</label>
-            <select
-              value={role}
-              onChange={e => setRole(e.target.value)}
-              className={inputClass}
-              style={inputStyle}
+          {error && (
+            <div style={{
+              marginBottom: '16px', padding: '10px 12px', borderRadius: 'var(--r3)',
+              background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)',
+              fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--red)',
+            }}>
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {[
+              { label: 'Full Name',   type: 'text',     val: name,     setter: setName,     placeholder: 'Waqas Ahmed' },
+              { label: 'Email',       type: 'email',    val: email,    setter: setEmail,    placeholder: 'you@example.com' },
+              { label: 'Password',    type: 'password', val: password, setter: setPassword, placeholder: '••••••••' },
+            ].map(({ label, type, val, setter, placeholder }) => (
+              <div key={label}>
+                <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--t3)', textTransform: 'uppercase', marginBottom: '6px' }}>{label}</label>
+                <input
+                  type={type}
+                  value={val}
+                  onChange={e => setter(e.target.value)}
+                  required
+                  placeholder={placeholder}
+                  style={inputStyle}
+                  onFocus={focusStyle}
+                  onBlur={blurStyle}
+                />
+              </div>
+            ))}
+            <div>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--t3)', textTransform: 'uppercase', marginBottom: '6px' }}>Role</label>
+              <select
+                value={role}
+                onChange={e => setRole(e.target.value)}
+                style={inputStyle}
+                onFocus={focusStyle}
+                onBlur={blurStyle}
+              >
+                <option value="REP">Sales Rep</option>
+                <option value="LINKEDIN_AGENT">LinkedIn Agent</option>
+                <option value="FREELANCER_AGENT">Freelancer Agent</option>
+                <option value="MANAGER">Manager</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: '100%', padding: '11px', borderRadius: 'var(--r3)',
+                background: loading ? 'rgba(124,111,255,0.4)' : 'linear-gradient(135deg,#6c47ff,#8b6fff)',
+                border: 'none', color: '#fff', fontSize: '13px', fontWeight: 600,
+                cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
+                fontFamily: 'var(--sans)',
+                boxShadow: loading ? 'none' : '0 4px 14px rgba(108,71,255,0.35)',
+                marginTop: '4px',
+              }}
             >
-              <option value="REP">Sales Rep</option>
-              <option value="LINKEDIN_AGENT">LinkedIn Agent</option>
-              <option value="FREELANCER_AGENT">Freelancer Agent</option>
-              <option value="MANAGER">Manager</option>
-              <option value="ADMIN">Admin</option>
-            </select>
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 px-4 text-sm font-semibold rounded-lg transition-all disabled:opacity-50"
-            style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)', color: '#67e8f9' }}
-          >
-            {loading ? 'Creating account…' : 'Create account'}
-          </button>
-        </form>
+              {loading ? 'Creating account…' : 'Create account →'}
+            </button>
+          </form>
 
-        <p className="mt-5 text-center text-xs text-slate-500">
-          Already have an account?{' '}
-          <Link href="/login" className="text-cyan-400 hover:text-cyan-300 transition-colors">Sign in</Link>
-        </p>
-      </div>
+          <p style={{ marginTop: '20px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--t3)' }}>
+            Already have an account?{' '}
+            <Link href="/login" style={{ color: 'var(--v2)', textDecoration: 'none' }}>Sign in</Link>
+          </p>
+        </div>
       </div>
     </div>
   )

@@ -76,7 +76,7 @@ function ProposalsList() {
           <Link
             href="/proposals/new"
             className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg transition-colors"
-            style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.25)', color: '#67e8f9' }}
+            style={{ background: 'rgba(124,111,255,0.1)', border: '1px solid rgba(124,111,255,0.25)', color: '#a78bfa' }}
           >
             <Plus size={13} />
             Log Proposal
@@ -92,7 +92,7 @@ function ProposalsList() {
             onClick={() => setFilter(s)}
             className={`px-3 py-1 text-[10px] font-semibold uppercase tracking-wide rounded-lg border transition-colors ${
               filter === s
-                ? 'bg-cyan-500/20 border-cyan-500/30 text-cyan-400'
+                ? 'bg-violet-500/20 border-violet-500/30 text-violet-400'
                 : 'border-slate-800 text-slate-600 hover:border-slate-600 hover:text-slate-400'
             }`}
           >
@@ -104,21 +104,21 @@ function ProposalsList() {
       {/* Table */}
       {loading ? (
         <div className="flex items-center gap-2 py-12 text-slate-600 text-xs">
-          <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+          <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
           Loading…
         </div>
       ) : proposals.length === 0 ? (
-        <div className="rounded-xl border border-slate-800/60 p-12 text-center" style={{ background: '#0a0b10' }}>
+        <div className="rounded-xl border border-[var(--bord)] p-12 text-center" style={{ background: 'var(--ink2)' }}>
           <p className="text-slate-500 text-sm">No proposals found.</p>
-          <Link href="/proposals/new" className="mt-3 inline-block text-xs text-cyan-500/70 hover:text-cyan-400 transition-colors">
+          <Link href="/proposals/new" className="mt-3 inline-block text-xs text-violet-500/70 hover:text-violet-400 transition-colors">
             Log your first proposal →
           </Link>
         </div>
       ) : (
-        <div className="rounded-xl border border-slate-800/60 overflow-hidden" style={{ background: '#0a0b10' }}>
+        <div className="rounded-xl border border-[var(--bord)] overflow-hidden" style={{ background: 'var(--ink2)' }}>
           <table className="w-full text-xs">
             <thead>
-              <tr style={{ borderBottom: '1px solid rgba(30,37,51,1)', background: '#07080d' }}>
+              <tr style={{ borderBottom: '1px solid rgba(30,37,51,1)', background: 'var(--ink)' }}>
                 <th className="px-4 py-3 text-left font-medium text-slate-600 uppercase tracking-wider">Job</th>
                 {isManager && <th className="px-4 py-3 text-left font-medium text-slate-600 uppercase tracking-wider">Rep</th>}
                 <th className="px-4 py-3 text-left font-medium text-slate-600 uppercase tracking-wider">Status</th>
@@ -142,7 +142,7 @@ function ProposalsList() {
                         href={p.job.upworkJobUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-[10px] text-slate-600 hover:text-cyan-400 transition-colors mt-0.5 w-fit"
+                        className="flex items-center gap-1 text-[10px] text-slate-600 hover:text-violet-400 transition-colors mt-0.5 w-fit"
                       >
                         <ExternalLink size={9} />
                         View job
@@ -181,7 +181,7 @@ function ProposalsList() {
                     <div className="flex items-center justify-end gap-3">
                       <a
                         href={`/review?proposalId=${p.id}`}
-                        className="text-[10px] text-cyan-500/70 hover:text-cyan-400 transition-colors"
+                        className="text-[10px] text-violet-500/70 hover:text-violet-400 transition-colors"
                       >
                         Review
                       </a>
@@ -276,7 +276,7 @@ function StatusDropdown({ proposalId, current, onUpdate }: { proposalId: string;
       {open && (
         <div
           className="absolute right-0 mt-1 w-32 rounded-lg z-20 py-1 overflow-hidden"
-          style={{ background: '#0f1117', border: '1px solid rgba(100,116,139,0.2)', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
+          style={{ background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.2)', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
         >
           {STATUSES.filter(s => s !== current).map(s => (
             <button

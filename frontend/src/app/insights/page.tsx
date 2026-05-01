@@ -120,13 +120,13 @@ export default function InsightsPage() {
     (!typeFilter || i.insightType === typeFilter)
   )
 
-  const inputClass = "w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-cyan-500/50 transition-colors"
-  const inputStyle = { background: '#0a0b10', border: '1px solid rgba(100,116,139,0.2)' }
+  const inputClass = "w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-violet-500/50 transition-colors"
+  const inputStyle = { background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.2)' }
 
   return (
     <div className="flex-1 relative z-10">
       {/* Header */}
-      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', background: '#07080d' }}>
+      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(124,111,255,0.08)', background: 'var(--ink)' }}>
         <div className="flex items-start justify-between flex-wrap gap-3">
           <div>
             <h1 className="text-lg font-semibold text-slate-200">Coaching Insights</h1>
@@ -141,7 +141,7 @@ export default function InsightsPage() {
                 value={selectedRep}
                 onChange={e => setSelectedRep(e.target.value)}
                 className="px-3 py-1.5 rounded-lg text-xs text-slate-300 focus:outline-none"
-                style={{ background: '#0f1117', border: '1px solid rgba(100,116,139,0.3)' }}
+                style={{ background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.3)' }}
               >
                 <option value="">Select rep…</option>
                 {reps.map(r => (
@@ -152,7 +152,7 @@ export default function InsightsPage() {
                 onClick={generateInsights}
                 disabled={!selectedRep || generating}
                 className="px-3 py-1.5 text-xs font-medium rounded-lg disabled:opacity-50 transition-colors"
-                style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.25)', color: '#67e8f9' }}
+                style={{ background: 'rgba(124,111,255,0.1)', border: '1px solid rgba(124,111,255,0.25)', color: '#a78bfa' }}
               >
                 {generating ? 'Generating…' : 'Generate Insights'}
               </button>
@@ -177,7 +177,7 @@ export default function InsightsPage() {
 
         {/* Manager note panel */}
         {showNotePanel && isManager && (
-          <div className="rounded-xl p-5 space-y-3" style={{ background: '#0a0b10', border: '1px solid rgba(139,92,246,0.2)' }}>
+          <div className="rounded-xl p-5 space-y-3" style={{ background: 'var(--ink2)', border: '1px solid rgba(139,92,246,0.2)' }}>
             <p className="text-xs font-semibold text-violet-400 uppercase tracking-widest">Send Note to Rep</p>
             <div>
               <label className="block text-[10px] text-slate-500 mb-1 uppercase tracking-wide">Rep</label>
@@ -237,7 +237,7 @@ export default function InsightsPage() {
               onClick={() => setFilter(s)}
               className={`px-2.5 py-1 text-[10px] font-semibold rounded-lg border transition-colors ${
                 filter === s
-                  ? (s ? SEVERITY_BADGE[s] : 'bg-cyan-500/20 border-cyan-500/30 text-cyan-400')
+                  ? (s ? SEVERITY_BADGE[s] : 'bg-violet-500/20 border-violet-500/30 text-violet-400')
                   : 'border-slate-800 text-slate-600 hover:border-slate-600 hover:text-slate-400'
               }`}
             >
@@ -264,7 +264,7 @@ export default function InsightsPage() {
         {loading ? (
           <p className="text-slate-500 text-xs py-8">Loading insights…</p>
         ) : filtered.length === 0 ? (
-          <div className="rounded-xl border border-slate-800/60 p-10 text-center" style={{ background: '#0a0b10' }}>
+          <div className="rounded-xl border border-[var(--bord)] p-10 text-center" style={{ background: 'var(--ink2)' }}>
             <p className="text-slate-500 text-sm">No insights match this filter.</p>
             {isManager && !insights.length && (
               <p className="text-xs text-slate-600 mt-1">Select a rep and click "Generate Insights" to run analysis.</p>

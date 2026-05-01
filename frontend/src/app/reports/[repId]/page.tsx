@@ -74,7 +74,7 @@ function nicheColor(niche: string) {
 
 function KPI({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="rounded-xl px-5 py-4" style={{ background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)' }}>
+    <div className="rounded-xl px-5 py-4" style={{ background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)' }}>
       <p className="text-[10px] font-medium text-slate-500 mb-1 uppercase tracking-wider">{label}</p>
       <p className="text-2xl font-bold text-slate-200">{value}</p>
       {sub && <p className="text-xs text-slate-600 mt-0.5">{sub}</p>}
@@ -97,8 +97,8 @@ function FunnelBar({ label, value, max, color }: { label: string; value: number;
   )
 }
 
-const cardStyle = { background: '#0a0b10', border: '1px solid rgba(30,37,51,0.8)' }
-const bgDark = { background: '#07080d' }
+const cardStyle = { background: 'var(--ink2)', border: '1px solid rgba(30,37,51,0.8)' }
+const bgDark = { background: 'var(--ink)' }
 
 export default function ReportPage() {
   const params = useParams()
@@ -134,13 +134,13 @@ export default function ReportPage() {
         @media print {
           .no-print { display: none !important; }
           .print-page { margin: 0; padding: 24px; }
-          body { background: #07080d; }
+          body { background: var(--ink); }
         }
       `}</style>
 
       <div className="flex-1 print-page overflow-auto">
           {/* Header */}
-          <div className="px-8 py-5 flex items-center justify-between no-print" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', ...bgDark }}>
+          <div className="px-8 py-5 flex items-center justify-between no-print" style={{ borderBottom: '1px solid rgba(124,111,255,0.08)', ...bgDark }}>
             <div>
               <h1 className="text-lg font-semibold text-slate-200">Bidder Report</h1>
               <p className="text-xs text-slate-500 mt-0.5">Individual performance overview</p>

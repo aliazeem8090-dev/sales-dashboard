@@ -3,19 +3,36 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { Proposal, ProposalStatus } from './proposal.entity';
+import { Job } from '../jobs/job.entity';
 import { ProposalStatusHistoryService } from '../proposal-status-history/proposal-status-history.service';
 import { ActivityLogsService } from '../activity-logs/activity-logs.service';
+import { JobNotificationsService } from '../job-notifications/job-notifications.service';
 
 @Injectable()
 export class ProposalsService {
   constructor(
     @InjectRepository(Proposal)
     private proposalsRepository: Repository<Proposal>,
+    @InjectRepository(Job)
+    private jobRepository: Repository<Job>,
     private statusHistoryService: ProposalStatusHistoryService,
     private activityLogsService: ActivityLogsService,
+    private jobNotificationsService: JobNotificationsService,
   ) {}
 
-  async findAll(filters?: { status?: ProposalStatus }): Promise<Proposal[]> {
+  async findAll(filters?: { status?: ProposalStatus; companyId?: string }): Promise<Proposal[]> {
+    if (filters?.companyId) {
+      const qb = this.proposalsRepository
+        .createQueryBuilder('p')
+        .leftJoinAndSelect('p.job', 'job')
+        .leftJoinAndSelect('p.profileUsed', 'profileUsed')
+        .leftJoinAndSelect('p.rep', 'rep')
+        .leftJoinAndSelect('rep.user', 'user')
+        .where('user.companyId = :companyId', { companyId: filters.companyId })
+        .orderBy('p.submittedAt', 'DESC');
+      if (filters.status) qb.andWhere('p.status = :status', { status: filters.status });
+      return qb.getMany();
+    }
     const where: any = {};
     if (filters?.status) where.status = filters.status;
     return this.proposalsRepository.find({
@@ -59,16 +76,35 @@ export class ProposalsService {
     });
   }
 
-  async create(proposalData: Partial<Proposal>, createdBy?: string): Promise<Proposal> {
+  async create(
+    proposalData: Partial<Proposal>,
+    createdBy?: string,
+    context?: { companyId?: string; repEmail?: string },
+  ): Promise<Proposal> {
     const proposal = this.proposalsRepository.create(proposalData);
     const saved = await this.proposalsRepository.save(proposal);
-    // Log initial status to history
     await this.statusHistoryService.log(
       saved.id,
       null,
       saved.status || ProposalStatus.SENT,
       createdBy || saved.repId,
     );
+
+    // Cross-company job lead notification: Company 1 → Company 2
+    if (context?.companyId === 'company-1' && saved.jobId) {
+      this.jobRepository.findOne({ where: { id: saved.jobId } }).then(job => {
+        if (job?.upworkJobUrl) {
+          this.jobNotificationsService.create({
+            jobUrl: job.upworkJobUrl,
+            jobTitle: job.title || 'Untitled Job',
+            repName: context.repEmail || 'Company 1 Rep',
+            sourceCompanyId: 'company-1',
+            targetCompanyId: 'company-2',
+          }).catch(() => {});
+        }
+      }).catch(() => {});
+    }
+
     return saved;
   }
 

@@ -144,9 +144,9 @@ export default function KpiTargetsPage() {
     return (
       <div className="flex items-center justify-center py-32">
         <div className="flex items-center gap-3">
-          <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-          <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" style={{ animationDelay: '150ms' }} />
-          <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" style={{ animationDelay: '300ms' }} />
+          <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+          <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" style={{ animationDelay: '150ms' }} />
+          <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" style={{ animationDelay: '300ms' }} />
           <span className="text-xs text-slate-500 ml-2">Loading reps…</span>
         </div>
       </div>
@@ -158,7 +158,7 @@ export default function KpiTargetsPage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <Target size={16} className="text-cyan-400" />
+          <Target size={16} className="text-violet-400" />
           <h1 className="text-lg font-semibold text-slate-200 tracking-tight">KPI Targets</h1>
         </div>
         <p className="text-xs text-slate-500">
@@ -188,21 +188,21 @@ export default function KpiTargetsPage() {
               className={`rounded-xl border overflow-hidden ${
                 status === 'fail' ? 'border-red-500/20' :
                 status === 'warn' ? 'border-amber-500/20' :
-                'border-slate-800/60'
+                'border-[var(--bord)]'
               }`}
-              style={{ background: '#0a0b10' }}
+              style={{ background: 'var(--ink2)' }}
             >
               {/* Card header */}
               <div className={`flex items-center justify-between px-5 py-3 border-b ${
                 status === 'fail' ? 'border-red-500/20 bg-red-500/5' :
                 status === 'warn' ? 'border-amber-500/20 bg-amber-500/5' :
-                'border-slate-800/60 bg-slate-900/30'
+                'border-[var(--bord)] bg-slate-900/30'
               }`}>
                 <div className="flex items-center gap-3">
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
                     status === 'fail' ? 'bg-red-500/15 text-red-400' :
                     status === 'warn' ? 'bg-amber-500/15 text-amber-400' :
-                    'bg-cyan-500/15 text-cyan-400'
+                    'bg-violet-500/15 text-violet-400'
                   }`}>
                     {rep.name.charAt(0).toUpperCase()}
                   </div>
@@ -225,7 +225,7 @@ export default function KpiTargetsPage() {
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
                     justSaved
                       ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400'
-                      : 'bg-cyan-500/10 border border-cyan-500/25 text-cyan-400 hover:bg-cyan-500/20'
+                      : 'bg-violet-500/10 border border-violet-500/25 text-violet-400 hover:bg-violet-500/20'
                   } disabled:opacity-50`}
                 >
                   {isSaving ? (
@@ -264,7 +264,7 @@ export default function KpiTargetsPage() {
                             min="0"
                             value={repTargets[field.key] || ''}
                             onChange={e => updateTarget(rep.repId, field.key, e.target.value)}
-                            className="w-20 px-2 py-1 text-xs font-mono text-slate-200 rounded-md border border-slate-700 bg-slate-800/60 focus:outline-none focus:border-cyan-500/50 focus:bg-slate-800 transition-colors"
+                            className="w-20 px-2 py-1 text-xs font-mono text-slate-200 rounded-md border border-slate-700 bg-slate-800/60 focus:outline-none focus:border-violet-500/50 focus:bg-slate-800 transition-colors"
                             placeholder="0"
                           />
                           {field.unit && field.unit !== '$' && <span className="text-[10px] text-slate-500">{field.unit}</span>}
@@ -308,7 +308,7 @@ export default function KpiTargetsPage() {
         })}
 
         {reps.length === 0 && (
-          <div className="rounded-xl border border-slate-800/60 p-12 text-center" style={{ background: '#0a0b10' }}>
+          <div className="rounded-xl border border-[var(--bord)] p-12 text-center" style={{ background: 'var(--ink2)' }}>
             <Target size={24} className="text-slate-700 mx-auto mb-3" />
             <p className="text-slate-500 text-sm">No reps found.</p>
             <p className="text-[11px] text-slate-600 mt-1">Add sales reps to the team first.</p>

@@ -48,7 +48,7 @@ export function Leaderboard({ reps }: { reps: RepEntry[] }) {
                 <div className="flex items-center justify-end gap-2">
                   <div className="w-16 rounded-full h-1.5" style={{ background: 'rgba(30,37,51,1)' }}>
                     <div
-                      className="h-1.5 bg-cyan-500 rounded-full"
+                      className="h-1.5 bg-violet-500 rounded-full"
                       style={{ width: `${rep.consistencyScore || 0}%` }}
                     />
                   </div>

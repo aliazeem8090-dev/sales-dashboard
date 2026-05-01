@@ -27,74 +27,108 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative" style={{ background: 'var(--background)' }}>
-      {/* Grid overlay */}
-      <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: 'linear-gradient(rgba(6,182,212,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.04) 1px, transparent 1px)',
-        backgroundSize: '40px 40px',
-      }} />
-
-      <div className="relative w-full max-w-sm mx-4">
-        {/* Logo mark */}
-        <div className="flex items-center gap-2.5 mb-8">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)' }}>
-            <div className="w-3 h-3 rounded-sm" style={{ background: '#06b6d4' }} />
-          </div>
+    <div style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'radial-gradient(ellipse 120% 80% at 50% -20%, rgba(90,60,200,0.18) 0%, transparent 60%), var(--ink)',
+      fontFamily: 'var(--sans)',
+    }}>
+      <div style={{ width: '100%', maxWidth: '360px', margin: '0 16px' }}>
+        {/* Brand */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
+          <div style={{
+            width: '38px', height: '38px', borderRadius: '11px',
+            background: 'linear-gradient(135deg,#6c47ff,#a78bfa)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'var(--mono)', fontSize: '12px', fontWeight: 500, color: '#fff',
+            boxShadow: '0 0 0 1px rgba(124,111,255,0.3), 0 4px 16px rgba(100,60,255,0.3)',
+          }}>SI</div>
           <div>
-            <p className="text-sm font-semibold text-slate-200">Sales Intelligence</p>
-            <p className="text-[10px]" style={{ color: 'rgba(6,182,212,0.6)' }}>Platform</p>
+            <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--t1)', letterSpacing: '-0.2px' }}>Sales Intelligence</p>
+            <p style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--t3)', letterSpacing: '1px' }}>PLATFORM v3</p>
           </div>
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl p-8" style={{ background: '#0a0b10', border: '1px solid rgba(6,182,212,0.12)' }}>
-          <h1 className="text-xl font-semibold text-slate-200 mb-1">Sign in</h1>
-          <p className="text-xs text-slate-500 mb-6">Enter your credentials to access the platform</p>
+        <div style={{
+          background: 'rgba(17,20,37,0.9)',
+          border: '1px solid var(--bord2)',
+          borderRadius: 'var(--r)',
+          padding: '32px',
+          backdropFilter: 'blur(20px)',
+          boxShadow: 'var(--shadow)',
+        }}>
+          <h1 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--t1)', marginBottom: '4px', letterSpacing: '-0.3px' }}>Sign in</h1>
+          <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--t3)', marginBottom: '24px', letterSpacing: '0.3px' }}>Enter your credentials to continue</p>
 
           {error && (
-            <div className="mb-4 px-3 py-2.5 rounded-lg text-xs text-red-400" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
+            <div style={{
+              marginBottom: '16px', padding: '10px 12px', borderRadius: 'var(--r3)',
+              background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)',
+              fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--red)',
+            }}>
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
-              <label className="block text-[10px] font-medium text-slate-500 mb-1.5 uppercase tracking-wider">Email</label>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--t3)', textTransform: 'uppercase', marginBottom: '6px' }}>Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-lg text-sm text-slate-200 focus:outline-none transition-colors"
-                style={{ background: '#07080d', border: '1px solid rgba(100,116,139,0.25)' }}
                 placeholder="you@company.com"
+                style={{
+                  width: '100%', padding: '10px 12px', borderRadius: 'var(--r3)',
+                  background: 'var(--ink)', border: '1px solid var(--bord2)',
+                  color: 'var(--t1)', fontSize: '13px', outline: 'none',
+                  fontFamily: 'var(--sans)', transition: 'border-color 0.2s',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={e => (e.currentTarget.style.borderColor = 'var(--v1)')}
+                onBlur={e => (e.currentTarget.style.borderColor = 'var(--bord2)')}
               />
             </div>
             <div>
-              <label className="block text-[10px] font-medium text-slate-500 mb-1.5 uppercase tracking-wider">Password</label>
+              <label style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--t3)', textTransform: 'uppercase', marginBottom: '6px' }}>Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-lg text-sm text-slate-200 focus:outline-none transition-colors"
-                style={{ background: '#07080d', border: '1px solid rgba(100,116,139,0.25)' }}
                 placeholder="••••••••"
+                style={{
+                  width: '100%', padding: '10px 12px', borderRadius: 'var(--r3)',
+                  background: 'var(--ink)', border: '1px solid var(--bord2)',
+                  color: 'var(--t1)', fontSize: '13px', outline: 'none',
+                  fontFamily: 'var(--sans)', transition: 'border-color 0.2s',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={e => (e.currentTarget.style.borderColor = 'var(--v1)')}
+                onBlur={e => (e.currentTarget.style.borderColor = 'var(--bord2)')}
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 px-4 text-sm font-semibold rounded-lg transition-all disabled:opacity-50 mt-2"
-              style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)', color: '#67e8f9' }}
+              style={{
+                width: '100%', padding: '11px', borderRadius: 'var(--r3)',
+                background: loading ? 'rgba(124,111,255,0.4)' : 'linear-gradient(135deg,#6c47ff,#8b6fff)',
+                border: 'none', color: '#fff', fontSize: '13px', fontWeight: 600,
+                cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
+                fontFamily: 'var(--sans)',
+                boxShadow: loading ? 'none' : '0 4px 14px rgba(108,71,255,0.35)',
+                marginTop: '4px',
+              }}
             >
               {loading ? 'Signing in…' : 'Sign in →'}
             </button>
           </form>
 
-          <p className="mt-5 text-center text-xs text-slate-600">
+          <p style={{ marginTop: '20px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--t3)' }}>
             No account?{' '}
-            <Link href="/register" className="text-cyan-500/70 hover:text-cyan-400 transition-colors">Register</Link>
+            <Link href="/register" style={{ color: 'var(--v2)', textDecoration: 'none' }}>Register</Link>
           </p>
         </div>
       </div>

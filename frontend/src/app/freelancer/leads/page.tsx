@@ -6,7 +6,7 @@ import { api } from '@/lib/api'
 import { getStoredUser } from '@/lib/auth'
 import { Plus, X, ChevronDown, ChevronUp, Phone, Mail, Trash2, FileText } from 'lucide-react'
 
-const inputClass = "w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-cyan-500/50 transition-colors"
+const inputClass = "w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-violet-500/50 transition-colors"
 const inputStyle = { background: '#0d0e14', border: '1px solid rgba(100,116,139,0.2)' }
 
 const STATUSES = ['NEW', 'PROPOSAL_SENT', 'REPLIED', 'INTERVIEW', 'HIRED', 'LOST'] as const
@@ -22,7 +22,7 @@ const STATUS_LABELS: Record<LeadStatus, string> = {
 }
 const STATUS_COLORS: Record<LeadStatus, string> = {
   NEW:           '#64748b',
-  PROPOSAL_SENT: '#67e8f9',
+  PROPOSAL_SENT: '#a78bfa',
   REPLIED:       '#a5b4fc',
   INTERVIEW:     '#fb923c',
   HIRED:         '#4ade80',
@@ -120,7 +120,7 @@ export default function FreelancerLeadsPage() {
   return (
     <div className="flex-1 relative z-10">
       {/* Header */}
-      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', background: '#07080d' }}>
+      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(124,111,255,0.08)', background: 'var(--ink)' }}>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold text-slate-200">Leads</h1>
@@ -129,7 +129,7 @@ export default function FreelancerLeadsPage() {
           <button
             onClick={() => { setShowForm(v => !v); if (showForm) resetForm() }}
             className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
-            style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.25)', color: '#67e8f9' }}
+            style={{ background: 'rgba(124,111,255,0.1)', border: '1px solid rgba(124,111,255,0.25)', color: '#a78bfa' }}
           >
             {showForm ? <X size={13} /> : <Plus size={13} />}
             {showForm ? 'Cancel' : 'Add Lead'}
@@ -141,8 +141,8 @@ export default function FreelancerLeadsPage() {
 
         {/* Add lead form */}
         {showForm && (
-          <form onSubmit={handleCreate} className="rounded-xl p-5 space-y-4" style={{ background: '#0a0b10', border: '1px solid rgba(6,182,212,0.15)' }}>
-            <p className="text-[10px] font-semibold text-cyan-400 uppercase tracking-widest">New Lead</p>
+          <form onSubmit={handleCreate} className="rounded-xl p-5 space-y-4" style={{ background: 'var(--ink2)', border: '1px solid rgba(124,111,255,0.15)' }}>
+            <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-widest">New Lead</p>
 
             <div>
               <label className="block text-[10px] text-slate-500 mb-1 uppercase tracking-wide">Client Name *</label>
@@ -177,7 +177,7 @@ export default function FreelancerLeadsPage() {
 
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-300">Cancel</button>
-              <button type="submit" disabled={submitting || !clientName.trim()} className="px-4 py-1.5 text-xs font-semibold rounded-lg disabled:opacity-50 transition-colors" style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)', color: '#67e8f9' }}>
+              <button type="submit" disabled={submitting || !clientName.trim()} className="px-4 py-1.5 text-xs font-semibold rounded-lg disabled:opacity-50 transition-colors" style={{ background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)', color: '#a78bfa' }}>
                 {submitting ? 'Adding…' : 'Add Lead'}
               </button>
             </div>
@@ -192,9 +192,9 @@ export default function FreelancerLeadsPage() {
               onClick={() => setFilterStatus(s)}
               className="px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors"
               style={{
-                background:  filterStatus === s ? (s === 'ALL' ? 'rgba(6,182,212,0.15)' : `${STATUS_COLORS[s as LeadStatus]}18`) : 'transparent',
-                border:      `1px solid ${filterStatus === s ? (s === 'ALL' ? 'rgba(6,182,212,0.3)' : `${STATUS_COLORS[s as LeadStatus]}40`) : 'rgba(100,116,139,0.15)'}`,
-                color:       filterStatus === s ? (s === 'ALL' ? '#67e8f9' : STATUS_COLORS[s as LeadStatus]) : '#64748b',
+                background:  filterStatus === s ? (s === 'ALL' ? 'rgba(124,111,255,0.15)' : `${STATUS_COLORS[s as LeadStatus]}18`) : 'transparent',
+                border:      `1px solid ${filterStatus === s ? (s === 'ALL' ? 'rgba(124,111,255,0.3)' : `${STATUS_COLORS[s as LeadStatus]}40`) : 'rgba(100,116,139,0.15)'}`,
+                color:       filterStatus === s ? (s === 'ALL' ? '#a78bfa' : STATUS_COLORS[s as LeadStatus]) : '#64748b',
               }}
             >
               {s === 'ALL' ? 'All' : STATUS_LABELS[s as LeadStatus]}
@@ -207,7 +207,7 @@ export default function FreelancerLeadsPage() {
         {loading ? (
           <p className="text-slate-500 text-xs py-8">Loading leads…</p>
         ) : filtered.length === 0 ? (
-          <div className="rounded-xl border border-slate-800/60 p-10 text-center" style={{ background: '#0a0b10' }}>
+          <div className="rounded-xl border border-[var(--bord)] p-10 text-center" style={{ background: 'var(--ink2)' }}>
             <p className="text-slate-500 text-sm">{filterStatus === 'ALL' ? 'No leads yet.' : `No leads with status "${STATUS_LABELS[filterStatus as LeadStatus]}".`}</p>
             {filterStatus === 'ALL' && <p className="text-xs text-slate-600 mt-1">Click "Add Lead" to log your first client.</p>}
           </div>
@@ -217,7 +217,7 @@ export default function FreelancerLeadsPage() {
               const color = STATUS_COLORS[lead.status]
               const isExpanded = expandedId === lead.id
               return (
-                <div key={lead.id} className="rounded-xl" style={{ background: '#0a0b10', border: `1px solid rgba(100,116,139,0.1)` }}>
+                <div key={lead.id} className="rounded-xl" style={{ background: 'var(--ink2)', border: `1px solid rgba(100,116,139,0.1)` }}>
                   {/* Summary row */}
                   <div className="flex items-center gap-3 px-4 py-3">
                     <div className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
@@ -278,12 +278,12 @@ export default function FreelancerLeadsPage() {
                             <p className="text-[10px] text-slate-600 uppercase tracking-wide mb-1">Contact Info</p>
                             <div className="flex gap-4">
                               {lead.contactEmail && (
-                                <a href={`mailto:${lead.contactEmail}`} className="flex items-center gap-1.5 text-[12px] text-cyan-400 hover:text-cyan-300">
+                                <a href={`mailto:${lead.contactEmail}`} className="flex items-center gap-1.5 text-[12px] text-violet-400 hover:text-violet-300">
                                   <Mail size={11} /> {lead.contactEmail}
                                 </a>
                               )}
                               {lead.contactMobile && (
-                                <a href={`tel:${lead.contactMobile}`} className="flex items-center gap-1.5 text-[12px] text-cyan-400 hover:text-cyan-300">
+                                <a href={`tel:${lead.contactMobile}`} className="flex items-center gap-1.5 text-[12px] text-violet-400 hover:text-violet-300">
                                   <Phone size={11} /> {lead.contactMobile}
                                 </a>
                               )}

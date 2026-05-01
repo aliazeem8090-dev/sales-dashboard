@@ -16,7 +16,7 @@ const STATUS_LABELS: Record<string, string> = {
 }
 const STATUS_COLORS: Record<string, string> = {
   NEW:           '#64748b',
-  PROPOSAL_SENT: '#67e8f9',
+  PROPOSAL_SENT: '#a78bfa',
   REPLIED:       '#a5b4fc',
   INTERVIEW:     '#fb923c',
   HIRED:         '#4ade80',
@@ -63,7 +63,7 @@ export default function ManagerFreelancerPage() {
   return (
     <div className="flex-1 relative z-10">
       {/* Header */}
-      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', background: '#07080d' }}>
+      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(124,111,255,0.08)', background: 'var(--ink)' }}>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold text-slate-200">Freelancer Agents</h1>
@@ -81,7 +81,7 @@ export default function ManagerFreelancerPage() {
         {loading ? (
           <p className="text-slate-500 text-xs py-8">Loading agents…</p>
         ) : agents.length === 0 ? (
-          <div className="rounded-xl border border-slate-800/60 p-10 text-center" style={{ background: '#0a0b10' }}>
+          <div className="rounded-xl border border-[var(--bord)] p-10 text-center" style={{ background: 'var(--ink2)' }}>
             <p className="text-slate-500 text-sm">No freelancer agents yet.</p>
             <p className="text-xs text-slate-600 mt-1">Add agents from the Team page.</p>
           </div>
@@ -91,7 +91,7 @@ export default function ManagerFreelancerPage() {
           const conversionRate = agent.totalLeads > 0 ? Math.round((agent.wonLeads / agent.totalLeads) * 100) : 0
 
           return (
-            <div key={agent.agentId} className="rounded-xl" style={{ background: '#0a0b10', border: '1px solid rgba(100,116,139,0.1)' }}>
+            <div key={agent.agentId} className="rounded-xl" style={{ background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.1)' }}>
               {/* Agent header row */}
               <div className="flex items-center gap-4 px-5 py-4">
                 <div className="flex-1 min-w-0">
@@ -101,7 +101,7 @@ export default function ManagerFreelancerPage() {
                 {/* Quick stats */}
                 <div className="flex items-center gap-5">
                   {[
-                    { label: 'Leads',   value: agent.totalLeads,   color: '#67e8f9' },
+                    { label: 'Leads',   value: agent.totalLeads,   color: '#a78bfa' },
                     { label: 'Active',  value: agent.activeLeads,  color: '#a5b4fc' },
                     { label: 'Hired',   value: agent.wonLeads,     color: '#4ade80' },
                     { label: 'Applied', value: agent.totalApplied, color: '#fbbf24' },
@@ -126,7 +126,7 @@ export default function ManagerFreelancerPage() {
               {isExpanded && (
                 <div className="px-5 pb-5 pt-3 space-y-4" style={{ borderTop: '1px solid rgba(100,116,139,0.08)' }}>
                   <div>
-                    <p className="text-[10px] font-semibold text-cyan-400 uppercase tracking-widest mb-3">Lead Pipeline Breakdown</p>
+                    <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-widest mb-3">Lead Pipeline Breakdown</p>
                     <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                       {PIPELINE_ORDER.map(s => {
                         const count = byStatus[s] || 0

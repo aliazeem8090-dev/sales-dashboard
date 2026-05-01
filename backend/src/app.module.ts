@@ -35,6 +35,8 @@ import { FreelancerAppliedJob } from './freelancer-applied-jobs/freelancer-appli
 import { FreelancerDashboardModule } from './freelancer-dashboard/freelancer-dashboard.module';
 import { LeadsModule } from './leads/leads.module';
 import { Lead } from './leads/lead.entity';
+import { JobNotificationsModule } from './job-notifications/job-notifications.module';
+import { JobNotification } from './job-notifications/job-notification.entity';
 import { User } from './users/user.entity';
 import { Rep } from './reps/rep.entity';
 import { UpworkProfile } from './upwork-profiles/upwork-profile.entity';
@@ -55,7 +57,7 @@ import { Benchmark } from './benchmarks/benchmark.entity';
       username: process.env.DB_USERNAME || 'root',
       password: process.env.DB_PASSWORD || '',
       database: process.env.DB_NAME || 'sales_dashboard',
-      entities: [User, Rep, UpworkProfile, Job, Proposal, ProposalReview, ActivityLog, CoachingInsight, Benchmark, BidderAssignment, ProposalStatusHistory, LinkedInAgent, LinkedInDailyLog, LinkedInLead, FreelancerAgent, FreelancerLead, FreelancerAppliedJob, Lead],
+      entities: [User, Rep, UpworkProfile, Job, Proposal, ProposalReview, ActivityLog, CoachingInsight, Benchmark, BidderAssignment, ProposalStatusHistory, LinkedInAgent, LinkedInDailyLog, LinkedInLead, FreelancerAgent, FreelancerLead, FreelancerAppliedJob, Lead, JobNotification],
       synchronize: true,
     }),
     AuthModule,
@@ -81,6 +83,7 @@ import { Benchmark } from './benchmarks/benchmark.entity';
     FreelancerAppliedJobsModule,
     FreelancerDashboardModule,
     LeadsModule,
+    JobNotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

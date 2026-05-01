@@ -11,18 +11,17 @@ import {
 } from 'lucide-react'
 
 function StatCard({
-  label, value, sub, color = 'cyan', icon: Icon,
+  label, value, sub, color = 'violet', icon: Icon,
 }: {
   label: string
   value: string | number
   sub?: string
-  color?: 'cyan' | 'blue' | 'violet' | 'emerald' | 'red' | 'amber' | 'slate'
+  color?: 'violet' | 'blue' | 'emerald' | 'red' | 'amber' | 'slate'
   icon?: any
 }) {
   const colors = {
-    cyan:    'border-cyan-500/20 bg-cyan-500/5 text-cyan-400',
-    blue:    'border-blue-500/20 bg-blue-500/5 text-blue-400',
     violet:  'border-violet-500/20 bg-violet-500/5 text-violet-400',
+    blue:    'border-blue-500/20 bg-blue-500/5 text-blue-400',
     emerald: 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400',
     red:     'border-red-500/20 bg-red-500/5 text-red-400',
     amber:   'border-amber-500/20 bg-amber-500/5 text-amber-400',
@@ -44,16 +43,16 @@ function FunnelBar({ label, value, max, pct }: { label: string; value: number; m
   const width = max > 0 ? Math.max(2, Math.round((value / max) * 100)) : 0
   return (
     <div className="flex items-center gap-3">
-      <span className="text-[10px] text-slate-500 w-20 text-right shrink-0">{label}</span>
-      <div className="flex-1 h-4 bg-slate-800/60 rounded overflow-hidden border border-slate-700/30">
+      <span className="text-[10px] w-20 text-right shrink-0" style={{ color: 'var(--t3)' }}>{label}</span>
+      <div className="flex-1 h-4 rounded overflow-hidden border" style={{ background: 'var(--surface2)', borderColor: 'var(--bord)' }}>
         <div
-          className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded flex items-center justify-end pr-1.5 transition-all duration-700"
+          className="h-full bg-gradient-to-r from-violet-600 to-violet-400 rounded flex items-center justify-end pr-1.5 transition-all duration-700"
           style={{ width: `${width}%`, minWidth: value > 0 ? '2rem' : '0' }}
         >
           {value > 0 && <span className="text-white text-[9px] font-semibold">{pct}%</span>}
         </div>
       </div>
-      <span className="text-xs font-mono font-semibold text-slate-400 w-6 text-right shrink-0">{value}</span>
+      <span className="text-xs font-mono font-semibold w-6 text-right shrink-0" style={{ color: 'var(--t2)' }}>{value}</span>
     </div>
   )
 }
@@ -121,20 +120,20 @@ function KpiRow({ label, actual, target, higherIsBetter, formatActual, formatTar
     : Math.min(100, Math.round((target / actual) * 100)) || (actual === 0 ? 100 : 0)
 
   return (
-    <div className="grid grid-cols-12 items-center gap-2 py-2.5 border-b border-slate-800/40 last:border-0">
+    <div className="grid grid-cols-12 items-center gap-2 py-2.5 last:border-0" style={{ borderBottom: '1px solid var(--bord)' }}>
       <div className="col-span-4">
-        <p className="text-xs text-slate-400">{label}</p>
+        <p className="text-xs" style={{ color: 'var(--t2)' }}>{label}</p>
       </div>
       <div className="col-span-5">
         <div className="flex items-center gap-2">
-          <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--surface2)' }}>
             <div className={`h-full rounded-full transition-all duration-700 ${styles.bar}`} style={{ width: `${pct}%` }} />
           </div>
           <span className={`text-[10px] font-mono font-semibold w-16 text-right ${styles.text}`}>{formatActual(actual)}</span>
         </div>
       </div>
       <div className="col-span-2 text-right">
-        <span className="text-[10px] text-slate-600 font-mono">{target > 0 ? formatTarget(target) : '—'}</span>
+        <span className="text-[10px] font-mono" style={{ color: 'var(--t3)' }}>{target > 0 ? formatTarget(target) : '—'}</span>
       </div>
       <div className="col-span-1 flex justify-end">
         {status === 'pass'
@@ -178,10 +177,10 @@ export function RepDashboard() {
     return (
       <div className="flex items-center justify-center py-32">
         <div className="flex items-center gap-3">
-          <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-          <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" style={{ animationDelay: '150ms' }} />
-          <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" style={{ animationDelay: '300ms' }} />
-          <span className="text-xs text-slate-500 ml-2">Loading your dashboard…</span>
+          <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--v1)' }} />
+          <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--v1)', animationDelay: '150ms' }} />
+          <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--v1)', animationDelay: '300ms' }} />
+          <span className="text-xs ml-2" style={{ color: 'var(--t3)' }}>Loading your dashboard…</span>
         </div>
       </div>
     )
@@ -190,7 +189,7 @@ export function RepDashboard() {
   if (!data) {
     return (
       <div className="flex items-center justify-center py-32">
-        <p className="text-sm text-slate-500">No data found. Make sure your account has a rep profile.</p>
+        <p className="text-sm" style={{ color: 'var(--t3)' }}>No data found. Make sure your account has a rep profile.</p>
       </div>
     )
   }
@@ -204,13 +203,13 @@ export function RepDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-slate-200 tracking-tight">
-            Welcome back, <span className="text-cyan-400">{data.name}</span>
+          <h1 className="text-lg font-semibold tracking-tight" style={{ color: 'var(--t1)' }}>
+            Welcome back, <span style={{ color: 'var(--v2)' }}>{data.name}</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs mt-0.5" style={{ color: 'var(--t3)' }}>
             {data.proposalsThisWeek} proposal{data.proposalsThisWeek !== 1 ? 's' : ''} this week
             {data.currentConnects !== undefined && (
-              <> · <span className={data.currentConnects < 10 ? 'text-red-400' : 'text-slate-400'}>
+              <> · <span className={data.currentConnects < 10 ? 'text-red-400' : ''} style={data.currentConnects >= 10 ? { color: 'var(--t2)' } : {}}>
                 {data.currentConnects} connects remaining
               </span></>
             )}
@@ -218,7 +217,8 @@ export function RepDashboard() {
         </div>
         <Link
           href="/board"
-          className="flex items-center gap-2 px-3 py-2 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-medium rounded-lg hover:bg-cyan-500/20 transition-colors"
+          className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg hover:opacity-80 transition-opacity"
+          style={{ background: 'var(--v1a)', border: '1px solid rgba(124,111,255,0.3)', color: 'var(--v2)' }}
         >
           <Kanban size={13} />
           My Board
@@ -227,18 +227,18 @@ export function RepDashboard() {
 
       {/* Assigned Profiles */}
       {data.assignedProfiles?.length > 0 && (
-        <div className="bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
+        <div className="rounded-xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--bord)', borderRadius: 'var(--r)' }}>
           <div className="flex items-center gap-2 mb-3">
-            <Briefcase size={13} className="text-cyan-400" />
-            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Your Assigned Profiles</h2>
+            <Briefcase size={13} style={{ color: 'var(--v1)' }} />
+            <h2 className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--t2)' }}>Your Assigned Profiles</h2>
           </div>
           <div className="flex flex-wrap gap-2">
             {data.assignedProfiles.map((p: any) => (
-              <div key={p.id} className="flex items-center gap-2 px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg">
-                <div className="w-2 h-2 rounded-full bg-cyan-500 shrink-0" />
+              <div key={p.id} className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: 'var(--surface2)', border: '1px solid var(--bord2)' }}>
+                <div className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--v1)' }} />
                 <div>
-                  <p className="text-xs font-semibold text-slate-200">{p.title}</p>
-                  <p className="text-[10px] text-slate-500">{p.niche}</p>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--t1)' }}>{p.title}</p>
+                  <p className="text-[10px]" style={{ color: 'var(--t3)' }}>{p.niche}</p>
                 </div>
               </div>
             ))}
@@ -248,7 +248,7 @@ export function RepDashboard() {
 
       {/* KPI grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-        <StatCard label="Proposals" value={total} sub={`${data.proposalsThisWeek} this week`} color="cyan" icon={TrendingUp} />
+        <StatCard label="Proposals" value={total} sub={`${data.proposalsThisWeek} this week`} color="violet" icon={TrendingUp} />
         <StatCard label="Viewed" value={data.viewed || 0} sub={`${data.viewRate || 0}% view rate`} color="blue" icon={Eye} />
         <StatCard label="Replied" value={data.replied || 0} sub={`${data.replyRate || 0}% reply rate`} color="violet" icon={MessageSquare} />
         <StatCard label="Interviews" value={data.interviews || 0} sub={`${data.interviewRate || 0}% of proposals`} color="amber" icon={Briefcase} />
@@ -269,7 +269,6 @@ export function RepDashboard() {
         const connectsLimit    = t.monthlyConnectsLimit    ?? 150
 
         const dailyActual    = Math.round((data.totalProposals / 30) * 10) / 10
-        const monthlyTarget  = dailyTarget * 30
         const earningsActual = data.earningsThisMonth || 0
         const connectsActual = data.connectsUsed || 0
 
@@ -288,11 +287,11 @@ export function RepDashboard() {
         const metCount = statuses.filter(s => s === 'pass').length
 
         return (
-          <div className={`bg-[#0a0b10] rounded-xl border overflow-hidden ${overall === 'fail' ? 'border-red-500/20' : overall === 'warn' ? 'border-amber-500/20' : 'border-emerald-500/20'}`}>
+          <div className={`rounded-xl border overflow-hidden ${overall === 'fail' ? 'border-red-500/20' : overall === 'warn' ? 'border-amber-500/20' : 'border-emerald-500/20'}`} style={{ background: 'var(--surface)' }}>
             <div className={`flex items-center justify-between px-5 py-3 border-b ${overall === 'fail' ? 'border-red-500/20 bg-red-500/5' : overall === 'warn' ? 'border-amber-500/20 bg-amber-500/5' : 'border-emerald-500/20 bg-emerald-500/5'}`}>
               <div className="flex items-center gap-2">
                 <Target size={14} className={overallStyle.text} />
-                <h2 className="text-xs font-semibold text-slate-300 uppercase tracking-widest">KPI Performance</h2>
+                <h2 className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--t1)' }}>KPI Performance</h2>
               </div>
               <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${overallStyle.badge}`}>
                 {metCount}/{kpis.length} KPIs Met
@@ -300,9 +299,9 @@ export function RepDashboard() {
             </div>
             <div className="px-5 py-1">
               <div className="flex items-center gap-1 py-1.5 mb-0.5">
-                <span className="col-span-4 text-[9px] text-slate-700 uppercase tracking-wider w-1/3">KPI</span>
-                <span className="text-[9px] text-slate-700 uppercase tracking-wider flex-1 pl-2">Progress</span>
-                <span className="text-[9px] text-slate-700 uppercase tracking-wider w-16 text-right">Target</span>
+                <span className="col-span-4 text-[9px] uppercase tracking-wider w-1/3" style={{ color: 'var(--t3)' }}>KPI</span>
+                <span className="text-[9px] uppercase tracking-wider flex-1 pl-2" style={{ color: 'var(--t3)' }}>Progress</span>
+                <span className="text-[9px] uppercase tracking-wider w-16 text-right" style={{ color: 'var(--t3)' }}>Target</span>
                 <span className="w-4" />
               </div>
               {kpis.map(k => (
@@ -324,8 +323,8 @@ export function RepDashboard() {
       {/* Middle row: funnel + alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Funnel */}
-        <div className="bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">Proposal Funnel</h2>
+        <div className="rounded-xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--bord)', borderRadius: 'var(--r)' }}>
+          <h2 className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--t2)' }}>Proposal Funnel</h2>
           <div className="space-y-2.5">
             <FunnelBar label="Sent" value={total} max={total} pct={100} />
             <FunnelBar label="Viewed" value={data.viewed || 0} max={total} pct={data.viewRate || 0} />
@@ -336,10 +335,10 @@ export function RepDashboard() {
         </div>
 
         {/* Alerts + Manager Notes */}
-        <div className="bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
+        <div className="rounded-xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--bord)', borderRadius: 'var(--r)' }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Alerts & Notes</h2>
-            <Bell size={13} className="text-slate-600" />
+            <h2 className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--t2)' }}>Alerts & Notes</h2>
+            <Bell size={13} style={{ color: 'var(--t3)' }} />
           </div>
 
           {managerNotes.length > 0 && (
@@ -362,7 +361,7 @@ export function RepDashboard() {
 
           {aiAlerts.length > 0 && (
             <div>
-              <p className="text-[10px] font-medium text-cyan-500/70 uppercase tracking-wider mb-1.5">Coaching Alerts</p>
+              <p className="text-[10px] font-medium uppercase tracking-wider mb-1.5" style={{ color: 'rgba(124,111,255,0.7)' }}>Coaching Alerts</p>
               <div className="space-y-1.5">
                 {aiAlerts.map((a: any) => (
                   <div key={a.id} className={`p-2.5 rounded-lg border text-[11px] ${SEVERITY_STYLES[a.severity] || SEVERITY_STYLES.LOW}`}>
@@ -381,12 +380,12 @@ export function RepDashboard() {
           {insights.filter(i => !i.isRead).length === 0 && (
             <div className="flex flex-col items-center justify-center py-6 text-center">
               <CheckCircle size={20} className="text-emerald-500/40 mb-2" />
-              <p className="text-xs text-slate-600">No unread alerts</p>
+              <p className="text-xs" style={{ color: 'var(--t3)' }}>No unread alerts</p>
             </div>
           )}
 
           {insights.length > 0 && (
-            <Link href="/insights" className="block mt-3 text-center text-[10px] text-cyan-500/60 hover:text-cyan-400 transition-colors">
+            <Link href="/insights" className="block mt-3 text-center text-[10px] transition-colors" style={{ color: 'rgba(124,111,255,0.6)' }}>
               View all insights →
             </Link>
           )}
@@ -395,20 +394,20 @@ export function RepDashboard() {
 
       {/* Recent proposals */}
       {data.recentProposals?.length > 0 && (
-        <div className="bg-[#0a0b10] border border-slate-800/60 rounded-xl p-4">
+        <div className="rounded-xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--bord)', borderRadius: 'var(--r)' }}>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Recent Proposals</h2>
-            <Link href="/board" className="text-[10px] text-cyan-500/60 hover:text-cyan-400 transition-colors">View board →</Link>
+            <h2 className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--t2)' }}>Recent Proposals</h2>
+            <Link href="/board" className="text-[10px] transition-colors" style={{ color: 'rgba(124,111,255,0.6)' }}>View board →</Link>
           </div>
           <div className="space-y-1">
             {data.recentProposals.slice(0, 5).map((p: any) => (
-              <div key={p.id} className="flex items-center justify-between py-2 border-b border-slate-800/40 last:border-0">
+              <div key={p.id} className="flex items-center justify-between py-2 last:border-0" style={{ borderBottom: '1px solid var(--bord)' }}>
                 <div className="flex-1 min-w-0 mr-3">
-                  <p className="text-xs text-slate-300 truncate">{p.job?.title || p.jobId}</p>
-                  <p className="text-[10px] text-slate-600">{formatDate(p.submittedAt)}</p>
+                  <p className="text-xs truncate" style={{ color: 'var(--t1)' }}>{p.job?.title || p.jobId}</p>
+                  <p className="text-[10px]" style={{ color: 'var(--t3)' }}>{formatDate(p.submittedAt)}</p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="flex items-center gap-0.5 text-[10px] text-slate-600">
+                  <span className="flex items-center gap-0.5 text-[10px]" style={{ color: 'var(--t3)' }}>
                     <Zap size={9} className="text-amber-500" />
                     {p.connectsUsed || 0}
                   </span>

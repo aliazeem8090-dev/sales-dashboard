@@ -18,7 +18,7 @@ const STATUS_STYLES = {
 const ALERT_STYLES = {
   critical: { bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.25)', color: '#f87171' },
   warn:     { bg: 'rgba(250,204,21,0.08)', border: 'rgba(250,204,21,0.25)', color: '#facc15' },
-  info:     { bg: 'rgba(6,182,212,0.08)',  border: 'rgba(6,182,212,0.25)',  color: '#67e8f9' },
+  info:     { bg: 'rgba(124,111,255,0.08)',  border: 'rgba(124,111,255,0.25)',  color: '#a78bfa' },
 }
 
 function KpiRow({ label, actual, target, unit = '', status, higherIsBetter }: {
@@ -85,7 +85,7 @@ export default function LinkedInDashboardPage() {
   return (
     <div className="flex-1 relative z-10">
       {/* Header */}
-      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', background: '#07080d' }}>
+      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(124,111,255,0.08)', background: 'var(--ink)' }}>
         <h1 className="text-lg font-semibold text-slate-200">LinkedIn Dashboard</h1>
         <p className="text-xs text-slate-500 mt-0.5">30-day rolling performance</p>
       </div>
@@ -115,8 +115,8 @@ export default function LinkedInDashboardPage() {
             { label: 'Converted', value: stats.converted, icon: CheckCircle2 },
             { label: 'Monthly InMails', value: `${stats.monthlyInMails}/50`, icon: Mail },
           ].map(({ label, value, icon: Icon }) => (
-            <div key={label} className="rounded-xl p-4" style={{ background: '#0a0b10', border: '1px solid rgba(100,116,139,0.1)' }}>
-              <Icon size={14} className="text-cyan-500 mb-2" />
+            <div key={label} className="rounded-xl p-4" style={{ background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.1)' }}>
+              <Icon size={14} className="text-violet-500 mb-2" />
               <p className="text-xl font-bold text-slate-100">{value}</p>
               <p className="text-[11px] text-slate-500 mt-0.5">{label}</p>
             </div>
@@ -124,21 +124,21 @@ export default function LinkedInDashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="rounded-xl p-4" style={{ background: '#0a0b10', border: '1px solid rgba(100,116,139,0.1)' }}>
+          <div className="rounded-xl p-4" style={{ background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.1)' }}>
             <p className="text-[11px] text-slate-500 uppercase tracking-widest mb-1">Reply Rate</p>
             <p className="text-2xl font-bold" style={{ color: stats.replyRate >= targets.minReplyRate ? '#4ade80' : '#f87171' }}>
               {stats.replyRate}%
             </p>
             <p className="text-[11px] text-slate-600 mt-0.5">Target: {targets.minReplyRate}%</p>
           </div>
-          <div className="rounded-xl p-4" style={{ background: '#0a0b10', border: '1px solid rgba(100,116,139,0.1)' }}>
+          <div className="rounded-xl p-4" style={{ background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.1)' }}>
             <p className="text-[11px] text-slate-500 uppercase tracking-widest mb-1">Conversion Rate</p>
             <p className="text-2xl font-bold" style={{ color: stats.conversionRate >= targets.minConversionRate ? '#4ade80' : '#f87171' }}>
               {stats.conversionRate}%
             </p>
             <p className="text-[11px] text-slate-600 mt-0.5">Target: {targets.minConversionRate}%</p>
           </div>
-          <div className="rounded-xl p-4" style={{ background: '#0a0b10', border: '1px solid rgba(100,116,139,0.1)' }}>
+          <div className="rounded-xl p-4" style={{ background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.1)' }}>
             <p className="text-[11px] text-slate-500 uppercase tracking-widest mb-1">Avg Daily Connections</p>
             <p className="text-2xl font-bold" style={{ color: stats.avgDailyConns >= targets.dailyConnectionTarget ? '#4ade80' : '#facc15' }}>
               {stats.avgDailyConns}
@@ -149,7 +149,7 @@ export default function LinkedInDashboardPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* KPI Performance */}
-          <div className="rounded-xl p-4" style={{ background: '#0a0b10', border: `1px solid ${overallColor}33` }}>
+          <div className="rounded-xl p-4" style={{ background: 'var(--ink2)', border: `1px solid ${overallColor}33` }}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs font-semibold text-slate-300 uppercase tracking-widest">KPI Performance</p>
               <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: `${overallColor}15`, color: overallColor, border: `1px solid ${overallColor}40` }}>
@@ -164,7 +164,7 @@ export default function LinkedInDashboardPage() {
           </div>
 
           {/* Follow-up Required */}
-          <div className="rounded-xl p-4" style={{ background: '#0a0b10', border: '1px solid rgba(250,204,21,0.15)' }}>
+          <div className="rounded-xl p-4" style={{ background: 'var(--ink2)', border: '1px solid rgba(250,204,21,0.15)' }}>
             <p className="text-xs font-semibold text-slate-300 uppercase tracking-widest mb-3">
               Follow-up Required
               {followUpRequired.length > 0 && (
@@ -197,7 +197,7 @@ export default function LinkedInDashboardPage() {
         </div>
 
         {/* 14-day trend */}
-        <div className="rounded-xl p-4" style={{ background: '#0a0b10', border: '1px solid rgba(100,116,139,0.1)' }}>
+        <div className="rounded-xl p-4" style={{ background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.1)' }}>
           <p className="text-xs font-semibold text-slate-300 uppercase tracking-widest mb-4">14-Day Activity Trend</p>
           <div className="flex items-end gap-1 h-20">
             {trend.map((d: any, i: number) => {
@@ -207,7 +207,7 @@ export default function LinkedInDashboardPage() {
                 <div key={i} className="flex-1 flex flex-col items-center gap-1">
                   <div
                     className="w-full rounded-sm transition-all"
-                    style={{ height: `${Math.max(h, 2)}%`, minHeight: 2, background: d.connections > 0 ? 'rgba(6,182,212,0.6)' : 'rgba(100,116,139,0.15)' }}
+                    style={{ height: `${Math.max(h, 2)}%`, minHeight: 2, background: d.connections > 0 ? 'rgba(124,111,255,0.6)' : 'rgba(100,116,139,0.15)' }}
                     title={`${d.date}: ${d.connections} connections, ${d.replies} replies`}
                   />
                   {i % 3 === 0 && (
@@ -221,7 +221,7 @@ export default function LinkedInDashboardPage() {
           </div>
           <div className="flex items-center gap-4 mt-3">
             <span className="flex items-center gap-1.5 text-[10px] text-slate-500">
-              <span className="w-2 h-2 rounded-sm inline-block" style={{ background: 'rgba(6,182,212,0.6)' }} />
+              <span className="w-2 h-2 rounded-sm inline-block" style={{ background: 'rgba(124,111,255,0.6)' }} />
               Connections
             </span>
           </div>
@@ -229,8 +229,8 @@ export default function LinkedInDashboardPage() {
 
         {/* Today's log summary */}
         {today && (
-          <div className="rounded-xl p-4" style={{ background: '#0a0b10', border: '1px solid rgba(6,182,212,0.15)' }}>
-            <p className="text-xs font-semibold text-cyan-400 uppercase tracking-widest mb-3">Today's Activity</p>
+          <div className="rounded-xl p-4" style={{ background: 'var(--ink2)', border: '1px solid rgba(124,111,255,0.15)' }}>
+            <p className="text-xs font-semibold text-violet-400 uppercase tracking-widest mb-3">Today's Activity</p>
             <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
               {[
                 { label: 'Leads Searched', value: today.leadsSearched },

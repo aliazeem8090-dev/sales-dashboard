@@ -6,8 +6,8 @@ import { api } from '@/lib/api'
 import { getStoredUser } from '@/lib/auth'
 import { Save, CheckCircle2, AlertTriangle } from 'lucide-react'
 
-const inputClass = "w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-cyan-500/50 transition-colors text-center"
-const inputStyle = { background: '#0a0b10', border: '1px solid rgba(100,116,139,0.2)' }
+const inputClass = "w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-violet-500/50 transition-colors text-center"
+const inputStyle = { background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.2)' }
 
 const FIELDS = [
   { key: 'leadsSearched',   label: 'Leads Searched',   hint: 'Total profiles browsed' },
@@ -102,11 +102,11 @@ export default function LinkedInLogPage() {
 
   return (
     <div className="flex-1 relative z-10">
-      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', background: '#07080d' }}>
+      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(124,111,255,0.08)', background: 'var(--ink)' }}>
         <h1 className="text-lg font-semibold text-slate-200">Daily Activity Log</h1>
         <p className="text-xs text-slate-500 mt-0.5">
           {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          {existingId && <span className="ml-2 text-cyan-500">• Log exists — updating</span>}
+          {existingId && <span className="ml-2 text-violet-500">• Log exists — updating</span>}
         </p>
       </div>
 
@@ -126,8 +126,8 @@ export default function LinkedInLogPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="rounded-xl p-5" style={{ background: '#0a0b10', border: '1px solid rgba(6,182,212,0.15)' }}>
-            <p className="text-xs font-semibold text-cyan-400 uppercase tracking-widest mb-4">Activity Numbers</p>
+          <div className="rounded-xl p-5" style={{ background: 'var(--ink2)', border: '1px solid rgba(124,111,255,0.15)' }}>
+            <p className="text-xs font-semibold text-violet-400 uppercase tracking-widest mb-4">Activity Numbers</p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {FIELDS.map(({ key, label, hint }) => (
                 <div key={key}>
@@ -153,15 +153,15 @@ export default function LinkedInLogPage() {
             </div>
           </div>
 
-          <div className="rounded-xl p-5" style={{ background: '#0a0b10', border: '1px solid rgba(100,116,139,0.1)' }}>
+          <div className="rounded-xl p-5" style={{ background: 'var(--ink2)', border: '1px solid rgba(100,116,139,0.1)' }}>
             <label className="block text-[10px] text-slate-500 mb-2 uppercase tracking-wide">Notes (optional)</label>
             <textarea
               value={form.notes}
               onChange={e => set('notes', e.target.value)}
               placeholder="Any observations, blockers, or wins today…"
               rows={3}
-              className="w-full px-3 py-2 rounded-lg text-xs text-slate-300 resize-none focus:outline-none focus:border-cyan-500/50 transition-colors"
-              style={{ background: '#07080d', border: '1px solid rgba(100,116,139,0.2)' }}
+              className="w-full px-3 py-2 rounded-lg text-xs text-slate-300 resize-none focus:outline-none focus:border-violet-500/50 transition-colors"
+              style={{ background: 'var(--ink)', border: '1px solid rgba(100,116,139,0.2)' }}
             />
           </div>
 
@@ -172,7 +172,7 @@ export default function LinkedInLogPage() {
               type="submit"
               disabled={saving}
               className="flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-lg disabled:opacity-50 transition-colors"
-              style={{ background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.3)', color: '#67e8f9' }}
+              style={{ background: 'rgba(124,111,255,0.15)', border: '1px solid rgba(124,111,255,0.3)', color: '#a78bfa' }}
             >
               <Save size={14} />
               {saving ? 'Saving…' : existingId ? 'Update Log' : 'Save Log'}

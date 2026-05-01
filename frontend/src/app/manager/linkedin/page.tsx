@@ -81,14 +81,14 @@ export default function ManagerLinkedInPage() {
 
   return (
     <div className="flex-1 relative z-10">
-      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(6,182,212,0.08)', background: '#07080d' }}>
+      <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(124,111,255,0.08)', background: 'var(--ink)' }}>
         <h1 className="text-lg font-semibold text-slate-200">LinkedIn Agents</h1>
         <p className="text-xs text-slate-500 mt-0.5">{agents.length} active agent{agents.length !== 1 ? 's' : ''} — 30-day performance</p>
       </div>
 
       <div className="px-6 py-5 space-y-4">
         {agents.length === 0 ? (
-          <div className="rounded-xl border border-slate-800/60 p-10 text-center" style={{ background: '#0a0b10' }}>
+          <div className="rounded-xl border border-[var(--bord)] p-10 text-center" style={{ background: 'var(--ink2)' }}>
             <p className="text-slate-500 text-sm">No LinkedIn agents yet.</p>
             <p className="text-xs text-slate-600 mt-1">Create users with the LinkedIn Agent role in Team Management.</p>
           </div>
@@ -100,7 +100,7 @@ export default function ManagerLinkedInPage() {
             const isEditing = editingId === agent.agentId
 
             return (
-              <div key={agent.agentId} className="rounded-xl" style={{ background: '#0a0b10', border: `1px solid ${overallColor}22` }}>
+              <div key={agent.agentId} className="rounded-xl" style={{ background: 'var(--ink2)', border: `1px solid ${overallColor}22` }}>
                 {/* Agent header */}
                 <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid rgba(100,116,139,0.08)' }}>
                   <div>
@@ -117,7 +117,7 @@ export default function ManagerLinkedInPage() {
                   {!isEditing ? (
                     <button
                       onClick={() => startEdit(agent)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors text-slate-500 hover:text-violet-400 hover:bg-violet-500/10"
                       style={{ border: '1px solid rgba(100,116,139,0.15)' }}
                     >
                       <Edit2 size={12} /> Set Targets
@@ -129,7 +129,7 @@ export default function ManagerLinkedInPage() {
                         onClick={() => saveTargets(agent.agentId)}
                         disabled={saving}
                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg disabled:opacity-50 transition-colors"
-                        style={{ background: 'rgba(6,182,212,0.12)', border: '1px solid rgba(6,182,212,0.25)', color: '#67e8f9' }}
+                        style={{ background: 'rgba(124,111,255,0.12)', border: '1px solid rgba(124,111,255,0.25)', color: '#a78bfa' }}
                       >
                         <Save size={12} /> {saving ? 'Saving…' : 'Save'}
                       </button>
@@ -168,8 +168,8 @@ export default function ManagerLinkedInPage() {
 
                 {/* Target editor */}
                 {isEditing && (
-                  <div className="px-5 py-4 space-y-3" style={{ borderTop: '1px solid rgba(6,182,212,0.1)', background: 'rgba(6,182,212,0.03)' }}>
-                    <p className="text-xs font-semibold text-cyan-400 uppercase tracking-widest">Edit Targets</p>
+                  <div className="px-5 py-4 space-y-3" style={{ borderTop: '1px solid rgba(124,111,255,0.1)', background: 'rgba(124,111,255,0.03)' }}>
+                    <p className="text-xs font-semibold text-violet-400 uppercase tracking-widest">Edit Targets</p>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {([
                         { key: 'dailyConnectionTarget', label: 'Daily Connections Target' },
@@ -186,7 +186,7 @@ export default function ManagerLinkedInPage() {
                             value={editTargets[key]}
                             onChange={e => setEditTargets(prev => ({ ...prev, [key]: parseFloat(e.target.value) || 0 }))}
                             className="w-full px-3 py-1.5 rounded-lg text-sm text-slate-200 focus:outline-none text-center"
-                            style={{ background: '#07080d', border: '1px solid rgba(100,116,139,0.2)' }}
+                            style={{ background: 'var(--ink)', border: '1px solid rgba(100,116,139,0.2)' }}
                           />
                         </div>
                       ))}
@@ -198,7 +198,7 @@ export default function ManagerLinkedInPage() {
                 {agent.alerts?.length > 0 && (
                   <div className="px-5 py-3 space-y-1.5" style={{ borderTop: '1px solid rgba(100,116,139,0.08)' }}>
                     {agent.alerts.map((a: any, i: number) => (
-                      <p key={i} className="text-[11px]" style={{ color: a.level === 'critical' ? '#f87171' : a.level === 'warn' ? '#facc15' : '#67e8f9' }}>
+                      <p key={i} className="text-[11px]" style={{ color: a.level === 'critical' ? '#f87171' : a.level === 'warn' ? '#facc15' : '#a78bfa' }}>
                         • {a.message}
                       </p>
                     ))}

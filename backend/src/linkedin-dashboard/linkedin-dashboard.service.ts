@@ -120,7 +120,15 @@ export class LinkedInDashboardService {
   }
 
   async getAllAgentsPerformance(companyId: string) {
-    const users = await this.userRepo.find({ where: { companyId, role: Role.LINKEDIN_AGENT } });
+    const qb = this.userRepo
+      .createQueryBuilder('user')
+      .where('user.role = :role', { role: Role.LINKEDIN_AGENT });
+    if (companyId === 'company-1' || !companyId) {
+      qb.andWhere('(user.companyId = :companyId OR user.companyId IS NULL)', { companyId: 'company-1' });
+    } else {
+      qb.andWhere('user.companyId = :companyId', { companyId });
+    }
+    const users = await qb.getMany();
     if (users.length === 0) return [];
     const userIds = users.map(u => u.id);
     const agents = await this.agentRepo.find({ where: { userId: In(userIds) }, relations: ['user'] });
