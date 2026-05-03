@@ -8,6 +8,7 @@ export class JobNotification {
   @Column({ nullable: true }) repName: string;
   @Column({ nullable: true }) sourceCompanyId: string;
   @Column() targetCompanyId: string;
+  @Column({ nullable: true }) targetUserId: string;
   @Column({ default: false }) isRead: boolean;
   @CreateDateColumn() createdAt: Date;
 }

@@ -8,6 +8,10 @@ import { ProposalStatusHistoryService } from '../proposal-status-history/proposa
 import { ActivityLogsService } from '../activity-logs/activity-logs.service';
 import { JobNotificationsService } from '../job-notifications/job-notifications.service';
 
+function normalize(value?: string | null): string {
+  return (value || '').trim().toLowerCase();
+}
+
 @Injectable()
 export class ProposalsService {
   constructor(
@@ -79,7 +83,7 @@ export class ProposalsService {
   async create(
     proposalData: Partial<Proposal>,
     createdBy?: string,
-    context?: { companyId?: string; repEmail?: string },
+    context?: { companyId?: string; repEmail?: string; role?: string },
   ): Promise<Proposal> {
     const proposal = this.proposalsRepository.create(proposalData);
     const saved = await this.proposalsRepository.save(proposal);
@@ -90,21 +94,19 @@ export class ProposalsService {
       createdBy || saved.repId,
     );
 
-    // Cross-company job lead notification: Company 1 → Company 2
-    // Treat null companyId as company-1 (legacy JWTs before the migration fix)
-    const repCompanyId = context?.companyId || 'company-1';
-    if (repCompanyId === 'company-1' && saved.jobId) {
-      this.jobRepository.findOne({ where: { id: saved.jobId } }).then(job => {
-        if (job?.upworkJobUrl) {
-          this.jobNotificationsService.create({
-            jobUrl: job.upworkJobUrl,
-            jobTitle: job.title || 'Untitled Job',
-            repName: context?.repEmail || 'Company 1 Rep',
-            sourceCompanyId: 'company-1',
-            targetCompanyId: 'company-2',
-          }).catch(() => {});
-        }
-      }).catch(() => {});
+    // Cross-company job lead notification: company-1 reps -> company-2 managers.
+    const repCompanyId = normalize(context?.companyId || 'company-1');
+    const creatorRole = normalize(context?.role);
+    if (repCompanyId === 'company-1' && creatorRole === 'rep' && saved.jobId) {
+      const job = await this.jobRepository.findOne({ where: { id: saved.jobId } });
+      if (job?.upworkJobUrl) {
+        await this.jobNotificationsService.createForManagers({
+          jobUrl: job.upworkJobUrl,
+          jobTitle: job.title || 'Untitled Job',
+          repName: context?.repEmail || 'Company 1 Rep',
+          sourceCompanyId: repCompanyId,
+        }, 'company-2');
+      }
     }
 
     return saved;

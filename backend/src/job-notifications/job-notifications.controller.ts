@@ -12,21 +12,21 @@ export class JobNotificationsController {
   @Get('unread-count')
   @Roles('ADMIN', 'MANAGER')
   async unreadCount(@Request() req: any) {
-    const count = await this.service.getUnreadCount(req.user.companyId);
+    const count = await this.service.getUnreadCountForUser(req.user.companyId, req.user.userId);
     return { count };
   }
 
   @Patch('read-all')
   @Roles('ADMIN', 'MANAGER')
   async markAllRead(@Request() req: any) {
-    await this.service.markAllRead(req.user.companyId);
+    await this.service.markAllReadForUser(req.user.companyId, req.user.userId);
     return { ok: true };
   }
 
   @Get()
   @Roles('ADMIN', 'MANAGER')
   findAll(@Request() req: any) {
-    return this.service.findForCompany(req.user.companyId);
+    return this.service.findForUser(req.user.companyId, req.user.userId);
   }
 
   @Patch(':id/read')

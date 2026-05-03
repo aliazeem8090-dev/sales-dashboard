@@ -22,9 +22,10 @@ export class ProposalsController {
     @Query('companyId') companyId?: string,
   ) {
     const { role } = req.user;
+    const normalizedRole = String(role || '').toLowerCase();
 
     // Reps can only see their own proposals — repId must be provided and valid
-    if (role === 'REP') {
+    if (normalizedRole === 'rep') {
       const filterRepId = repId || '';
       return this.proposalsService.findByRepWithFilters(filterRepId, { status, startDate: start, endDate: end, profileId });
     }
@@ -61,6 +62,7 @@ export class ProposalsController {
     return this.proposalsService.create(createProposalDto, req.user.userId, {
       companyId: req.user.companyId,
       repEmail: req.user.email,
+      role: req.user.role,
     });
   }
 
@@ -81,7 +83,8 @@ export class ProposalsController {
   @Delete(':id')
   remove(@Param('id') id: string, @Request() req: any) {
     const { role, userId } = req.user;
-    if (role === 'ADMIN' || role === 'MANAGER') {
+    const normalizedRole = String(role || '').toLowerCase();
+    if (normalizedRole === 'admin' || normalizedRole === 'manager') {
       return this.proposalsService.remove(id);
     }
     return this.proposalsService.removeByOwner(id, userId);
