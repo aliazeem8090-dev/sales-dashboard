@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
+import * as activityLogsApi from '@/lib/data/activity-logs'
+import * as repsApi from '@/lib/data/reps'
 import { getStoredUser } from '@/lib/auth'
 import { ArrowLeft, CheckCircle } from 'lucide-react'
 
@@ -39,9 +40,9 @@ export default function LogActivityPage() {
 
   useEffect(() => {
     if (user?.role === 'ADMIN' || user?.role === 'MANAGER') {
-      api.get<any[]>('/reps').then(setReps).catch(() => {})
+      repsApi.findAll(user?.companyId).then(setReps).catch(() => {})
     } else {
-      api.get<any>(`/reps/by-user/${user?.id}`).then(r => { if (r) setRepId(r.id) }).catch(() => {})
+      repsApi.findByUserId(user!.id).then(r => { if (r) setRepId(r.id) }).catch(() => {})
     }
   }, [])
 
@@ -54,7 +55,7 @@ export default function LogActivityPage() {
     setError('')
     setLoading(true)
     try {
-      await api.post('/activity-logs', {
+      await activityLogsApi.create({
         ...form,
         repId: repId || reps[0]?.id,
         date: new Date().toISOString().split('T')[0],

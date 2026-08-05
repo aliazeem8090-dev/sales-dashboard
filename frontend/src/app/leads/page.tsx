@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { api } from '@/lib/api'
+import * as leadsApi from '@/lib/data/leads'
+import { getStoredUser } from '@/lib/auth'
 import { UserCircle2, Pencil, Check, X } from 'lucide-react'
 
 interface Lead {
@@ -44,7 +45,9 @@ export default function MyLeadsPage() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    api.get<Lead[]>('/leads/my')
+    const user = getStoredUser()
+    if (!user) return
+    leadsApi.findByUserId(user.id)
       .then(setLeads)
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -70,7 +73,7 @@ export default function MyLeadsPage() {
   async function saveEdit(id: string) {
     setSaving(true)
     try {
-      const updated = await api.patch<Lead>(`/leads/${id}`, draft)
+      const updated = await leadsApi.update(id, draft)
       setLeads(prev => prev.map(l => l.id === id ? { ...l, ...updated } : l))
       setEditingId(null)
       setDraft({})

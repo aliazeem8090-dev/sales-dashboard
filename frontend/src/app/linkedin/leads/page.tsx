@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
+import * as linkedinLeadsApi from '@/lib/data/linkedin-leads'
 import { getStoredUser } from '@/lib/auth'
 import { UserPlus, ChevronRight, X } from 'lucide-react'
 
@@ -46,7 +46,7 @@ export default function LinkedInLeadsPage() {
 
   async function fetchLeads(aid: string) {
     try {
-      const data = await api.get<any[]>(`/linkedin-leads/agent/${aid}`)
+      const data = await linkedinLeadsApi.findByAgent(aid)
       setLeads(data as any[])
     } catch { } finally { setLoading(false) }
   }
@@ -56,7 +56,7 @@ export default function LinkedInLeadsPage() {
     if (!agentId || !name.trim()) return
     setSubmitting(true)
     try {
-      const lead = await api.post(`/linkedin-leads`, { agentId, name: name.trim(), company: company.trim(), source: source.trim(), message: message.trim() || undefined })
+      const lead = await linkedinLeadsApi.create(agentId, { name: name.trim(), company: company.trim(), source: source.trim(), message: message.trim() || undefined })
       setLeads(prev => [lead as any, ...prev])
       setName(''); setCompany(''); setSource(''); setMessage('')
       setShowForm(false)
@@ -66,14 +66,14 @@ export default function LinkedInLeadsPage() {
   async function updateStatus(lead: any, status: Status) {
     setUpdatingId(lead.id)
     try {
-      const updated = await api.patch(`/linkedin-leads/${lead.id}`, { status })
+      const updated = await linkedinLeadsApi.update(lead.id, { status })
       setLeads(prev => prev.map(l => l.id === lead.id ? updated : l))
     } catch { } finally { setUpdatingId(null) }
   }
 
   async function deleteLead(id: string) {
     try {
-      await api.delete(`/linkedin-leads/${id}`)
+      await linkedinLeadsApi.remove(id)
       setLeads(prev => prev.filter(l => l.id !== id))
     } catch { }
   }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
+import * as freelancerJobsApi from '@/lib/data/freelancer-jobs'
 import { getStoredUser } from '@/lib/auth'
 import { Plus, X, ExternalLink, AlertTriangle, Clock, RefreshCw, ChevronDown } from 'lucide-react'
 
@@ -93,8 +93,8 @@ export default function FreelancerJobsPage() {
 
   async function fetchJobs(id: string) {
     try {
-      const data = await api.get<Job[]>(`/freelancer-jobs/agent/${id}`)
-      setJobs(enrichJobs(data))
+      const data = await freelancerJobsApi.findByAgent(id)
+      setJobs(enrichJobs(data as any))
     } catch { } finally { setLoading(false) }
   }
 
@@ -103,14 +103,14 @@ export default function FreelancerJobsPage() {
     if (!agentId || !jobTitle.trim()) return
     setSubmitting(true)
     try {
-      const job = await api.post<Job>(`/freelancer-jobs/agent/${agentId}`, {
+      const job = await freelancerJobsApi.create(agentId, {
         jobTitle: jobTitle.trim(),
         clientName: clientName.trim() || undefined,
         jobUrl: jobUrl.trim() || undefined,
         proposalText: proposalText.trim() || undefined,
         notes: notes.trim() || undefined,
       })
-      setJobs(prev => enrichJobs([job, ...prev]))
+      setJobs(prev => enrichJobs([job as any, ...prev]))
       setJobTitle(''); setClientName(''); setJobUrl(''); setProposalText(''); setNotes('')
       setShowForm(false)
     } catch { } finally { setSubmitting(false) }
@@ -118,7 +118,7 @@ export default function FreelancerJobsPage() {
 
   async function handleStatusChange(job: Job, newStatus: JobStatus) {
     try {
-      const updated = await api.patch<Job>(`/freelancer-jobs/${job.id}`, { status: newStatus })
+      const updated = await freelancerJobsApi.update(job.id, { status: newStatus })
       setJobs(prev => enrichJobs(prev.map(j => j.id === job.id ? { ...j, ...updated } : j)))
     } catch { }
   }
@@ -126,14 +126,14 @@ export default function FreelancerJobsPage() {
   async function handleFollowUp(job: Job) {
     setFollowingUpId(job.id)
     try {
-      const updated = await api.patch<Job>(`/freelancer-jobs/${job.id}/followup`, {})
+      const updated = await freelancerJobsApi.markFollowUp(job.id)
       setJobs(prev => enrichJobs(prev.map(j => j.id === job.id ? { ...j, ...updated } : j)))
     } catch { } finally { setFollowingUpId(null) }
   }
 
   async function handleDelete(jobId: string) {
     try {
-      await api.delete(`/freelancer-jobs/${jobId}`)
+      await freelancerJobsApi.remove(jobId)
       setJobs(prev => prev.filter(j => j.id !== jobId))
     } catch { }
   }

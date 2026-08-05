@@ -17,7 +17,8 @@ import { KanbanColumn } from './KanbanColumn'
 import { ProposalCard } from './ProposalCard'
 import { InterviewLeadModal } from './InterviewLeadModal'
 import { EditProposalPanel } from './EditProposalPanel'
-import { api } from '@/lib/api'
+import * as proposalsApi from '@/lib/data/proposals'
+import { getStoredUser } from '@/lib/auth'
 
 const COLUMNS = [
   { id: 'SENT',      label: 'Sent',      accent: 'border-slate-500',   dotColor: 'bg-slate-400' },
@@ -151,7 +152,7 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
 
     // Persist all other status changes
     try {
-      await api.patch(`/proposals/${activeId}/status`, { status: targetCol })
+      await proposalsApi.updateStatus(activeId, targetCol, getStoredUser()?.id)
     } catch {
       setProposals(prev => prev.map(p =>
         p.id === activeId ? { ...p, status: originalStatus ?? p.status } : p
@@ -164,7 +165,7 @@ export function KanbanBoard({ initialProposals }: KanbanBoardProps) {
     const { proposalId, originalStatus } = pendingInterview
     setPendingInterview(null)
     try {
-      await api.patch(`/proposals/${proposalId}/status`, { status: 'REPLIED' })
+      await proposalsApi.updateStatus(proposalId, 'REPLIED', getStoredUser()?.id)
     } catch {
       setProposals(prev => prev.map(p =>
         p.id === proposalId ? { ...p, status: originalStatus } : p

@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { api } from '@/lib/api'
+import * as usersApi from '@/lib/data/users'
+import * as upworkProfilesApi from '@/lib/data/upwork-profiles'
+import * as bidderAssignmentsApi from '@/lib/data/bidder-assignments'
 import { getStoredUser } from '@/lib/auth'
 import { UserCheck, Plus, X, BarChart2, FilePlus } from 'lucide-react'
 
 interface BidderUser {
-  id: string; name: string; email: string; role: string; rep?: { id: string }
+  id: string; name: string; email: string; role: string; repId?: string | null
 }
 interface UpworkProfile {
   id: string; title: string; niche: string; primarySkills: string
@@ -66,10 +68,11 @@ export default function AssignmentsPage() {
   async function loadAll() {
     setLoading(true)
     try {
+      const currentCompanyId = currentUser?.companyId
       const [usersData, profilesData, assignmentsData] = await Promise.all([
-        api.get<BidderUser[]>('/users').catch(() => [] as BidderUser[]),
-        api.get<UpworkProfile[]>('/upwork-profiles').catch(() => [] as UpworkProfile[]),
-        api.get<Assignment[]>('/bidder-assignments').catch(() => [] as Assignment[]),
+        usersApi.findAll().catch(() => [] as BidderUser[]),
+        upworkProfilesApi.findAll(currentCompanyId).catch(() => [] as UpworkProfile[]),
+        bidderAssignmentsApi.getAllAssignments(currentCompanyId).catch(() => [] as Assignment[]),
       ])
       setBidders(usersData.filter(u => u.role === 'REP'))
       setProfiles(profilesData)
@@ -99,9 +102,9 @@ export default function AssignmentsPage() {
     setSaving(true)
     try {
       if (isAssigned(selectedProfile.id, bidderId)) {
-        await api.delete(`/bidder-assignments/${bidderId}/${selectedProfile.id}`)
+        await bidderAssignmentsApi.unassign(bidderId, selectedProfile.id)
       } else {
-        await api.post('/bidder-assignments', { bidderId, profileId: selectedProfile.id })
+        await bidderAssignmentsApi.assign(bidderId, selectedProfile.id, currentUser!.id)
       }
       await loadAll()
     } finally {
@@ -116,10 +119,11 @@ export default function AssignmentsPage() {
     setCreatingProfile(true)
     try {
       const skills = newSkills.split(',').map(s => s.trim()).filter(Boolean)
-      await api.post('/upwork-profiles', {
+      await upworkProfilesApi.create({
         title: newTitle.trim(),
         niche: newNiche,
         primarySkills: skills,
+        companyId: currentUser?.companyId || undefined,
       })
       setNewTitle(''); setNewSkills(''); setNewNiche('MERN'); setShowNewProfile(false)
       await loadAll()
@@ -311,8 +315,8 @@ export default function AssignmentsPage() {
                         <p className="text-[10px] text-slate-600">{bidder.email}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        {bidder.rep?.id && (
-                          <a href={`/reports/${bidder.rep.id}`} className="p-1.5 rounded-lg text-slate-600 hover:text-violet-400 transition-colors">
+                        {bidder.repId && (
+                          <a href={`/reports/${bidder.repId}`} className="p-1.5 rounded-lg text-slate-600 hover:text-violet-400 transition-colors">
                             <BarChart2 size={13} />
                           </a>
                         )}

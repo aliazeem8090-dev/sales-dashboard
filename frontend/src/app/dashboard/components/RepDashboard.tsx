@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { api } from '@/lib/api'
 import { getStoredUser } from '@/lib/auth'
+import { getRepSelfDashboard } from '@/lib/data/dashboard'
+import { findByRep } from '@/lib/data/coaching-insights'
 import {
   TrendingUp, MessageSquare, Eye, Briefcase, XCircle,
   Zap, CheckCircle, Activity, AlertTriangle, Bell, Kanban,
@@ -157,9 +158,9 @@ export function RepDashboard() {
     async function load() {
       try {
         const [dash, ins] = await Promise.all([
-          api.get<any>('/dashboard/rep-self'),
+          getRepSelfDashboard(user!.id),
           user?.repId
-            ? api.get<any[]>(`/coaching-insights/rep/${user.repId}`).catch(() => [])
+            ? findByRep(user.repId).catch(() => [])
             : Promise.resolve([]),
         ])
         setData(dash)

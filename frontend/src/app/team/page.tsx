@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
+import * as usersApi from '@/lib/data/users'
 import { getStoredUser } from '@/lib/auth'
 import { UserPlus, Trash2, Mail, X, RefreshCw } from 'lucide-react'
 
@@ -65,8 +65,8 @@ export default function TeamPage() {
 
   async function fetchUsers() {
     try {
-      const data = await api.get<any[]>('/users')
-      setUsers((data as any[]).filter(u => u.role === 'REP' || u.role === 'LINKEDIN_AGENT' || u.role === 'FREELANCER_AGENT'))
+      const data = await usersApi.findAll()
+      setUsers(data)
     } catch { } finally { setLoading(false) }
   }
 
@@ -76,7 +76,7 @@ export default function TeamPage() {
     if (!name.trim() || !email.trim() || !password.trim()) { setError('All fields are required.'); return }
     setSubmitting(true)
     try {
-      await api.post('/users', {
+      await usersApi.create({
         name: name.trim(),
         email: email.trim(),
         password,
@@ -93,7 +93,7 @@ export default function TeamPage() {
   async function handleDelete(user: any) {
     setDeletingId(user.id)
     try {
-      await api.delete(`/users/${user.id}`)
+      await usersApi.remove(user.id)
       setUsers(prev => prev.filter(u => u.id !== user.id))
     } catch { } finally { setDeletingId(null); setConfirmDelete(null) }
   }
@@ -101,7 +101,7 @@ export default function TeamPage() {
   async function handleRoleChange(userId: string, newRole: string) {
     setChangingRoleId(userId)
     try {
-      await api.patch(`/users/${userId}/role`, { role: newRole })
+      await usersApi.updateRole(userId, newRole)
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u))
     } catch { } finally { setChangingRoleId(null) }
   }

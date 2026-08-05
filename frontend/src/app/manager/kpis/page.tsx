@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { api } from '@/lib/api'
+import { getLeaderboard } from '@/lib/data/dashboard'
+import * as repsApi from '@/lib/data/reps'
+import { getStoredUser } from '@/lib/auth'
 import { Target, CheckCircle2, XCircle, AlertTriangle, Save, RefreshCw } from 'lucide-react'
 
 interface KpiTargets {
@@ -102,9 +104,10 @@ export default function KpiTargetsPage() {
   const [loading, setLoading] = useState(true)
 
   function loadData() {
-    return api.get<any[]>('/dashboard/leaderboard?days=30')
+    const user = getStoredUser()
+    return getLeaderboard(user?.companyId || null, 30)
       .then(data => {
-        const filtered = data.filter(r => r.repId)
+        const filtered = data.filter(r => r.repId) as unknown as RepData[]
         setReps(filtered)
         setTargets(buildInitialTargets(filtered))
       })
@@ -129,7 +132,7 @@ export default function KpiTargetsPage() {
     setSaving(prev => ({ ...prev, [rep.repId]: true }))
     try {
       const merged = { ...rep.targets, ...targets[rep.repId] }
-      await api.patch(`/reps/${rep.repId}`, { targets: merged })
+      await repsApi.update(rep.repId, { targets: merged })
       // Reload so actuals + saved targets both reflect reality
       await loadData()
       setSaved(prev => ({ ...prev, [rep.repId]: true }))

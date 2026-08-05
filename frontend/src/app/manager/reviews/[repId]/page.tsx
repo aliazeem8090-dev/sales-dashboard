@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { api } from '@/lib/api'
+import { getLeaderboard } from '@/lib/data/dashboard'
+import * as proposalsApi from '@/lib/data/proposals'
+import { getStoredUser } from '@/lib/auth'
 import { ArrowLeft, ExternalLink, Zap, ChevronDown, ChevronUp } from 'lucide-react'
 
 const TIME_FILTERS = [
@@ -146,9 +148,10 @@ export default function RepReviewDetailPage() {
 
   function load(selectedDays: number) {
     setLoading(true)
+    const user = getStoredUser()
     // Get rep info from leaderboard + proposals
     Promise.all([
-      api.get<any[]>('/dashboard/leaderboard').catch(() => []),
+      getLeaderboard(user?.companyId || null).catch(() => []),
       fetchProposals(selectedDays),
     ]).then(([lb]) => {
       const rep = (lb as any[]).find(r => r.repId === repId)
@@ -160,9 +163,7 @@ export default function RepReviewDetailPage() {
     const startDate = selectedDays > 0
       ? new Date(Date.now() - selectedDays * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
       : undefined
-    const params = new URLSearchParams({ repId })
-    if (startDate) params.set('start', startDate)
-    return api.get<any[]>(`/proposals?${params}`)
+    return proposalsApi.findByRepWithFilters(repId, { startDate })
       .then(setProposals)
       .catch(() => setProposals([]))
   }

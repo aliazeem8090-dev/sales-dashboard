@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
+import * as freelancerLeadsApi from '@/lib/data/freelancer-leads'
 import { getStoredUser } from '@/lib/auth'
 import { Plus, X, ChevronDown, ChevronUp, Phone, Mail, Trash2, FileText } from 'lucide-react'
 
@@ -70,8 +70,8 @@ export default function FreelancerLeadsPage() {
 
   async function fetchLeads(id: string) {
     try {
-      const data = await api.get<Lead[]>(`/freelancer-leads/agent/${id}`)
-      setLeads(data)
+      const data = await freelancerLeadsApi.findByAgent(id)
+      setLeads(data as any)
     } catch { } finally { setLoading(false) }
   }
 
@@ -85,7 +85,7 @@ export default function FreelancerLeadsPage() {
     if (!agentId || !clientName.trim()) return
     setSubmitting(true)
     try {
-      const lead = await api.post<Lead>(`/freelancer-leads/agent/${agentId}`, {
+      const lead = await freelancerLeadsApi.create(agentId, {
         clientName: clientName.trim(),
         jobDescription: jobDescription.trim() || undefined,
         proposal: proposal.trim() || undefined,
@@ -93,7 +93,7 @@ export default function FreelancerLeadsPage() {
         contactEmail: contactEmail.trim() || undefined,
         notes: notes.trim() || undefined,
       })
-      setLeads(prev => [lead, ...prev])
+      setLeads(prev => [lead as any, ...prev])
       resetForm()
       setShowForm(false)
     } catch { } finally { setSubmitting(false) }
@@ -101,7 +101,7 @@ export default function FreelancerLeadsPage() {
 
   async function handleStatusChange(lead: Lead, newStatus: LeadStatus) {
     try {
-      const updated = await api.patch<Lead>(`/freelancer-leads/${lead.id}`, { status: newStatus })
+      const updated = await freelancerLeadsApi.update(lead.id, { status: newStatus })
       setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, ...updated } : l))
     } catch { }
   }
@@ -109,7 +109,7 @@ export default function FreelancerLeadsPage() {
   async function handleDelete(id: string) {
     setDeletingId(id)
     try {
-      await api.delete(`/freelancer-leads/${id}`)
+      await freelancerLeadsApi.remove(id)
       setLeads(prev => prev.filter(l => l.id !== id))
       if (expandedId === id) setExpandedId(null)
     } catch { } finally { setDeletingId(null) }

@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
+import { getStoredUser } from '@/lib/auth'
+import * as dashboardApi from '@/lib/data/dashboard'
+import * as coachingApi from '@/lib/data/coaching-insights'
+import * as linkedinApi from '@/lib/data/linkedin-dashboard'
+import * as freelancerApi from '@/lib/data/freelancer-dashboard'
 import {
   Users, AlertTriangle, BarChart2,
   Briefcase, ChevronRight, Clock, Network,
@@ -383,16 +387,17 @@ export function ManagerDashboard() {
 
   function loadData(selectedDays: number) {
     setLoading(true)
-    const q = selectedDays > 0 ? `?days=${selectedDays}` : ''
+    const companyId = getStoredUser()?.companyId ?? null
+    const days = selectedDays > 0 ? selectedDays : undefined
     Promise.all([
-      api.get<any>(`/dashboard/team-overview${q}`).catch(() => null),
-      api.get<any[]>(`/dashboard/leaderboard${q}`).catch(() => []),
-      api.get<any[]>('/dashboard/niche-stats').catch(() => []),
-      api.get<any[]>('/coaching-insights/team').catch(() => []),
-      api.get<any[]>(`/dashboard/team-trends?days=${selectedDays || 30}`).catch(() => []),
-      api.get<any>('/dashboard/weekly-summary').catch(() => null),
-      api.get<any[]>('/linkedin-dashboard/all').catch(() => []),
-      api.get<any[]>('/freelancer-dashboard/all').catch(() => []),
+      dashboardApi.getTeamOverview(companyId, days).catch(() => null),
+      dashboardApi.getLeaderboard(companyId, days).catch(() => []),
+      dashboardApi.getNicheStats(companyId).catch(() => []),
+      coachingApi.findTeamInsights(companyId).catch(() => []),
+      dashboardApi.getTeamTrends(companyId, selectedDays || 30).catch(() => []),
+      dashboardApi.getWeeklySummary(companyId).catch(() => null),
+      linkedinApi.getAllAgentsPerformance(companyId).catch(() => []),
+      freelancerApi.getAllAgentsPerformance(companyId).catch(() => []),
     ]).then(([ov, lb, ns, ins, tr, ws, li, fl]) => {
       setOverview(ov)
       setLeaderboard(lb as any[])

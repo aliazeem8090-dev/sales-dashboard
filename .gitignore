@@ -8,3 +8,7 @@ yarn-debug.log*
 
 .vercel
 .env*.local
+
+# Claude Code local settings — contains locally-approved command history,
+# which can include secrets pasted into commands during a session.
+.claude/settings.local.json

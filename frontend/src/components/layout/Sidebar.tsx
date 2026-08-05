@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { logout, getStoredUser, AuthUser } from '@/lib/auth'
-import { api } from '@/lib/api'
+import * as jobNotificationsApi from '@/lib/data/job-notifications'
 import {
   LayoutDashboard, FileText, MessageSquare, Lightbulb,
   ClipboardList, Star, LogOut, Users, BarChart2, Kanban,
@@ -85,8 +85,8 @@ export function Sidebar() {
     const u = getStoredUser()
     setUser(u)
     if (u && (u.role === 'MANAGER' || u.role === 'ADMIN') && u.companyId === 'company-2') {
-      api.get<{ count: number }>('/job-notifications/unread-count')
-        .then(r => setJobLeadCount(r.count))
+      jobNotificationsApi.getUnreadCountForUser(u.companyId || 'company-1', u.id)
+        .then(setJobLeadCount)
         .catch(() => {})
     }
   }, [])

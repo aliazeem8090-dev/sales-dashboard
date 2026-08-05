@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
+import { getAgentDashboard } from '@/lib/data/linkedin-dashboard'
 import { getStoredUser } from '@/lib/auth'
 import {
   CheckCircle2, AlertTriangle, XCircle, Info,
@@ -58,7 +58,7 @@ export default function LinkedInDashboardPage() {
       setLoading(false)
       return
     }
-    api.get(`/linkedin-dashboard/agent/${user.agentId}`)
+    getAgentDashboard(user.agentId)
       .then((d: any) => setData(d))
       .catch(() => setError('Failed to load dashboard data'))
       .finally(() => setLoading(false))

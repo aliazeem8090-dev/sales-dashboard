@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
+import * as linkedinDailyLogsApi from '@/lib/data/linkedin-daily-logs'
 import { getStoredUser } from '@/lib/auth'
 import { Save, CheckCircle2, AlertTriangle } from 'lucide-react'
 
@@ -52,7 +52,7 @@ export default function LinkedInLogPage() {
     setAgentId(user.agentId)
 
     // Load today's log
-    api.get(`/linkedin-daily-logs/today/${user.agentId}`)
+    linkedinDailyLogsApi.getTodayLog(user.agentId)
       .then((log: any) => {
         if (log) {
           setExistingId(log.id)
@@ -73,8 +73,8 @@ export default function LinkedInLogPage() {
       .catch(() => {})
 
     // Monthly InMail count
-    api.get(`/linkedin-daily-logs/monthly-inmails/${user.agentId}`)
-      .then((res: any) => setMonthlyInMails(res?.total || 0))
+    linkedinDailyLogsApi.getMonthlyInMails(user.agentId)
+      .then((total: number) => setMonthlyInMails(total || 0))
       .catch(() => {})
   }, [])
 
@@ -87,7 +87,7 @@ export default function LinkedInLogPage() {
     if (!agentId) return
     setSaving(true); setError(''); setSaved(false)
     try {
-      await api.post(`/linkedin-daily-logs/upsert/${agentId}`, form)
+      await linkedinDailyLogsApi.upsertToday(agentId, form)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch {

@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { api } from '@/lib/api'
+import { getLeaderboard } from '@/lib/data/dashboard'
+import { getStoredUser } from '@/lib/auth'
 import { AlertTriangle, Clock, ChevronRight, Users } from 'lucide-react'
 
 const TIME_FILTERS = [
@@ -51,8 +52,8 @@ export default function RepReviewsPage() {
 
   function load(d: number) {
     setLoading(true)
-    const q = d > 0 ? `?days=${d}` : ''
-    api.get<any[]>(`/dashboard/leaderboard${q}`)
+    const user = getStoredUser()
+    getLeaderboard(user?.companyId || null, d > 0 ? d : undefined)
       .then(setReps)
       .catch(() => setReps([]))
       .finally(() => setLoading(false))

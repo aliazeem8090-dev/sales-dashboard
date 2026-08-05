@@ -3,7 +3,8 @@
 import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { api } from '@/lib/api'
+import * as proposalsApi from '@/lib/data/proposals'
+import * as repsApi from '@/lib/data/reps'
 import { getStoredUser } from '@/lib/auth'
 import { Plus, ExternalLink, Zap, Trash2 } from 'lucide-react'
 
@@ -37,21 +38,16 @@ function ProposalsList() {
 
   useEffect(() => {
     setLoading(true)
-    const params = new URLSearchParams()
-    if (filter) params.set('status', filter)
+    const statusFilter = filter || undefined
 
-    // Reps must pass their repId — backend enforces it anyway
     if (user?.role === 'REP') {
-      api.get<any>(`/reps/by-user/${user.id}`)
-        .then(rep => {
-          const repParam = rep?.id ? `repId=${rep.id}&${params}` : params.toString()
-          return api.get<any[]>(`/proposals?${repParam}`)
-        })
+      repsApi.findByUserId(user.id)
+        .then(rep => proposalsApi.findByRepWithFilters(rep?.id || '', { status: statusFilter }))
         .then(setProposals)
         .catch(console.error)
         .finally(() => setLoading(false))
     } else {
-      api.get<any[]>(`/proposals?${params}`)
+      proposalsApi.findAll({ status: statusFilter, companyId: user?.companyId || 'company-1' })
         .then(setProposals)
         .catch(console.error)
         .finally(() => setLoading(false))
@@ -213,7 +209,7 @@ function DeleteButton({ proposalId, onDelete }: { proposalId: string; onDelete: 
   async function handleDelete() {
     setDeleting(true)
     try {
-      await api.delete(`/proposals/${proposalId}`)
+      await proposalsApi.remove(proposalId)
       onDelete()
     } catch (e) {
       console.error(e)
@@ -260,7 +256,7 @@ function StatusDropdown({ proposalId, current, onUpdate }: { proposalId: string;
   async function updateStatus(status: string) {
     setOpen(false)
     try {
-      const updated = await api.patch<any>(`/proposals/${proposalId}/status`, { status })
+      const updated = await proposalsApi.updateStatus(proposalId, status, getStoredUser()?.id)
       onUpdate(updated)
     } catch (e) { console.error(e) }
   }

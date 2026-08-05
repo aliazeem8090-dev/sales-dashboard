@@ -1,0 +1,2 @@
+-- Seed data is intentionally empty during migration.
+-- Import live data from Railway/MySQL after the schema is applied.

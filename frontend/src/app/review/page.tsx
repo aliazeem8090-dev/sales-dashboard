@@ -2,7 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { api } from '@/lib/api'
+import { invokeAi } from '@/lib/ai'
+import { supabase } from '@/lib/supabase'
 
 const PROFILE_TYPES = ['MERN', 'LARAVEL', 'AI_ML', 'WORDPRESS', 'GENERAL']
 
@@ -45,9 +46,17 @@ function ReviewContent() {
 
   useEffect(() => {
     if (proposalId) {
-      api.get<any>(`/proposals/${proposalId}`).then(p => {
-        if (p?.fullProposalText) setProposalText(p.fullProposalText)
-      }).catch(() => {})
+      const loadProposal = async () => {
+        const { data } = await supabase
+          .from('proposal')
+          .select('fullProposalText')
+          .eq('id', proposalId)
+          .single()
+
+          if (data?.fullProposalText) setProposalText(data.fullProposalText)
+      }
+
+      loadProposal().catch(() => {})
     }
   }, [proposalId])
 
@@ -56,7 +65,8 @@ function ReviewContent() {
     setError('')
     setLoading(true)
     try {
-      const data = await api.post<any>('/chat/review-proposal', {
+      const data = await invokeAi<any>({
+        action: 'review-proposal',
         proposalText,
         profileType,
         jobDescription: jobDescription || undefined,
@@ -64,7 +74,7 @@ function ReviewContent() {
       setResult(data)
 
       if (proposalId) {
-        await api.post('/proposal-reviews', {
+        const { error: reviewError } = await supabase.from('proposal_review').insert({
           proposalId,
           overallScore: data.overallScore,
           parameterScores: data.categoryScores,
@@ -74,7 +84,13 @@ function ReviewContent() {
           rewrittenVersion: data.rewrittenVersion,
           modelOutputSnapshot: data,
         })
-        await api.put(`/proposals/${proposalId}`, { aiScore: data.overallScore })
+        if (reviewError) throw new Error(reviewError.message)
+
+        const { error: proposalError } = await supabase
+          .from('proposal')
+          .update({ aiScore: data.overallScore })
+          .eq('id', proposalId)
+        if (proposalError) throw new Error(proposalError.message)
       }
     } catch (err: any) {
       setError(err.message || 'Review failed. Check your OpenAI API key.')

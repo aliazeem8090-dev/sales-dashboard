@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
+import * as freelancerDashboardApi from '@/lib/data/freelancer-dashboard'
 import { getStoredUser } from '@/lib/auth'
 import { RefreshCw, ChevronDown, ChevronUp, Briefcase, Link as LinkIcon } from 'lucide-react'
 
@@ -51,8 +51,9 @@ export default function ManagerFreelancerPage() {
   async function fetchAgents() {
     setLoading(true)
     try {
-      const data = await api.get<AgentSummary[]>('/freelancer-dashboard/all')
-      setAgents(data)
+      const user = getStoredUser()
+      const data = await freelancerDashboardApi.getAllAgentsPerformance(user?.companyId || null)
+      setAgents(data as any)
     } catch { } finally { setLoading(false) }
   }
 

@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { X, Zap } from 'lucide-react'
-import { api } from '@/lib/api'
+import * as jobsApi from '@/lib/data/jobs'
+import * as proposalsApi from '@/lib/data/proposals'
+import * as upworkProfilesApi from '@/lib/data/upwork-profiles'
 
 interface EditProposalPanelProps {
   proposal: any
@@ -24,7 +26,7 @@ export function EditProposalPanel({ proposal, onSaved, onClose }: EditProposalPa
   const [error, setError] = useState('')
 
   useEffect(() => {
-    api.get<any[]>('/upwork-profiles').then(setProfiles).catch(() => {})
+    upworkProfilesApi.findAll().then(setProfiles).catch(() => {})
   }, [])
 
   async function handleSave(e: React.FormEvent) {
@@ -34,10 +36,10 @@ export function EditProposalPanel({ proposal, onSaved, onClose }: EditProposalPa
     try {
       // Update job title if changed
       if (proposal.job?.id && jobTitle !== proposal.job.title) {
-        await api.patch(`/jobs/${proposal.job.id}`, { title: jobTitle })
+        await jobsApi.update(proposal.job.id, { title: jobTitle })
       }
       // Update proposal fields
-      const updated = await api.put<any>(`/proposals/${proposal.id}`, {
+      const updated = await proposalsApi.update(proposal.id, {
         fullProposalText: proposalText,
         connectsUsed,
         profileUsedId: profileUsedId || null,

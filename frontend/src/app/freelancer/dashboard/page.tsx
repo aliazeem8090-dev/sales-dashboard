@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { api } from '@/lib/api'
+import { getAgentDashboard } from '@/lib/data/freelancer-dashboard'
 import { getStoredUser } from '@/lib/auth'
 import { Users, Link as LinkIcon, TrendingUp, ChevronRight, ExternalLink } from 'lucide-react'
 
@@ -59,8 +59,8 @@ export default function FreelancerDashboardPage() {
       setError('Agent profile not found. Log out and back in.')
       setLoading(false); return
     }
-    api.get<DashboardData>(`/freelancer-dashboard/agent/${user.freelancerAgentId}`)
-      .then(d => setData(d))
+    getAgentDashboard(user.freelancerAgentId)
+      .then(d => setData(d as any))
       .catch(() => setError('Failed to load dashboard'))
       .finally(() => setLoading(false))
   }, [])

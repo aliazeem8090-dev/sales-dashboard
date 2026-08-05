@@ -1,9 +1,13 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { api } from '@/lib/api'
 import { getStoredUser } from '@/lib/auth'
 import { KanbanBoard } from '@/components/board/KanbanBoard'
+import * as proposalsApi from '@/lib/data/proposals'
+import * as jobsApi from '@/lib/data/jobs'
+import * as repsApi from '@/lib/data/reps'
+import * as bidderAssignmentsApi from '@/lib/data/bidder-assignments'
+import * as upworkProfilesApi from '@/lib/data/upwork-profiles'
 import {
   Plus, Kanban, Users, ChevronDown, Search, Calendar,
   X, ArrowLeft, ArrowRight, Zap, ChevronLeft, ExternalLink, Building2,
@@ -193,19 +197,20 @@ function NewProposalPanel({
     if (!repId) { setError('Rep profile not found. Contact your manager.'); return }
     setLoading(true)
     try {
-      const job = await api.post<any>('/jobs', {
+      const user = getStoredUser()
+      const job = await jobsApi.findOrCreate({
         upworkJobUrl: form.jobUrl,
         title: form.jobTitle,
         description: form.jobDescription || undefined,
       })
-      await api.post('/proposals', {
+      await proposalsApi.create({
         repId,
         jobId: job.id,
         fullProposalText: form.fullProposalText,
         connectsUsed: totalConnects,
         profileUsedId: form.profileUsedId || undefined,
         submittedAt: new Date().toISOString(),
-      })
+      }, user?.id, { companyId: user?.companyId || undefined, repEmail: user?.email, role: user?.role })
       onSuccess()
     } catch (err: any) {
       setError(err.message || 'Failed to save proposal')
@@ -465,16 +470,16 @@ export default function BoardPage() {
       setIsManager(true)
       const c2mgr = u.companyId === 'company-2'
       setIsCompany2Manager(c2mgr)
-      api.get<any[]>('/reps').then(setAllReps).catch(() => {})
+      repsApi.findAll(u.companyId).then(setAllReps).catch(() => {})
       loadProposals({ mgr: true })
     } else {
       // Load rep + assigned profiles
-      api.get<any>(`/reps/by-user/${u.id}`)
+      repsApi.findByUserId(u.id)
         .then(async rep => {
           if (rep?.id) {
             setRepId(rep.id)
-            const assignments = await api.get<any[]>(`/bidder-assignments/bidder/${u.id}`).catch(() => [])
-            const allProfiles = await api.get<any[]>('/upwork-profiles').catch(() => [])
+            const assignments = await bidderAssignmentsApi.getByBidder(u.id).catch(() => [])
+            const allProfiles = await upworkProfilesApi.findAll().catch(() => [])
             if (assignments.length > 0) {
               const ids = new Set(assignments.map((a: any) => a.profileId))
               const filtered = allProfiles.filter((p: any) => ids.has(p.id))
@@ -492,7 +497,7 @@ export default function BoardPage() {
   async function loadCompany1Proposals() {
     setCompany1Loading(true)
     try {
-      const data = await api.get<any[]>('/proposals?companyId=company-1')
+      const data = await proposalsApi.findAll({ companyId: 'company-1' })
       setCompany1Proposals(data)
     } catch { } finally {
       setCompany1Loading(false)
@@ -513,13 +518,15 @@ export default function BoardPage() {
       const mgr = opts?.mgr ?? isManager
       const rid = opts?.rid ?? repId
       const repFilter = opts?.repFilter ?? selectedRepId
-      let url = '/proposals'
+      const user = getStoredUser()
+      let data: any[]
       if (mgr) {
-        if (repFilter) url = `/proposals?repId=${repFilter}`
+        data = repFilter
+          ? await proposalsApi.findByRepWithFilters(repFilter, {})
+          : await proposalsApi.findAll({ companyId: user?.companyId || 'company-1' })
       } else {
-        if (rid) url = `/proposals?repId=${rid}`
+        data = rid ? await proposalsApi.findByRepWithFilters(rid, {}) : []
       }
-      const data = await api.get<any[]>(url)
       setProposals(data)
     } catch {
       setError('Failed to load proposals')

@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { api } from '@/lib/api'
+import * as coachingApi from '@/lib/data/coaching-insights'
+import * as repsApi from '@/lib/data/reps'
 import { getStoredUser } from '@/lib/auth'
 import { PenLine, Zap, Info, MessageSquare, Activity, BarChart2, User } from 'lucide-react'
 
@@ -67,15 +68,15 @@ export default function InsightsPage() {
     if (user === null) return
     if (isManager) {
       Promise.all([
-        api.get<any[]>('/coaching-insights/team'),
-        api.get<any[]>('/reps'),
+        coachingApi.findTeamInsights(user?.companyId || 'company-1'),
+        repsApi.findAll(user?.companyId),
       ]).then(([ins, repList]) => {
         setInsights(ins as any[])
         setReps(repList as any[])
       }).catch(console.error).finally(() => setLoading(false))
     } else {
-      api.get<any>(`/reps/by-user/${user?.id}`)
-        .then(rep => rep ? api.get<any[]>(`/coaching-insights/rep/${rep.id}`) : [])
+      repsApi.findByUserId(user!.id)
+        .then(rep => rep ? coachingApi.findByRep(rep.id) : [])
         .then(ins => setInsights(ins as any[]))
         .catch(console.error)
         .finally(() => setLoading(false))
@@ -86,7 +87,7 @@ export default function InsightsPage() {
     if (!selectedRep) return
     setGenerating(true)
     try {
-      const newInsights = await api.post<any[]>(`/coaching-insights/generate/${selectedRep}`, {})
+      const newInsights = await coachingApi.generateForRep(selectedRep)
       setInsights(prev => [...(newInsights as any[]), ...prev])
     } catch (err) { console.error(err) }
     finally { setGenerating(false) }
@@ -96,10 +97,7 @@ export default function InsightsPage() {
     if (!noteRep || !noteText.trim()) return
     setSavingNote(true)
     try {
-      const created = await api.post<any>(`/coaching-insights/note/${noteRep}`, {
-        note: noteText.trim(),
-        severity: noteSeverity,
-      })
+      const created = await coachingApi.createNote(noteRep, noteText.trim(), noteSeverity)
       setInsights(prev => [created as any, ...prev])
       setNoteText('')
       setShowNotePanel(false)
@@ -108,7 +106,7 @@ export default function InsightsPage() {
   }
 
   async function markRead(id: string) {
-    await api.patch(`/coaching-insights/${id}/read`)
+    await coachingApi.markRead(id)
     setInsights(prev => prev.map(i => i.id === id ? { ...i, isRead: true } : i))
   }
 

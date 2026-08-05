@@ -9,7 +9,7 @@ import {
   AlertTriangle, Star, StickyNote, Pencil, Trash2,
 } from 'lucide-react'
 import { getStoredUser } from '@/lib/auth'
-import { api } from '@/lib/api'
+import * as proposalsApi from '@/lib/data/proposals'
 
 interface ProposalCardProps {
   proposal: any
@@ -69,7 +69,7 @@ export function ProposalCard({ proposal, isDragging, onEdit, onDelete }: Proposa
   async function handleDelete() {
     setDeleting(true)
     try {
-      await api.delete(`/proposals/${proposal.id}`)
+      await proposalsApi.remove(proposal.id)
       onDelete?.(proposal.id)
     } catch {
       setDeleting(false)

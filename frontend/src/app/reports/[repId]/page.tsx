@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { api } from '@/lib/api'
+import { getBidderReport } from '@/lib/data/dashboard'
 import { Printer } from 'lucide-react'
 
 interface ReportData {
@@ -108,8 +108,8 @@ export default function ReportPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    api.get<ReportData>(`/dashboard/report/${repId}`)
-      .then(setReport)
+    getBidderReport(repId)
+      .then(setReport as any)
       .catch(() => setError('Could not load report'))
       .finally(() => setLoading(false))
   }, [repId])

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
+import * as jobNotificationsApi from '@/lib/data/job-notifications'
 import { getStoredUser } from '@/lib/auth'
 import { ExternalLink, CheckCheck, Bell, Clock } from 'lucide-react'
 
@@ -43,7 +43,9 @@ export default function NotificationsPage() {
 
   async function fetchNotifications() {
     try {
-      const data = await api.get<JobNotification[]>('/job-notifications')
+      const user = getStoredUser()
+      if (!user) return
+      const data = await jobNotificationsApi.findForUser(user.companyId || 'company-1', user.id)
       setNotifications(data)
     } catch { } finally {
       setLoading(false)
@@ -52,7 +54,7 @@ export default function NotificationsPage() {
 
   async function handleMarkRead(id: string) {
     try {
-      await api.patch(`/job-notifications/${id}/read`, {})
+      await jobNotificationsApi.markRead(id)
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n))
     } catch { }
   }
@@ -60,7 +62,8 @@ export default function NotificationsPage() {
   async function handleMarkAllRead() {
     setMarkingAll(true)
     try {
-      await api.patch('/job-notifications/read-all', {})
+      const user = getStoredUser()
+      if (user) await jobNotificationsApi.markAllReadForUser(user.companyId || 'company-1', user.id)
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
     } catch { } finally {
       setMarkingAll(false)

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { api } from '@/lib/api'
+import { invokeAi } from '@/lib/ai'
 import { getStoredUser } from '@/lib/auth'
 import { Send, MessageSquare } from 'lucide-react'
 
@@ -44,7 +44,7 @@ export default function ChatPage() {
         profile: user?.assignedProfileId ? { profileId: user.assignedProfileId } : null,
         teamProfiles: ['MERN', 'Laravel', 'AI/ML Python', 'WordPress'],
       }
-      const data = await api.post<any>('/chat/message', { message, context })
+      const data = await invokeAi<{ response: string }>({ action: 'message', message, context })
       setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
     } catch (err: any) {
       setMessages(prev => [...prev, {

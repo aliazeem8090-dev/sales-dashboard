@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { X, UserCircle2 } from 'lucide-react'
-import { api } from '@/lib/api'
+import * as leadsApi from '@/lib/data/leads'
+import { getStoredUser } from '@/lib/auth'
 
 interface InterviewLeadModalProps {
   proposalId: string
@@ -38,9 +39,10 @@ export function InterviewLeadModal({ proposalId, repId, onSaved, onSkip, onCance
     if (!form.clientName.trim()) { setError('Client name is required.'); return }
     setSaving(true)
     try {
-      await api.post('/leads', {
+      await leadsApi.create({
         repId,
         proposalId,
+        companyId: getStoredUser()?.companyId || undefined,
         ...form,
       })
       onSaved()

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
+import * as freelancerDailyLogsApi from '@/lib/data/freelancer-daily-logs'
 import { getStoredUser } from '@/lib/auth'
 import { Save, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react'
 
@@ -56,7 +56,7 @@ export default function FreelancerLogPage() {
 
   async function fetchTodayLog(id: string) {
     try {
-      const data = await api.get<any>(`/freelancer-daily-logs/today/${id}`)
+      const data = await freelancerDailyLogsApi.getTodayLog(id)
       if (data) {
         setValues({
           jobsFound:        String(data.jobsFound        ?? ''),
@@ -87,7 +87,7 @@ export default function FreelancerLogPage() {
       for (const f of FIELDS) {
         payload[f.key] = values[f.key] === '' ? 0 : parseInt(values[f.key], 10)
       }
-      await api.post(`/freelancer-daily-logs/upsert/${agentId}`, payload)
+      await freelancerDailyLogsApi.upsertToday(agentId, payload)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (err: any) {

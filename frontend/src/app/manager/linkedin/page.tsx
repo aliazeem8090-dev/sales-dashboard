@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
+import * as linkedinDashboardApi from '@/lib/data/linkedin-dashboard'
 import { getStoredUser } from '@/lib/auth'
 import { CheckCircle2, AlertTriangle, XCircle, Edit2, Save, X } from 'lucide-react'
 
@@ -47,7 +47,7 @@ export default function ManagerLinkedInPage() {
       router.replace('/dashboard')
       return
     }
-    api.get('/linkedin-dashboard/all')
+    linkedinDashboardApi.getAllAgentsPerformance(user.companyId || null)
       .then((data: any) => setAgents(data as any[]))
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -67,7 +67,7 @@ export default function ManagerLinkedInPage() {
   async function saveTargets(agentId: string) {
     setSaving(true)
     try {
-      await api.post(`/linkedin-dashboard/targets/${agentId}`, editTargets)
+      await linkedinDashboardApi.setTargets(agentId, editTargets)
       setAgents(prev => prev.map(a => a.agentId === agentId ? { ...a, targets: { ...a.targets, ...editTargets } } : a))
       setEditingId(null)
     } catch { } finally { setSaving(false) }

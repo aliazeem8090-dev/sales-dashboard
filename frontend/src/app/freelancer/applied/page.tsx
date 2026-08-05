@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
+import * as freelancerAppliedJobsApi from '@/lib/data/freelancer-applied-jobs'
 import { getStoredUser } from '@/lib/auth'
 import { Plus, ExternalLink, Trash2, Link as LinkIcon } from 'lucide-react'
 
@@ -50,8 +50,8 @@ export default function FreelancerAppliedPage() {
 
   async function fetchJobs(id: string) {
     try {
-      const data = await api.get<AppliedJob[]>(`/freelancer-applied-jobs/agent/${id}`)
-      setJobs(data)
+      const data = await freelancerAppliedJobsApi.findByAgent(id)
+      setJobs(data as any)
     } catch { } finally { setLoading(false) }
   }
 
@@ -60,11 +60,11 @@ export default function FreelancerAppliedPage() {
     if (!agentId || !url.trim()) return
     setSubmitting(true)
     try {
-      const job = await api.post<AppliedJob>(`/freelancer-applied-jobs/agent/${agentId}`, {
+      const job = await freelancerAppliedJobsApi.create(agentId, {
         url: url.trim(),
         title: title.trim() || undefined,
       })
-      setJobs(prev => [job, ...prev])
+      setJobs(prev => [job as any, ...prev])
       setUrl('')
       setTitle('')
     } catch { } finally { setSubmitting(false) }
@@ -73,7 +73,7 @@ export default function FreelancerAppliedPage() {
   async function handleDelete(id: string) {
     setDeletingId(id)
     try {
-      await api.delete(`/freelancer-applied-jobs/${id}`)
+      await freelancerAppliedJobsApi.remove(id)
       setJobs(prev => prev.filter(j => j.id !== id))
     } catch { } finally { setDeletingId(null) }
   }

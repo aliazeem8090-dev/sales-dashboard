@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
+import * as leadsApi from '@/lib/data/leads'
 import { getStoredUser } from '@/lib/auth'
 import { UserCircle2, Building2, MessageSquare, Phone, DollarSign, User } from 'lucide-react'
 
@@ -39,7 +39,7 @@ export default function ManagerLeadsPage() {
       router.replace('/dashboard')
       return
     }
-    api.get<Lead[]>('/leads')
+    leadsApi.findByCompany(u.companyId || 'company-1')
       .then(setLeads)
       .catch(() => {})
       .finally(() => setLoading(false))
